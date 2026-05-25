@@ -3,7 +3,6 @@ import { api } from '@/lib/api-factory'
 import type {
     ForgotPasswordInputType,
     IUserProfile,
-    IUserResponse,
     IVerifyInputType,
     SigninInputType,
     SignupInputType,
@@ -40,12 +39,6 @@ export const authService = {
             body: JSON.stringify(data),
             cache: 'no-store',
         }),
-    getMe: () =>
-        api.API<IUserResponse>('/api/user/current', {
-            method: 'GET',
-            cache: 'no-store',
-        }),
-
     logout: () =>
         api.API<any>('/api/auth/logout', {
             method: 'POST',
