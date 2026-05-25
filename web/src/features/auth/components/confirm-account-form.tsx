@@ -21,12 +21,6 @@ export function ConfirmAccountForm({ className, ...props }: React.ComponentProps
 
     const { mutate, isPending, isSuccess, error, isError } = useMutation({
         mutationFn: (data: IVerifyInputType) => authService.verify(data),
-        // Optional: Auto-redirect after 3 seconds on success
-        onSuccess: () => {
-            setTimeout(() => {
-                // window.location.assign(SIGNIN_URL)
-            }, 3000)
-        },
     })
 
     const { handleSubmit } = useForm<IVerifyInputType>({

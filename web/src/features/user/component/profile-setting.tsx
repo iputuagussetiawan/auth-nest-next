@@ -9,15 +9,8 @@ import type { IUserProfile } from '../types/user-type'
 import { Button } from '@/components/ui/button'
 import {
     Dialog,
-    DialogClose,
     DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
 } from '@/components/ui/dialog'
-import { Field, FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
@@ -36,32 +29,22 @@ type DialogType = 'email' | 'password' | 'edit' | null
 export default function ProfileSettings({ user }: ProfileSettingsProps) {
     const [previewImage, setPreviewImage] = useState<string | null>(user.profilePicture)
     const fileInputRef = useRef<HTMLInputElement>(null)
-    const [activeDialog, setActiveDialog] = useState<DialogType>(null) // State to control dialog
+    const [activeDialog, setActiveDialog] = useState<DialogType>(null)
 
     const queryClient = useQueryClient()
 
-    // 1. Define the Mutation
     const { mutate: updateProfile, isPending } = useMutation({
         mutationFn: (formData: FormData) => userService.update(formData),
-
-        // 2. What happens on success?
         onSuccess: () => {
-            // Tells the whole app the user data has changed
-            queryClient.invalidateQueries({ queryKey: ['authUser'] })
-
+            queryClient.invalidateQueries({ queryKey: ['user'] })
             toast.success('Profile updated successfully!', { position: 'top-center' })
-
-            // Sync the form dirty state
             form.reset(form.getValues())
         },
-
-        // 3. What happens on error?
         onError: (error: any) => {
             toast.error(error.message || 'Failed to update profile')
         },
     })
 
-    // 2. Initialize form
     const form = useForm<profileDTO>({
         resolver: zodResolver(profileNameValidation),
         defaultValues: {
@@ -69,24 +52,18 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
         },
     })
 
-    // Triggered when user selects a new file
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
-            // 1. Create a local preview
             const reader = new FileReader()
             reader.onloadend = () => {
                 setPreviewImage(reader.result as string)
             }
             reader.readAsDataURL(file)
-
-            // 2. Mark form as dirty so Save button enables
             form.setValue('name', form.getValues('name'), { shouldDirty: true })
         }
     }
 
-    // 3. Handle Submit
-    // 4. Clean Submit Handler
     function onSubmit(values: profileDTO) {
         const formData = new FormData()
         formData.append('name', values.name)
@@ -95,12 +72,11 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
             formData.append('profilePicture', fileInputRef.current.files[0])
         }
 
-        // Direct execution via mutate
         updateProfile(formData)
     }
+
     return (
         <div className="max-w-3xl space-y-8 p-6">
-            {/* Header */}
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
                 <p className="text-muted-foreground mt-1">
@@ -108,7 +84,6 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                 </p>
             </div>
 
-            {/* Account Section */}
             <section className="space-y-6">
                 <header>
                     <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
@@ -119,7 +94,6 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
 
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <div className="flex items-center gap-6">
-                        {/* Avatar Container with Hover Effect */}
                         <div
                             className="group relative cursor-pointer"
                             onClick={() => fileInputRef.current?.click()}
@@ -132,7 +106,6 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                             <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
                                 <Camera className="h-5 w-5 text-white drop-shadow-md" />
                             </div>
-                            {/* Hidden File Input */}
                             <input
                                 type="file"
                                 name="profilePicture"
@@ -163,14 +136,12 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                 </form>
             </section>
 
-            {/* Account Security Section */}
             <section className="space-y-6">
                 <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
                     Account security
                 </h2>
                 <Separator />
 
-                {/* Email Row */}
                 <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                         <Label className="text-base">Email</Label>
@@ -181,7 +152,6 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                     </Button>
                 </div>
 
-                {/* Password Row */}
                 <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                         <Label className="text-base">Password (On Progress dev... )</Label>
@@ -210,19 +180,19 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
 
                     {activeDialog === 'password' && (
                         <>
-                            <DialogHeader>
-                                <DialogTitle>Change Password</DialogTitle>
-                                <DialogDescription>Choose a strong password.</DialogDescription>
-                            </DialogHeader>
-                            <FieldGroup className="py-4">
+                            <div className="space-y-1.5">
+                                <h2 className="text-lg font-semibold">Change Password</h2>
+                                <p className="text-muted-foreground text-sm">Choose a strong password.</p>
+                            </div>
+                            <div className="space-y-3 py-4">
                                 <Input type="password" placeholder="New Password" />
                                 <Input type="password" placeholder="Confirm Password" />
-                            </FieldGroup>
-                            <DialogFooter>
+                            </div>
+                            <div className="flex justify-end">
                                 <Button onClick={() => setActiveDialog(null)}>
                                     Update Password
                                 </Button>
-                            </DialogFooter>
+                            </div>
                         </>
                     )}
                 </DialogContent>

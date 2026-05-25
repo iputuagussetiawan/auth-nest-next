@@ -5,6 +5,7 @@ import type { IUserProfile } from '@/features/user/types/user-type'
 import type {
     ForgotPasswordInputType,
     IVerifyInputType,
+    ResetPasswordInputType,
     SigninInputType,
     SignupInputType,
 } from '../types/auth-type'
@@ -34,7 +35,7 @@ export const authService = {
             body: JSON.stringify(data),
             cache: 'no-store',
         }),
-    resetPassword: (data: any) =>
+    resetPassword: (data: ResetPasswordInputType & { verificationCode: string }) =>
         api.API<any>('/api/auth/password/reset', {
             method: 'POST',
             body: JSON.stringify(data),

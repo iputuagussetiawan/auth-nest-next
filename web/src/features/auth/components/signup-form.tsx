@@ -39,19 +39,12 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
     })
 
     const { mutate, isPending } = useMutation({
-        // 2. Call the service directly here
         mutationFn: (data: SignupInputType) => authService.register(data),
-
-        onSuccess: (result, variables) => {
-            // Since your service likely returns the raw data or throws on error,
-            // you might need to adjust this check based on your API's response shape.
-            if (result) {
-                setRegisteredEmail(variables.email)
-                setIsRegistered(true)
-            }
+        onSuccess: (_, variables) => {
+            setRegisteredEmail(variables.email)
+            setIsRegistered(true)
         },
         onError: (error: any) => {
-            // 3. The service usually throws an error, so handle it here
             setError('email', {
                 type: 'manual',
                 message: error.message || 'Registration failed',
@@ -59,7 +52,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
         },
     })
 
-    const onSubmit = async (data: SignupInputType) => {
+    const onSubmit = (data: SignupInputType) => {
         mutate(data)
     }
 
@@ -135,7 +128,6 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
                     />
                 </div>
 
-                {/* Email */}
                 <UiFormInput
                     label="Email Address"
                     id="email"
@@ -146,7 +138,6 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
                     {...register('email')}
                 />
 
-                {/* Password */}
                 <UiFormInput
                     label="Password"
                     id="password"

@@ -12,18 +12,18 @@ import { UiFormInput } from '@/components/ui/UiFormInput'
 import { handleUpdateProfile } from '../../actions/user'
 import { updateProfileValidation, type UpdateProfileDTO } from '../../types/user-type'
 
-interface ProfileSettingsProps {
+interface ManageEmailProps {
     user: IUserProfile
     onSuccess: () => void
 }
 
-export default function ManageEmail({ user, onSuccess }: ProfileSettingsProps) {
+export default function ManageEmail({ user, onSuccess }: ManageEmailProps) {
     const [isLoading, setIsLoading] = useState(false)
     const {
         register,
         handleSubmit,
         reset,
-        formState: { errors, isDirty }, // Destructure formState for cleaner code
+        formState: { errors, isDirty },
     } = useForm<UpdateProfileDTO>({
         resolver: zodResolver(updateProfileValidation),
         defaultValues: {
@@ -37,21 +37,18 @@ export default function ManageEmail({ user, onSuccess }: ProfileSettingsProps) {
         try {
             const formData = new FormData()
             formData.append('email', values.email)
-            await handleUpdateProfile(formData) // Your Server Action
-
-            await new Promise((resolve) => setTimeout(resolve, 1500))
+            await handleUpdateProfile(formData)
 
             toast.success('Email updated! Please verify your new address.')
-
-            // ✅ Close the dialog after success
             onSuccess()
-            reset(values) // Reset dirty state
-        } catch (error) {
+            reset(values)
+        } catch {
             toast.error('Update failed')
         } finally {
             setIsLoading(false)
         }
     }
+
     return (
         <>
             <DialogHeader>
@@ -78,7 +75,7 @@ export default function ManageEmail({ user, onSuccess }: ProfileSettingsProps) {
                             className="w-full sm:w-auto"
                         >
                             {isLoading && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-                            {isLoading ? 'Save Email' : 'Save Email'}
+                            Save Email
                         </Button>
                     </DialogFooter>
                 </form>

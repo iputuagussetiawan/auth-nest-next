@@ -33,7 +33,7 @@ function copyResponseHeaders(from: Response, to: NextResponse) {
     from.headers.getSetCookie?.().forEach((c) => to.headers.append('set-cookie', c))
 }
 
-async function entries(request: NextRequest) {
+async function proxyRequest(request: NextRequest) {
     const path = request.nextUrl.pathname.replace(/^\/api\//, '')
     const targetUrl = `${API_BASE_URL}/${path}${request.nextUrl.search}`
 
@@ -107,8 +107,8 @@ async function entries(request: NextRequest) {
     }
 }
 
-export const GET = entries
-export const POST = entries
-export const PUT = entries
-export const DELETE = entries
-export const PATCH = entries
+export const GET = proxyRequest
+export const POST = proxyRequest
+export const PUT = proxyRequest
+export const DELETE = proxyRequest
+export const PATCH = proxyRequest

@@ -1,6 +1,6 @@
 import { GalleryVerticalEnd } from 'lucide-react'
 
-import { ConfirmAccountForm } from '@/features/auth/components/confirm-account-form '
+import { ConfirmAccountForm } from '@/features/auth/components/confirm-account-form'
 
 export default function ConfirmAccountPage() {
     return (

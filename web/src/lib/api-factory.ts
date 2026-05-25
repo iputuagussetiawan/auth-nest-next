@@ -1,9 +1,8 @@
 import { AUTH_COOKIE_NAME, SIGNIN_URL } from './constants'
 
-// Tambahkan tipe untuk params agar lebih aman
 type ApiOptions = RequestInit & {
     next?: NextFetchRequestConfig
-    params?: Record<string, string | number | boolean | undefined> // Tambahkan ini
+    params?: Record<string, string | number | boolean | undefined>
 }
 
 class FetchFactory {
@@ -25,10 +24,7 @@ class FetchFactory {
         return headers
     }
 
-    async API<T>(
-        endpoint: string,
-        options: ApiOptions = {}, // Gunakan tipe ApiOptions
-    ): Promise<T> {
+    async API<T>(endpoint: string, options: ApiOptions = {}): Promise<T> {
         const apiBaseUrl = process.env.NEXT_PUBLIC_APP_BASE_URL
         const defaultHeaders = await this.getRequestConfig()
 
@@ -41,7 +37,6 @@ class FetchFactory {
             delete mergedHeaders['Content-Type']
         }
 
-        // --- PERBAIKAN LOGIKA PARAMS DI SINI ---
         let fullUrl = `${apiBaseUrl}${endpoint}`
 
         if (options.params) {
@@ -55,11 +50,9 @@ class FetchFactory {
 
             const queryString = searchParams.toString()
             if (queryString) {
-                // Cek apakah endpoint sudah punya tanda tanya (?) atau belum
                 fullUrl += fullUrl.includes('?') ? `&${queryString}` : `?${queryString}`
             }
         }
-        // ---------------------------------------
 
         const response = await fetch(fullUrl, {
             ...options,

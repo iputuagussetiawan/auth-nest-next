@@ -27,8 +27,6 @@ export default function SessionSetting() {
         },
     })
 
-    // Helper to parse UA strings
-
     if (isLoading) {
         return (
             <div className="flex h-40 items-center justify-center">

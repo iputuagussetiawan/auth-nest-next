@@ -27,16 +27,14 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
     const [timeLeft, setTimeLeft] = useState<string>('00:00')
     const [isExpired, setIsExpired] = useState(false)
 
-    // 1. Setup the Mutation
     const { mutate, isPending, isSuccess, error, isError } = useMutation({
-        mutationFn: (data: any) => authService.resetPassword(data),
+        mutationFn: (data: ResetPasswordInputType & { verificationCode: string }) =>
+            authService.resetPassword(data),
         onSuccess: () => {
-            // Auto-redirect after 3 seconds on success
             setTimeout(() => router.push(SIGNIN_URL), 3000)
         },
     })
 
-    // --- Timer Logic (Unchanged but kept for functionality) ---
     const calculateTimeLeft = useCallback(() => {
         if (!expiration) {
             setIsExpired(true)
@@ -67,7 +65,6 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
         const timer = setInterval(calculateTimeLeft, 1000)
         return () => clearInterval(timer)
     }, [calculateTimeLeft])
-    // ---------------------------------------------------------
 
     const {
         register,
@@ -80,13 +77,9 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
 
     const onSubmit = (data: ResetPasswordInputType) => {
         if (!verificationCode) return
-        mutate({
-            password: data.password,
-            verificationCode: verificationCode,
-        })
+        mutate({ password: data.password, verificationCode })
     }
 
-    // 2. Expired State
     if (isExpired || !verificationCode) {
         return (
             <div
@@ -104,7 +97,6 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
         )
     }
 
-    // 3. Success State
     if (isSuccess) {
         return (
             <div
@@ -143,7 +135,6 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
                     </p>
                 </div>
 
-                {/* Timer Display */}
                 <div
                     className={cn(
                         'flex items-center justify-center gap-2 self-center rounded-full border px-4 py-2 text-xs font-medium transition-colors',
@@ -156,7 +147,6 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
                     <span>Expires in: {timeLeft}</span>
                 </div>
 
-                {/* Server Error Display */}
                 {isError && (
                     <div className="bg-destructive/10 text-destructive border-destructive/20 rounded-md border p-3 text-center text-xs">
                         {(error as any)?.message || 'Failed to reset password'}

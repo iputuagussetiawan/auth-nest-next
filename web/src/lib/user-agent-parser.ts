@@ -3,14 +3,14 @@ import {
     Compass,
     Globe,
     Laptop,
-    LucideIcon, // 👈 Use LucideIcon instead of TypeIcon
+    LucideIcon,
     Monitor,
     Smartphone,
     Terminal,
 } from 'lucide-react'
 
 interface SessionDetails {
-    Icon: LucideIcon // 👈 Correct type here
+    Icon: LucideIcon
     browser: string
     os: string
     isMobile: boolean
@@ -19,7 +19,6 @@ interface SessionDetails {
 export const parseUserAgent = (ua: string): SessionDetails => {
     const lowerUA = ua.toLowerCase()
 
-    // --- 1. Browser Detection ---
     const getBrowser = () => {
         if (lowerUA.includes('edg/')) return 'Edge'
         if (lowerUA.includes('opr/') || lowerUA.includes('opera')) return 'Opera'
@@ -31,7 +30,6 @@ export const parseUserAgent = (ua: string): SessionDetails => {
         return 'Other Browser'
     }
 
-    // --- 2. OS & Device Detection ---
     const getDeviceContext = () => {
         if (lowerUA.includes('android')) return { os: 'Android', icon: Smartphone, isMobile: true }
         if (/iphone|ipad|ipod/.test(lowerUA)) return { os: 'iOS', icon: Smartphone, isMobile: true }
@@ -45,14 +43,11 @@ export const parseUserAgent = (ua: string): SessionDetails => {
     const browser = getBrowser()
     const { os, icon: OS_Icon, isMobile } = getDeviceContext()
 
-    // --- 3. Icon Refinement ---
     let FinalIcon: LucideIcon = OS_Icon
 
     if (browser === 'Chrome') FinalIcon = Chrome
     if (browser === 'Safari' && !isMobile) FinalIcon = Compass
     if (browser === 'Node.js') FinalIcon = Terminal
-
-    // If we couldn't determine a specific OS icon above
     if (browser === 'Other Browser' && !isMobile) FinalIcon = Monitor
 
     return {
