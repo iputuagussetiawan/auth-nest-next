@@ -5,7 +5,7 @@ import { AUTH_COOKIE_NAME } from './lib/constants'
 const protectedRoutes = ['/dashboard', '/onboarding']
 const authRoutes = ['/signin', '/signup', '/register', '/forgot-password', '/reset-password']
 
-export default function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl
     const token = request.cookies.get(AUTH_COOKIE_NAME)?.value
 
