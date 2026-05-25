@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation' // 🗝️ For redirecting after login
+import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
@@ -10,7 +10,7 @@ import { GoogleSignInButton } from '@/components/google-sign-in'
 import { Button } from '@/components/ui/button'
 import { FieldGroup, FieldLabel, FieldSeparator } from '@/components/ui/field'
 import { UiFormInput } from '@/components/ui/UiFormInput'
-import { DASHBOARD_URL, ONBOARDING_URL, SIGNUP_URL } from '@/lib/constants'
+import { DASHBOARD_URL, SIGNUP_URL } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
 import { authService } from '../services/auth-service'
@@ -33,15 +33,11 @@ export function SignInForm({ className, ...props }: React.ComponentProps<'form'>
 
     const { mutate, isPending } = useMutation({
         mutationFn: (data: SigninInputType) => authService.login(data),
-        onSuccess: (result) => {
-            // Adjust this based on whether your service returns a boolean or throws
-            if (result) {
-                router.push(DASHBOARD_URL)
-                router.refresh()
-            }
+        onSuccess: () => {
+            router.push(DASHBOARD_URL)
+            router.refresh()
         },
         onError: (error: any) => {
-            // Highlight fields on failure
             setError('email', { type: 'manual', message: ' ' })
             setError('password', {
                 type: 'manual',

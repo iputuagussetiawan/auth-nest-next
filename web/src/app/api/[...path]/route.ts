@@ -34,7 +34,7 @@ function copyResponseHeaders(from: Response, to: NextResponse) {
 }
 
 async function entries(request: NextRequest) {
-    const path = request.nextUrl.pathname.replace('/api/', '')
+    const path = request.nextUrl.pathname.replace(/^\/api\//, '')
     const targetUrl = `${API_BASE_URL}/${path}${request.nextUrl.search}`
 
     const headers = new Headers(request.headers)

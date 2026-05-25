@@ -9,6 +9,7 @@ const useAuth = () => {
         queryKey: ['user'],
         queryFn: userService.getMe,
         staleTime: 5 * 60 * 1000,
+        retry: 1,
     })
 }
 
