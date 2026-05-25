@@ -36,19 +36,6 @@ export interface IApiResponse<T> {
     data: T
 }
 
-export interface IUserProfile {
-    id: string
-    firstName: string
-    lastName: string
-    email: string
-    profilePicture: string // Cloudinary URL
-    isActive: boolean
-    lastLogin: string | null
-    onboardingComplete: boolean
-    createdAt: string // ISO Date String
-    updatedAt: string // ISO Date String
-}
-
 export interface ILoginData {
     user: IUserProfile
     access_token: string

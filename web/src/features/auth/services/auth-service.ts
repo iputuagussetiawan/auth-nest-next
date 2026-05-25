@@ -1,8 +1,9 @@
 import { api } from '@/lib/api-factory'
 
+import type { IUserProfile } from '@/features/user/types/user-type'
+
 import type {
     ForgotPasswordInputType,
-    IUserProfile,
     IVerifyInputType,
     SigninInputType,
     SignupInputType,
