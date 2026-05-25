@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
-import { AUTH_COOKIE_NAME } from './lib/constants'
+import { AUTH_COOKIE_NAME, DASHBOARD_URL, SIGNIN_URL } from './lib/constants'
 
 const protectedRoutes = ['/dashboard', '/onboarding']
-const authRoutes = ['/signin', '/signup', '/register', '/forgot-password', '/reset-password']
+const authRoutes = ['/signin', '/signup', '/forgot-password', '/reset-password']
 
 export default function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl
@@ -13,11 +13,11 @@ export default function proxy(request: NextRequest) {
     const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route))
 
     if (isProtectedRoute && !token) {
-        return NextResponse.redirect(new URL('/signin', request.url))
+        return NextResponse.redirect(new URL(SIGNIN_URL, request.url))
     }
 
     if (isAuthRoute && token) {
-        return NextResponse.redirect(new URL('/dashboard', request.url))
+        return NextResponse.redirect(new URL(DASHBOARD_URL, request.url))
     }
 
     return NextResponse.next()
