@@ -10,7 +10,7 @@ import PreferencesSettings from './profile-preferences'
 import ProfileSettings from './profile-setting'
 
 const Profile = () => {
-    const { isLoading, user } = useAuthContext()
+    const { user } = useAuthContext()
     return (
         <div className="flex flex-col space-y-6 pb-16 md:block">
             <Tabs

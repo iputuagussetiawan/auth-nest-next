@@ -3,13 +3,6 @@ import { z } from 'zod'
 import type { IRole } from '@/features/role/types/role-type'
 import type { ISession } from '@/features/session/types/session-type'
 
-export const profileValidation = z.object({
-    firstName: z.string().min(1, 'First name is required').max(50, 'First name is too long').trim(),
-    lastName: z.string().min(1, 'Last name is required').max(50, 'Last name is too long').trim(),
-})
-
-export type updateProfileDTO = z.infer<typeof profileValidation>
-
 export const profileNameValidation = z.object({
     name: z.string().min(1, 'Name is required').max(100, 'Name is too long').trim(),
 })
