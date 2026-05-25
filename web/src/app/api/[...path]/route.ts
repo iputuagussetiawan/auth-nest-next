@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { AUTH_COOKIE_NAME } from '@/lib/constants'
 
-const API_BASE_URL = process.env.BACKEND_URL || 'http://localhost:5000'
+const API_BASE_URL = process.env.BACKEND_URL || 'http://localhost:8000/api'
 
 function isAuthPath(path: string) {
     return path.startsWith('auth/')

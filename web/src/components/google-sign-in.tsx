@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Loader2 } from 'lucide-react' // For the loading spinner
+import { Loader2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 
@@ -12,14 +12,8 @@ export const GoogleSignInButton = () => {
 
     const handleGoogleSignIn = () => {
         setIsLoading(true)
-
-        // 1. Determine the backend URL
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
-        const authUrl = `${apiBaseUrl}/auth/google`
-
-        // 2. Redirect to the Express/Passport.js endpoint
-        // We use .assign() to keep it in the same tab for a better mobile experience
-        window.location.assign(authUrl)
+        const appBaseUrl = process.env.NEXT_PUBLIC_APP_BASE_URL || 'http://localhost:3000'
+        window.location.assign(`${appBaseUrl}/api/auth/google`)
     }
 
     return (
