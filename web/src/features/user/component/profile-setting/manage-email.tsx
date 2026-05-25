@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
-import type { IUser } from '@/features/session/types/session-type'
+import type { IUserProfile } from '../../types/user-type'
 import { Button } from '@/components/ui/button'
 import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { UiFormInput } from '@/components/ui/UiFormInput'
@@ -13,7 +13,7 @@ import { handleUpdateProfile } from '../../actions/user'
 import { updateProfileValidation, type UpdateProfileDTO } from '../../types/user-type'
 
 interface ProfileSettingsProps {
-    user: IUser
+    user: IUserProfile
     onSuccess: () => void
 }
 

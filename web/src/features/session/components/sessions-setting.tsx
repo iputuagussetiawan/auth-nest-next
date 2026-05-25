@@ -60,7 +60,7 @@ export default function SessionSetting() {
                 {currentSession && (
                     <SessionItem
                         session={{ id: currentSession.id, isCurrent: true }}
-                        parsedDetails={parseUserAgent(currentSession.userAgent)}
+                        parsedDetails={parseUserAgent(currentSession.userAgent ?? '')}
                         timeAgo="Active now"
                         onDelete={(id) => deleteSession(id)}
                         loading={isDeleting}
@@ -77,7 +77,7 @@ export default function SessionSetting() {
                             <SessionItem
                                 key={session.id}
                                 session={{ id: session.id, isCurrent: false }}
-                                parsedDetails={parseUserAgent(session.userAgent)}
+                                parsedDetails={parseUserAgent(session.userAgent ?? '')}
                                 timeAgo="Last active recently"
                                 loading={isDeleting}
                                 onDelete={(id) => deleteSession(id)}

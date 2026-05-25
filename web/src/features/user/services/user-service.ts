@@ -22,4 +22,11 @@ export const userService = {
             body: JSON.stringify(data),
             cache: 'no-store',
         }),
+
+    update: (formData: FormData) =>
+        api.API<IUserProfileResponse>('/api/user', {
+            method: 'PATCH',
+            body: formData,
+            cache: 'no-store',
+        }),
 }

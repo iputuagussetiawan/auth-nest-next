@@ -5,7 +5,7 @@ import { Camera, Loader2, Save } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
-import type { IUser } from '@/features/session/types/session-type'
+import type { IUserProfile } from '../types/user-type'
 import { Button } from '@/components/ui/button'
 import {
     Dialog,
@@ -24,11 +24,11 @@ import { Separator } from '@/components/ui/separator'
 import { UserAvatar } from '@/components/user-avatar'
 
 import { userService } from '../services/user-service'
-import { profileValidation, type profileDTO } from '../types/user-type'
+import { profileNameValidation, type profileDTO } from '../types/user-type'
 import ManageEmail from './profile-setting/manage-email'
 
 interface ProfileSettingsProps {
-    user: IUser
+    user: IUserProfile
 }
 
 type DialogType = 'email' | 'password' | 'edit' | null
@@ -63,7 +63,7 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
 
     // 2. Initialize form
     const form = useForm<profileDTO>({
-        resolver: zodResolver(profileValidation),
+        resolver: zodResolver(profileNameValidation),
         defaultValues: {
             name: `${user.firstName} ${user.lastName}`,
         },

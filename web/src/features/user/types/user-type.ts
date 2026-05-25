@@ -10,6 +10,18 @@ export const profileValidation = z.object({
 
 export type updateProfileDTO = z.infer<typeof profileValidation>
 
+export const profileNameValidation = z.object({
+    name: z.string().min(1, 'Name is required').max(100, 'Name is too long').trim(),
+})
+
+export type profileDTO = z.infer<typeof profileNameValidation>
+
+export const updateProfileValidation = z.object({
+    email: z.string().email({ message: 'Please enter a valid email address' }),
+})
+
+export type UpdateProfileDTO = z.infer<typeof updateProfileValidation>
+
 export interface IUserProfile {
     id: string
     email: string
