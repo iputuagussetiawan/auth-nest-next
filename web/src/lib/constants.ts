@@ -1,4 +1,5 @@
 export const AUTH_COOKIE_NAME = 'accessToken'
+export const REFRESH_COOKIE_NAME = 'refreshToken'
 export const SIGNUP_URL = '/signup'
 export const SIGNIN_URL = '/signin'
 export const SIGNOUT_URL = '/'

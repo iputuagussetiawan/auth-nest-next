@@ -3,7 +3,6 @@
 import { useAuthContext } from '@/providers/auth-provider'
 import { Settings, Share2, User } from 'lucide-react'
 
-import { useAuth } from '@/features/auth/context/auth-context'
 import SessionSetting from '@/features/session/components/sessions-setting'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
