@@ -39,6 +39,10 @@ async function entries(request: NextRequest) {
 
     const headers = new Headers(request.headers)
     headers.delete('host')
+    headers.delete('x-forwarded-for')
+    headers.delete('x-real-ip')
+    headers.delete('x-forwarded-host')
+    headers.delete('x-forwarded-proto')
 
     const body =
         request.method !== 'GET' && request.method !== 'HEAD'
