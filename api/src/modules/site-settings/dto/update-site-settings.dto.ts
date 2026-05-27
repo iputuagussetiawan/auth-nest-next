@@ -1,4 +1,8 @@
-import { IsBoolean, IsEmail, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator'
+import { Transform } from 'class-transformer'
+import { IsBoolean, IsEmail, IsOptional, IsString, MaxLength } from 'class-validator'
+
+const emptyToUndefined = () =>
+    Transform(({ value }) => (value === '' ? undefined : value))
 
 export class UpdateSiteSettingsDto {
     @IsOptional() @IsString() @MaxLength(200) siteName?: string
@@ -8,7 +12,7 @@ export class UpdateSiteSettingsDto {
     @IsOptional() @IsString() @MaxLength(500) logoUrl?: string
     @IsOptional() @IsString() @MaxLength(500) faviconUrl?: string
 
-    @IsOptional() @IsEmail() @MaxLength(200) contactEmail?: string
+    @IsOptional() @emptyToUndefined() @IsEmail() @MaxLength(200) contactEmail?: string
     @IsOptional() @IsString() @MaxLength(50) contactPhone?: string
     @IsOptional() @IsString() contactAddress?: string
 

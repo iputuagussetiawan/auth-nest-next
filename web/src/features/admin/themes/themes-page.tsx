@@ -38,7 +38,7 @@ function ThemeCard({
     const { config } = theme
     const light = config.light ?? {} as any
     return (
-        <Card className={theme.isActive ? 'ring-2 ring-primary' : ''}>
+        <Card className={`transition-shadow hover:shadow-md cursor-pointer ${theme.isActive ? 'ring-2 ring-primary' : 'hover:ring-1 hover:ring-border'}`}>
             <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2">
                     <div>
@@ -112,7 +112,10 @@ export function ThemesPage() {
     })
     const themes = data?.data ?? []
 
-    const invalidate = () => qc.invalidateQueries({ queryKey: ['admin-themes'] })
+    const invalidate = () => {
+        qc.invalidateQueries({ queryKey: ['admin-themes'] })
+        qc.invalidateQueries({ queryKey: ['active-theme'] })
+    }
 
     const createMutation = useMutation({
         mutationFn: (values: { name: string; slug: string; isActive: boolean; config: IThemeConfig }) =>
