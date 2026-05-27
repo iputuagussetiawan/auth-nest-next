@@ -114,7 +114,7 @@ export function ThemesPage() {
 
     const invalidate = () => {
         qc.invalidateQueries({ queryKey: ['admin-themes'] })
-        qc.invalidateQueries({ queryKey: ['active-theme'] })
+        qc.invalidateQueries({ queryKey: ['my-theme'] })
     }
 
     const createMutation = useMutation({

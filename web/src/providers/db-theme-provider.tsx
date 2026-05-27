@@ -37,9 +37,9 @@ export function DbThemeProvider({ children }: { children: React.ReactNode }) {
     const { resolvedTheme } = useTheme()
 
     const { data } = useQuery({
-        queryKey: ['active-theme'],
-        queryFn: () => api.API<{ data: { config: IThemeConfig } }>('/api/themes/active', { method: 'GET', cache: 'no-store' }),
-        staleTime: 5 * 60 * 1000,
+        queryKey: ['my-theme'],
+        queryFn: () => api.API<{ data: { config: IThemeConfig } }>('/api/themes/my', { method: 'GET', cache: 'no-store' }),
+        staleTime: 30 * 1000,
     })
 
     useEffect(() => {

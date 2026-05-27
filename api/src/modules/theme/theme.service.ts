@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm'
 import { DRIZZLE } from '../../database/drizzle.provider'
 import * as schema from '../../database/schema'
 import { themes } from '../../database/schema/themes.schema'
+import { users } from '../../database/schema/users.schema'
 import { NotFoundException } from '../../common/exceptions/app-error'
 import { CreateThemeDto } from './dto/create-theme.dto'
 import { UpdateThemeDto } from './dto/update-theme.dto'
@@ -114,7 +115,43 @@ export class ThemeService {
     async delete(id: string) {
         const [existing] = await this.db.select().from(themes).where(eq(themes.id, id)).limit(1)
         if (!existing) throw new NotFoundException('Theme not found')
+        // Clear any user preferences pointing to this theme
+        await this.db.update(users).set({ preferredThemeId: null, updatedAt: new Date() }).where(eq(users.preferredThemeId, id))
         await this.db.delete(themes).where(eq(themes.id, id))
         return { message: 'Theme deleted' }
+    }
+
+    async getAllPublic() {
+        return this.db.select().from(themes).orderBy(themes.createdAt)
+    }
+
+    async getMyTheme(userId?: string | null) {
+        if (userId) {
+            const [user] = await this.db
+                .select({ preferredThemeId: users.preferredThemeId })
+                .from(users)
+                .where(eq(users.id, userId))
+                .limit(1)
+
+            if (user?.preferredThemeId) {
+                const [preferred] = await this.db
+                    .select()
+                    .from(themes)
+                    .where(eq(themes.id, user.preferredThemeId))
+                    .limit(1)
+                if (preferred) return preferred
+            }
+        }
+        return this.getActive()
+    }
+
+    async setPreference(userId: string, themeId: string) {
+        const [theme] = await this.db.select().from(themes).where(eq(themes.id, themeId)).limit(1)
+        if (!theme) throw new NotFoundException('Theme not found')
+        await this.db
+            .update(users)
+            .set({ preferredThemeId: themeId, updatedAt: new Date() })
+            .where(eq(users.id, userId))
+        return { themeId }
     }
 }

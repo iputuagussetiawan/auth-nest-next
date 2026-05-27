@@ -22,6 +22,7 @@ import {
 
 import { LogoutMenuItem } from './logout-menu-item'
 import { UserAvatar } from './user-avatar'
+import { ThemePickerMenuItem } from './theme-picker'
 
 export function NavUser({ user }: { user: IUserProfile | null }) {
     const { isMobile } = useSidebar()
@@ -71,6 +72,7 @@ export function NavUser({ user }: { user: IUserProfile | null }) {
                                 <Sparkles />
                                 Upgrade to Pro
                             </DropdownMenuItem>
+                            <ThemePickerMenuItem />
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
