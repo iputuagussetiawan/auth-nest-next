@@ -5,6 +5,7 @@ import {
     KeyRound,
     LayoutDashboard,
     LayoutList,
+    Palette,
     Search,
     Shield,
     Users,
@@ -112,6 +113,11 @@ export const getSidebarData = (user?: IUserProfile) => {
             group: 'Administration',
             roles: ['admin'],
             item: { title: 'Modules', url: '/dashboard/modules', icon: LayoutList },
+        },
+        {
+            group: 'Administration',
+            roles: ['admin'],
+            item: { title: 'Themes', url: '/dashboard/themes', icon: Palette },
         },
     ]
 

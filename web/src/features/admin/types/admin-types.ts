@@ -81,3 +81,38 @@ export interface IAppModulesResponse {
     message: string
     data: IAppModule[]
 }
+
+export interface IThemeConfig {
+    primaryColor: string
+    accentColor: string
+    backgroundColor: string
+    foregroundColor: string
+    cardColor: string
+    borderRadius: string
+    fontFamily: string
+    heroVariant: 'centered' | 'fullwidth'
+    heroBackground: 'gradient' | 'solid' | 'mesh'
+    darkMode: boolean
+}
+
+export interface ITheme {
+    id: string
+    name: string
+    slug: string
+    isActive: boolean
+    config: IThemeConfig
+    createdAt: string
+    updatedAt: string
+}
+
+export interface IThemesResponse {
+    status: string
+    message: string
+    data: ITheme[]
+}
+
+export interface IThemeResponse {
+    status: string
+    message: string
+    data: ITheme
+}

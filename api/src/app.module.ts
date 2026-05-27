@@ -12,6 +12,7 @@ import { RbacModule } from './modules/rbac/rbac.module'
 import { UserModule } from './modules/user/user.module'
 import { SessionModule } from './modules/session/session.module'
 import { AppModuleModule } from './modules/app-module/app-module.module'
+import { ThemeModule } from './modules/theme/theme.module'
 
 @Module({
     imports: [
@@ -24,6 +25,7 @@ import { AppModuleModule } from './modules/app-module/app-module.module'
         UserModule,
         SessionModule,
         AppModuleModule,
+        ThemeModule,
     ],
     controllers: [AppController],
     providers: [
