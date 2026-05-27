@@ -6,7 +6,6 @@ import { useAuthContext } from '@/providers/auth-provider'
 import { getSidebarData } from '@/lib/sidebar-menu'
 
 import { NavMain } from './nav-main'
-import { NavProjects } from './nav-projects'
 import { NavUser } from './nav-user'
 import { TeamSwitcher } from './team-switcher'
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from './ui/sidebar'
@@ -38,7 +37,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarHeader>
             <SidebarContent>
                 <NavMain key={user?.id || 'guest'} groups={sidebarData.navGroups} />
-                <NavProjects projects={sidebarData.projects} />
             </SidebarContent>
             <SidebarFooter>
                 {user ? <NavUser user={user} /> : <div className="p-4 text-xs">Not Logged In</div>}

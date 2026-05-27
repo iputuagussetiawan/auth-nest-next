@@ -1,14 +1,11 @@
 import {
-    BookOpen,
     Briefcase,
     FileUser,
     GalleryVerticalEnd,
     KeyRound,
     LayoutDashboard,
     LayoutList,
-    PieChart,
     Search,
-    Settings2,
     Shield,
     Users,
 } from 'lucide-react'
@@ -31,7 +28,6 @@ export const getSidebarData = (user?: IUserProfile) => {
     const roleName = user?.role ?? undefined
     const userPermissions = user?.permissions ?? []
 
-    const isAdmin = roleName === 'admin'
     const isJobSeeker = roleName === 'jobseeker'
 
     const allNavItems: {
@@ -96,20 +92,6 @@ export const getSidebarData = (user?: IUserProfile) => {
                 ],
             },
         },
-        // --- Settings (all users, but admin gets extra sub-item) ---
-        {
-            group: undefined,
-            item: {
-                title: 'Settings',
-                url: '#',
-                icon: Settings2,
-                items: [
-                    { title: 'General', url: '/settings' },
-                    { title: 'Security', url: '/settings/security' },
-                    ...(isAdmin ? [{ title: 'System Limits', url: '/settings/limits' }] : []),
-                ],
-            },
-        },
         // --- Administration ---
         {
             group: 'Administration',
@@ -159,15 +141,6 @@ export const getSidebarData = (user?: IUserProfile) => {
     return {
         teams: [{ name: 'Acme Inc', logo: GalleryVerticalEnd, plan: 'Enterprise' }],
         navGroups,
-        projects: [
-            { name: 'Documentation', url: '/docs', icon: BookOpen },
-            ...(canAccess(
-                { roles: ['admin'], permissions: ['analytics:read'] },
-                roleName,
-                userPermissions,
-            )
-                ? [{ name: 'Sales & Marketing', url: '#', icon: PieChart }]
-                : []),
-        ],
+        projects: [],
     }
 }
