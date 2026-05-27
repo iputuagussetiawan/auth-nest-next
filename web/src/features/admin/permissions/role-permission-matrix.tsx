@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+
+const PINNED_SLUGS = ['user', 'role'] as const
 import { adminRoleService } from '../services/admin-role-service'
 import { adminPermissionService } from '../services/admin-permission-service'
 import { adminModuleService } from '../services/admin-module-service'
@@ -141,10 +143,19 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
         return result
     }, [grouped, search, modules])
 
-    // Tree-ordered group entries (parent → children)
+    // Pinned groups always shown at top regardless of tree position
+    const pinnedEntries = useMemo((): GroupEntry[] =>
+        PINNED_SLUGS
+            .filter(slug => filteredGrouped.has(slug))
+            .map(slug => ({ slug, label: slug, depth: 0 })),
+        [filteredGrouped],
+    )
+    const pinnedSet = useMemo(() => new Set(PINNED_SLUGS), [])
+
+    // Tree-ordered group entries (parent → children), pinned slugs excluded
     const flatEntries = useMemo(
-        () => flattenGroupTree(moduleTree, filteredGrouped, collapsed),
-        [moduleTree, filteredGrouped, collapsed],
+        () => flattenGroupTree(moduleTree, filteredGrouped, collapsed).filter(e => !pinnedSet.has(e.slug as any)),
+        [moduleTree, filteredGrouped, collapsed, pinnedSet],
     )
 
     // Groups whose slug isn't in the module tree (manually created, orphaned)
@@ -158,12 +169,12 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
     const orphanedEntries = useMemo((): GroupEntry[] => {
         const result: GroupEntry[] = []
         for (const slug of filteredGrouped.keys()) {
-            if (slug !== '__other__' && !coveredSlugs.has(slug)) {
+            if (slug !== '__other__' && !coveredSlugs.has(slug) && !pinnedSet.has(slug as any)) {
                 result.push({ slug, label: slug.replace(/-/g, ' '), depth: 0 })
             }
         }
         return result
-    }, [filteredGrouped, coveredSlugs])
+    }, [filteredGrouped, coveredSlugs, pinnedSet])
 
     const otherPerms = filteredGrouped.get('__other__')
 
@@ -217,11 +228,10 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
 
     // ── render helpers ──────────────────────────────────────────────────────
 
-    const renderGroupHeader = (slug: string, label: string, depth: number, directCount: number) => {
+    const renderGroupHeader = (slug: string, label: string, depth: number, directCount: number, pinned = false) => {
         const isCollapsed = collapsed.has(slug)
         const headerPL = 16 + depth * 16
-        // Child groups get a slightly lighter muted shade
-        const bgClass = depth === 0 ? 'bg-muted/40' : 'bg-muted/25'
+        const bgClass = pinned ? 'bg-primary/8' : depth === 0 ? 'bg-muted/40' : 'bg-muted/25'
 
         return (
             <tr
@@ -246,6 +256,9 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
                         {directCount > 0 && (
                             <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">{directCount}</Badge>
                         )}
+                        {pinned && (
+                            <Badge variant="outline" className="h-4 border-primary/40 px-1.5 text-[10px] text-primary">Core</Badge>
+                        )}
                     </div>
                 </td>
                 {roles.map(role => (
@@ -261,7 +274,7 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
         const rowBg = idx % 2 === 0 ? 'bg-background' : 'bg-muted/10'
 
         return (
-            <tr key={perm.id} className={`${rowBg} hover:bg-muted/30`}>
+            <tr key={perm.id} className={`group ${rowBg} hover:bg-muted/30`}>
                 <td
                     className={`sticky left-0 z-10 border-r py-3 pr-4 ${rowBg}`}
                     style={{ paddingLeft: rowPL }}
@@ -274,7 +287,7 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
                             )}
                         </div>
                         {!isProtected && (onEdit || onDelete) && (
-                            <div className="flex shrink-0 items-center gap-1">
+                            <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                                 {onEdit && (
                                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onEdit(perm)}>
                                         <Pencil className="h-3 w-3" />
@@ -315,19 +328,19 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
         )
     }
 
-    const renderGroupSection = (entry: GroupEntry) => {
+    const renderGroupSection = (entry: GroupEntry, pinned = false) => {
         const { slug, label, depth } = entry
         const perms = filteredGrouped.get(slug) ?? []
         const isCollapsed = collapsed.has(slug)
         return (
             <React.Fragment key={slug}>
-                {renderGroupHeader(slug, label, depth, perms.length)}
+                {renderGroupHeader(slug, label, depth, perms.length, pinned)}
                 {!isCollapsed && perms.map((perm, idx) => renderPermRow(perm, idx, slug, depth))}
             </React.Fragment>
         )
     }
 
-    const totalVisible = flatEntries.length + orphanedEntries.length + (otherPerms ? 1 : 0)
+    const totalVisible = pinnedEntries.length + flatEntries.length + orphanedEntries.length + (otherPerms ? 1 : 0)
 
     return (
         <div className="space-y-3">
@@ -379,11 +392,19 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
                             </tr>
                         )}
 
+                        {/* Pinned core groups always at top */}
+                        {pinnedEntries.map(e => renderGroupSection(e, true))}
+
+                        {/* Divider after pinned if there are more groups */}
+                        {pinnedEntries.length > 0 && (flatEntries.length > 0 || orphanedEntries.length > 0 || otherPerms) && (
+                            <tr><td colSpan={roles.length + 1} className="h-px bg-border p-0" /></tr>
+                        )}
+
                         {/* Module tree groups (parent → children, indented) */}
-                        {flatEntries.map(renderGroupSection)}
+                        {flatEntries.map(e => renderGroupSection(e))}
 
                         {/* Orphaned groups (slug not in module tree) */}
-                        {orphanedEntries.map(renderGroupSection)}
+                        {orphanedEntries.map(e => renderGroupSection(e))}
 
                         {/* Ungrouped permissions */}
                         {otherPerms && (

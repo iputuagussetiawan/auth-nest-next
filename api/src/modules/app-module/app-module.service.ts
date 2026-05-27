@@ -129,13 +129,56 @@ export class AppModuleService {
     }
 
     async reorder(items: { id: string; parentId: string | null; order: number }[]) {
-        await Promise.all(
-            items.map(({ id, parentId, order }) =>
+        const allModules = await this.db.select().from(appModules)
+
+        // Apply incoming parentId changes to an in-memory map so path computation
+        // uses the new hierarchy, not the old one.
+        const moduleMap = new Map(allModules.map(m => [m.id, { ...m }]))
+        for (const { id, parentId } of items) {
+            const m = moduleMap.get(id)
+            if (m) m.parentId = parentId
+        }
+
+        // Walk up the tree to compute the canonical path for any module.
+        const computePath = (id: string, seen = new Set<string>()): string => {
+            if (seen.has(id)) return '/dashboard' // cycle guard
+            const m = moduleMap.get(id)
+            if (!m) return '/dashboard'
+            if (!m.parentId) return `/dashboard/${m.slug}`
+            seen.add(id)
+            return `${computePath(m.parentId, seen)}/${m.slug}`
+        }
+
+        // Collect the moved items PLUS all their descendants — their paths all change.
+        const toUpdate = new Set<string>(items.map(i => i.id))
+        const queue = [...toUpdate]
+        while (queue.length) {
+            const pid = queue.shift()!
+            for (const m of moduleMap.values()) {
+                if (m.parentId === pid && !toUpdate.has(m.id)) {
+                    toUpdate.add(m.id)
+                    queue.push(m.id)
+                }
+            }
+        }
+
+        await Promise.all([
+            // Reordered items: update parentId + order + path
+            ...items.map(({ id, parentId, order }) =>
                 this.db.update(appModules)
-                    .set({ parentId: parentId ?? null, order, updatedAt: new Date() })
+                    .set({ parentId: parentId ?? null, order, path: computePath(id), updatedAt: new Date() })
                     .where(eq(appModules.id, id)),
             ),
-        )
+            // Descendants not in the reorder list: path only
+            ...[...toUpdate]
+                .filter(id => !items.some(i => i.id === id))
+                .map(id =>
+                    this.db.update(appModules)
+                        .set({ path: computePath(id), updatedAt: new Date() })
+                        .where(eq(appModules.id, id)),
+                ),
+        ])
+
         return { message: 'Modules reordered' }
     }
 
