@@ -9,10 +9,27 @@ export const userService = {
             cache: 'no-store',
         }),
 
-    update: (formData: FormData) =>
-        api.API<IUserProfileResponse>('/api/user', {
+    updateProfile: (data: { firstName?: string; lastName?: string }) =>
+        api.API<IUserProfileResponse>('/api/user/profile', {
+            method: 'PATCH',
+            body: JSON.stringify(data),
+            cache: 'no-store',
+        }),
+
+    updateAvatar: (file: File) => {
+        const formData = new FormData()
+        formData.append('profilePicture', file)
+        return api.API<IUserProfileResponse>('/api/user/avatar', {
             method: 'PATCH',
             body: formData,
+            cache: 'no-store',
+        })
+    },
+
+    updatePassword: (data: { currentPassword: string; newPassword: string; confirmPassword: string }) =>
+        api.API<any>('/api/user/password', {
+            method: 'PATCH',
+            body: JSON.stringify(data),
             cache: 'no-store',
         }),
 }

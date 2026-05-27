@@ -1,16 +1,8 @@
-import { useState } from 'react'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2 } from 'lucide-react'
-import { useForm } from 'react-hook-form'
-import { toast } from 'sonner'
-
 import type { IUserProfile } from '../../types/user-type'
 import { Button } from '@/components/ui/button'
 import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { UiFormInput } from '@/components/ui/UiFormInput'
-
-import { handleUpdateProfile } from '../../actions/user'
-import { updateProfileValidation, type UpdateProfileDTO } from '../../types/user-type'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 interface ManageEmailProps {
     user: IUserProfile
@@ -18,68 +10,21 @@ interface ManageEmailProps {
 }
 
 export default function ManageEmail({ user, onSuccess }: ManageEmailProps) {
-    const [isLoading, setIsLoading] = useState(false)
-    const {
-        register,
-        handleSubmit,
-        reset,
-        formState: { errors, isDirty },
-    } = useForm<UpdateProfileDTO>({
-        resolver: zodResolver(updateProfileValidation),
-        defaultValues: {
-            email: user.email,
-        },
-    })
-
-    const onSubmit = async (values: UpdateProfileDTO) => {
-        if (!values.email || values.email === user.email) return
-        setIsLoading(true)
-        try {
-            const formData = new FormData()
-            formData.append('email', values.email)
-            await handleUpdateProfile(formData)
-
-            toast.success('Email updated! Please verify your new address.')
-            onSuccess()
-            reset(values)
-        } catch {
-            toast.error('Update failed')
-        } finally {
-            setIsLoading(false)
-        }
-    }
-
     return (
         <>
             <DialogHeader>
-                <DialogTitle>Manage Emails</DialogTitle>
-                <DialogDescription>Update your primary email address here.</DialogDescription>
+                <DialogTitle>Manage Email</DialogTitle>
+                <DialogDescription>
+                    Your current email address is shown below. Email changes are not self-service — contact support to update it.
+                </DialogDescription>
             </DialogHeader>
-            <div>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="py-4">
-                        <UiFormInput
-                            label="Email Address"
-                            id="email"
-                            type="email"
-                            placeholder="m@example.com"
-                            {...register('email')}
-                            error={errors.email}
-                            disabled={isLoading}
-                        />
-                    </div>
-                    <DialogFooter>
-                        <Button
-                            type="submit"
-                            disabled={isLoading || !isDirty}
-                            className="w-full sm:w-auto"
-                        >
-                            {isLoading && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-                            Save Email
-                        </Button>
-                    </DialogFooter>
-                </form>
+            <div className="py-4">
+                <Label>Current Email</Label>
+                <Input value={user.email} readOnly className="bg-muted mt-1 cursor-not-allowed" />
             </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={onSuccess}>Close</Button>
+            </DialogFooter>
         </>
     )
 }

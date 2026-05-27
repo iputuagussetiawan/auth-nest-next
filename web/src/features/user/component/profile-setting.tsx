@@ -1,3 +1,5 @@
+'use client'
+
 import { useRef, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -7,10 +9,7 @@ import { toast } from 'sonner'
 
 import type { IUserProfile } from '../types/user-type'
 import { Button } from '@/components/ui/button'
-import {
-    Dialog,
-    DialogContent,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
@@ -19,61 +18,64 @@ import { UserAvatar } from '@/components/user-avatar'
 import { userService } from '../services/user-service'
 import { profileNameValidation, type profileDTO } from '../types/user-type'
 import ManageEmail from './profile-setting/manage-email'
+import ManagePassword from './profile-setting/manage-passwors'
 
 interface ProfileSettingsProps {
     user: IUserProfile
 }
 
-type DialogType = 'email' | 'password' | 'edit' | null
+type DialogType = 'email' | 'password' | null
 
 export default function ProfileSettings({ user }: ProfileSettingsProps) {
     const [previewImage, setPreviewImage] = useState<string | null>(user.profilePicture)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [activeDialog, setActiveDialog] = useState<DialogType>(null)
+    const qc = useQueryClient()
 
-    const queryClient = useQueryClient()
-
-    const { mutate: updateProfile, isPending } = useMutation({
-        mutationFn: (formData: FormData) => userService.update(formData),
+    const { mutate: updateProfile, isPending: isSavingProfile } = useMutation({
+        mutationFn: ({ firstName, lastName }: { firstName: string; lastName: string }) =>
+            userService.updateProfile({ firstName, lastName }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['user'] })
-            toast.success('Profile updated successfully!', { position: 'top-center' })
+            qc.invalidateQueries({ queryKey: ['user'] })
+            toast.success('Profile updated')
             form.reset(form.getValues())
         },
-        onError: (error: any) => {
-            toast.error(error.message || 'Failed to update profile')
+        onError: (e: any) => toast.error(e.message || 'Failed to update profile'),
+    })
+
+    const { mutate: updateAvatar, isPending: isSavingAvatar } = useMutation({
+        mutationFn: (file: File) => userService.updateAvatar(file),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: ['user'] })
+            toast.success('Avatar updated')
         },
+        onError: (e: any) => toast.error(e.message || 'Failed to update avatar'),
     })
 
     const form = useForm<profileDTO>({
         resolver: zodResolver(profileNameValidation),
         defaultValues: {
-            name: `${user.firstName} ${user.lastName}`,
+            name: `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim(),
         },
     })
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
-        if (file) {
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                setPreviewImage(reader.result as string)
-            }
-            reader.readAsDataURL(file)
-            form.setValue('name', form.getValues('name'), { shouldDirty: true })
-        }
+        if (!file) return
+        const reader = new FileReader()
+        reader.onloadend = () => setPreviewImage(reader.result as string)
+        reader.readAsDataURL(file)
+        updateAvatar(file)
     }
 
     function onSubmit(values: profileDTO) {
-        const formData = new FormData()
-        formData.append('name', values.name)
-
-        if (fileInputRef.current?.files?.[0]) {
-            formData.append('profilePicture', fileInputRef.current.files[0])
-        }
-
-        updateProfile(formData)
+        const parts = values.name.trim().split(/\s+/)
+        const firstName = parts[0] ?? ''
+        const lastName = parts.slice(1).join(' ') || ''
+        updateProfile({ firstName, lastName })
     }
+
+    const isPending = isSavingProfile || isSavingAvatar
 
     return (
         <div className="max-w-3xl space-y-8 p-6">
@@ -108,7 +110,6 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                             </div>
                             <input
                                 type="file"
-                                name="profilePicture"
                                 ref={fileInputRef}
                                 className="hidden"
                                 accept="image/*"
@@ -124,12 +125,15 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                                 className="bg-secondary/50 max-w-md"
                                 disabled={isPending}
                             />
+                            {form.formState.errors.name && (
+                                <p className="text-destructive text-xs">{form.formState.errors.name.message}</p>
+                            )}
                         </div>
                     </div>
 
                     <div className="flex justify-start">
                         <Button type="submit" disabled={isPending}>
-                            {isPending ? <Loader2 className="animate-spin" /> : <Save />}
+                            {isSavingProfile ? <Loader2 className="animate-spin" /> : <Save />}
                             Save Changes
                         </Button>
                     </div>
@@ -137,10 +141,12 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
             </section>
 
             <section className="space-y-6">
-                <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
-                    Account security
-                </h2>
-                <Separator />
+                <header>
+                    <h2 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
+                        Account Security
+                    </h2>
+                    <Separator className="mt-2" />
+                </header>
 
                 <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
@@ -148,20 +154,21 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                         <p className="text-muted-foreground text-sm">{user.email}</p>
                     </div>
                     <Button variant="secondary" size="sm" onClick={() => setActiveDialog('email')}>
-                        Manage emails
+                        Manage email
                     </Button>
                 </div>
 
                 <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                        <Label className="text-base">Password (On Progress dev... )</Label>
+                        <Label className="text-base">Password</Label>
                         <p className="text-muted-foreground text-sm">
-                            Set a password for your account
+                            {user.provider === 'email' ? 'Change your account password' : `Managed by ${user.provider}`}
                         </p>
                     </div>
                     <Button
                         variant="secondary"
                         size="sm"
+                        disabled={user.provider !== 'email'}
                         onClick={() => setActiveDialog('password')}
                     >
                         Manage password
@@ -169,31 +176,13 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                 </div>
             </section>
 
-            <Dialog
-                open={activeDialog !== null}
-                onOpenChange={(open) => !open && setActiveDialog(null)}
-            >
+            <Dialog open={activeDialog !== null} onOpenChange={(open) => !open && setActiveDialog(null)}>
                 <DialogContent className="sm:max-w-sm">
                     {activeDialog === 'email' && (
                         <ManageEmail user={user} onSuccess={() => setActiveDialog(null)} />
                     )}
-
                     {activeDialog === 'password' && (
-                        <>
-                            <div className="space-y-1.5">
-                                <h2 className="text-lg font-semibold">Change Password</h2>
-                                <p className="text-muted-foreground text-sm">Choose a strong password.</p>
-                            </div>
-                            <div className="space-y-3 py-4">
-                                <Input type="password" placeholder="New Password" />
-                                <Input type="password" placeholder="Confirm Password" />
-                            </div>
-                            <div className="flex justify-end">
-                                <Button onClick={() => setActiveDialog(null)}>
-                                    Update Password
-                                </Button>
-                            </div>
-                        </>
+                        <ManagePassword onSuccess={() => setActiveDialog(null)} />
                     )}
                 </DialogContent>
             </Dialog>

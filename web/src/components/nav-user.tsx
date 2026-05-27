@@ -1,6 +1,7 @@
 'use client'
 
 import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, Sparkles } from 'lucide-react'
+import Link from 'next/link'
 
 import type { IUserProfile } from '@/features/user/types/user-type'
 import {
@@ -73,9 +74,11 @@ export function NavUser({ user }: { user: IUserProfile | null }) {
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                            <DropdownMenuItem>
-                                <BadgeCheck />
-                                Account
+                            <DropdownMenuItem asChild>
+                                <Link href="/dashboard/account">
+                                    <BadgeCheck />
+                                    Account
+                                </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                                 <CreditCard />
