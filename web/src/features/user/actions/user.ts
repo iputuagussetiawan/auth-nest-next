@@ -4,18 +4,12 @@ import { revalidatePath } from 'next/cache'
 
 import { userService } from '../services/user-service'
 
-export async function handleUpdateProfile(formData: FormData) {
+export async function handleUpdateProfile(data: { firstName?: string; lastName?: string }) {
     try {
-        const result = await userService.update(formData)
+        const result = await userService.updateProfile(data)
         revalidatePath('/dashboard/account')
-        return {
-            success: true,
-            result,
-        }
+        return { success: true, result }
     } catch (error: any) {
-        return {
-            success: false,
-            error: error.message || 'Failed to update',
-        }
+        return { success: false, error: error.message || 'Failed to update' }
     }
 }
