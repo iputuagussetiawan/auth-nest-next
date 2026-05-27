@@ -62,6 +62,7 @@ async function proxyRequest(request: NextRequest) {
                 method: 'POST',
                 headers: { cookie: request.headers.get('cookie') ?? '' },
                 cache: 'no-store',
+                redirect: 'manual', 
             })
 
             if (refreshRes.ok) {

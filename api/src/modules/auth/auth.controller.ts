@@ -166,7 +166,7 @@ export class AuthController {
             const refreshToken = this.authService.signRefreshToken({ sessionId: session.id })
 
             setAuthCookies(res, accessToken, refreshToken)
-            return res.redirect(`${FRONTEND_ORIGIN}/onboarding?status=success&provider=google`)
+            return res.redirect(`${FRONTEND_ORIGIN}/dashboard`)
         } catch {
             return res.redirect(`${FRONTEND_ORIGIN}/signin?status=error`)
         }

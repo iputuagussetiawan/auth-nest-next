@@ -12,7 +12,7 @@ export const GoogleSignInButton = () => {
 
     const handleGoogleSignIn = () => {
         setIsLoading(true)
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000'
         const authUrl = `${apiBaseUrl}/auth/google`
         window.location.assign(authUrl)
     }
