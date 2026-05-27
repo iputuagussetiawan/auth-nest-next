@@ -2,23 +2,34 @@ import {
     BadRequestException,
     Body,
     Controller,
+    Delete,
     Get,
+    Param,
+    ParseIntPipe,
+    ParseUUIDPipe,
     Patch,
+    Post,
+    Query,
     Req,
     UploadedFile,
     UseGuards,
     UseInterceptors,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody, ApiQuery } from '@nestjs/swagger'
 import { memoryStorage } from 'multer'
 import { Request } from 'express'
 
 import { successResponse } from '../../common/helpers/response.helper'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
+import { RolesGuard } from '../../common/guards/roles.guard'
+import { Roles } from '../../common/decorators/roles.decorator'
 import { UserService } from './user.service'
 import { UpdateProfileDto } from './dto/update-profile.dto'
 import { UpdatePasswordDto } from './dto/update-password.dto'
+import { AdminUpdateUserDto } from './dto/admin-update-user.dto'
+import { AdminAssignRoleDto } from './dto/admin-assign-role.dto'
+import { AdminCreateUserDto } from './dto/admin-create-user.dto'
 
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const MAX_SIZE = 5 * 1024 * 1024 // 5 MB
@@ -58,6 +69,68 @@ export class UserController {
         await this.userService.updatePassword(user.userId, dto)
         return successResponse('Password updated successfully')
     }
+
+    // ── Admin endpoints ──────────────────────────────────────────────
+
+    @Post('admin/users')
+    @UseGuards(RolesGuard)
+    @Roles('admin')
+    @ApiOperation({ summary: 'Create user (admin)' })
+    async adminCreateUser(@Body() dto: AdminCreateUserDto) {
+        const user = await this.userService.adminCreateUser(dto)
+        return successResponse('User created', user)
+    }
+
+    @Get('admin/users')
+    @UseGuards(RolesGuard)
+    @Roles('admin')
+    @ApiOperation({ summary: 'List all users (admin)' })
+    @ApiQuery({ name: 'search', required: false })
+    @ApiQuery({ name: 'page', required: false })
+    @ApiQuery({ name: 'limit', required: false })
+    async adminGetUsers(
+        @Query('search') search?: string,
+        @Query('page', new ParseIntPipe({ optional: true })) page = 1,
+        @Query('limit', new ParseIntPipe({ optional: true })) limit = 20,
+    ) {
+        const result = await this.userService.getAllUsers(search, page, limit)
+        return successResponse('Users fetched', result)
+    }
+
+    @Patch('admin/users/:id')
+    @UseGuards(RolesGuard)
+    @Roles('admin')
+    @ApiOperation({ summary: 'Update user (admin)' })
+    async adminUpdateUser(
+        @Param('id', ParseUUIDPipe) id: string,
+        @Body() dto: AdminUpdateUserDto,
+    ) {
+        const user = await this.userService.adminUpdateUser(id, dto)
+        return successResponse('User updated', user)
+    }
+
+    @Delete('admin/users/:id')
+    @UseGuards(RolesGuard)
+    @Roles('admin')
+    @ApiOperation({ summary: 'Delete user (admin)' })
+    async adminDeleteUser(@Param('id', ParseUUIDPipe) id: string) {
+        const result = await this.userService.adminDeleteUser(id)
+        return successResponse(result.message)
+    }
+
+    @Patch('admin/users/:id/role')
+    @UseGuards(RolesGuard)
+    @Roles('admin')
+    @ApiOperation({ summary: 'Assign role to user (admin)' })
+    async adminAssignRole(
+        @Param('id', ParseUUIDPipe) id: string,
+        @Body() dto: AdminAssignRoleDto,
+    ) {
+        const result = await this.userService.adminAssignRole(id, dto.roleId)
+        return successResponse(result.message)
+    }
+
+    // ── Self-service endpoints ────────────────────────────────────────
 
     @Patch('avatar')
     @ApiOperation({ summary: 'Upload profile picture to Cloudinary' })

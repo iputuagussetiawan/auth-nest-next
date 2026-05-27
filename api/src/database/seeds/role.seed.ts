@@ -7,10 +7,10 @@ import { permissions } from '../schema/permissions.schema'
 import { rolePermissions } from '../schema/role-permissions.schema'
 
 const ROLES = [
-    { name: 'admin',     description: 'Full system access' },
-    { name: 'company',   description: 'Company account access' },
-    { name: 'jobseeker', description: 'Jobseeker account access' },
-    { name: 'user',      description: 'Default user role' },
+    { name: 'admin',     description: 'Full system access',       icon: 'ShieldCheck' },
+    { name: 'company',   description: 'Company account access',   icon: 'Building2'   },
+    { name: 'jobseeker', description: 'Jobseeker account access', icon: 'Briefcase'   },
+    { name: 'user',      description: 'Default user role',        icon: 'User'        },
 ]
 
 const PERMISSIONS = [
@@ -54,7 +54,13 @@ async function seedRoles(db: NodePgDatabase<typeof schema>): Promise<Map<string,
         const existing = await db.select().from(roles).where(eq(roles.name, row.name)).limit(1)
         if (existing.length) {
             map.set(row.name, existing[0].id)
-            console.log(`  skip  role: ${row.name}`)
+            // backfill icon if missing
+            if (!existing[0].icon) {
+                await db.update(roles).set({ icon: row.icon }).where(eq(roles.id, existing[0].id))
+                console.log(`  update role icon: ${row.name}`)
+            } else {
+                console.log(`  skip  role: ${row.name}`)
+            }
         } else {
             const [created] = await db.insert(roles).values(row).returning()
             map.set(row.name, created.id)

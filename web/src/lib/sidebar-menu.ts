@@ -3,10 +3,14 @@ import {
     Briefcase,
     FileUser,
     GalleryVerticalEnd,
+    KeyRound,
     LayoutDashboard,
+    LayoutList,
     PieChart,
     Search,
     Settings2,
+    Shield,
+    Users,
 } from 'lucide-react'
 
 import type { IUserProfile } from '@/features/user/types/user-type'
@@ -24,11 +28,11 @@ function canAccess(
 }
 
 export const getSidebarData = (user?: IUserProfile) => {
-    const roleName = user?.role?.name
+    const roleName = user?.role ?? undefined
     const userPermissions = user?.permissions ?? []
 
-    const isAdmin = roleName === 'ADMIN'
-    const isJobSeeker = roleName === 'JOBSEEKER'
+    const isAdmin = roleName === 'admin'
+    const isJobSeeker = roleName === 'jobseeker'
 
     const allNavItems: {
         group: string | undefined
@@ -52,7 +56,7 @@ export const getSidebarData = (user?: IUserProfile) => {
         // --- Job Seeker ---
         {
             group: undefined,
-            roles: ['JOBSEEKER'],
+            roles: ['jobseeker'],
             item: {
                 title: 'My Resume',
                 url: '#',
@@ -65,7 +69,7 @@ export const getSidebarData = (user?: IUserProfile) => {
         },
         {
             group: undefined,
-            roles: ['JOBSEEKER'],
+            roles: ['jobseeker'],
             item: {
                 title: 'Job Search',
                 url: '#',
@@ -79,7 +83,7 @@ export const getSidebarData = (user?: IUserProfile) => {
         },
         {
             group: undefined,
-            roles: ['JOBSEEKER'],
+            roles: ['jobseeker'],
             item: {
                 title: 'My Career',
                 url: '#',
@@ -109,18 +113,23 @@ export const getSidebarData = (user?: IUserProfile) => {
         // --- Administration ---
         {
             group: 'Administration',
-            roles: ['ADMIN'],
-            permissions: ['user:read'],
-            item: {
-                title: 'Management',
-                url: '#',
-                icon: Briefcase,
-                items: [
-                    { title: 'All Users', url: '/admin/users' },
-                    { title: 'Job Listings', url: '/admin/jobs' },
-                    { title: 'Reports', url: '/admin/reports' },
-                ],
-            },
+            roles: ['admin'],
+            item: { title: 'Users', url: '/dashboard/users', icon: Users },
+        },
+        {
+            group: 'Administration',
+            roles: ['admin'],
+            item: { title: 'Roles', url: '/dashboard/roles', icon: Shield },
+        },
+        {
+            group: 'Administration',
+            roles: ['admin'],
+            item: { title: 'Permissions', url: '/dashboard/permissions', icon: KeyRound },
+        },
+        {
+            group: 'Administration',
+            roles: ['admin'],
+            item: { title: 'Modules', url: '/dashboard/modules', icon: LayoutList },
         },
     ]
 
@@ -153,7 +162,7 @@ export const getSidebarData = (user?: IUserProfile) => {
         projects: [
             { name: 'Documentation', url: '/docs', icon: BookOpen },
             ...(canAccess(
-                { roles: ['ADMIN'], permissions: ['analytics:read'] },
+                { roles: ['admin'], permissions: ['analytics:read'] },
                 roleName,
                 userPermissions,
             )

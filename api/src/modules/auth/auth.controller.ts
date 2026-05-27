@@ -23,8 +23,8 @@ import { VerifyEmailDto } from './dto/verify-email.dto'
 import { ForgotPasswordDto } from './dto/forgot-password.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
 
-const ACCESS_MAX_AGE = 15 * 60 * 1000
-const REFRESH_MAX_AGE = 30 * 24 * 60 * 60 * 1000
+const ACCESS_MAX_AGE = 24 * 60 * 60 * 1000       // 1 day
+const REFRESH_MAX_AGE = 30 * 24 * 60 * 60 * 1000  // 30 days
 const IS_PROD = process.env.NODE_ENV === 'production'
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:3000'
 

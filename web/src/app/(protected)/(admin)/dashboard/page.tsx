@@ -1,8 +1,5 @@
-export default async function DashboardPage() {
-    return (
-        <div>
-            <h1>Dashbaord 11</h1>
-            <h3>Debug User Output:</h3>
-        </div>
-    )
+import { DashboardContent } from '@/features/dashboard/components/dashboard-content'
+
+export default function DashboardPage() {
+    return <DashboardContent />
 }

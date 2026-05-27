@@ -1,6 +1,5 @@
 import { z } from 'zod'
 
-import type { IRole } from '@/features/role/types/role-type'
 import type { ISession } from '@/features/session/types/session-type'
 
 export const profileNameValidation = z.object({
@@ -27,7 +26,7 @@ export interface IUserProfile {
     lastLogin: string | null
     createdAt: string
     updatedAt: string
-    role: IRole
+    role: string | null
     permissions: string[]
     sessions: ISession[]
 }

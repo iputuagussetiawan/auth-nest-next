@@ -54,6 +54,16 @@ export class RoleService {
         return { message: 'Role deleted' }
     }
 
+    async updateRoleImage(id: string, imageUrl: string) {
+        await this.findById(id)
+        const [updated] = await this.db
+            .update(roles)
+            .set({ icon: imageUrl, updatedAt: new Date() })
+            .where(eq(roles.id, id))
+            .returning()
+        return updated
+    }
+
     async assignPermissions(roleId: string, permissionIds: string[]) {
         await this.findById(roleId)
         await this.db.delete(rolePermissions).where(eq(rolePermissions.roleId, roleId))
@@ -63,6 +73,16 @@ export class RoleService {
             )
         }
         return { message: 'Permissions assigned' }
+    }
+
+    async findAllWithPermissions() {
+        const allRoles = await this.findAll()
+        return Promise.all(
+            allRoles.map(async (role) => ({
+                ...role,
+                permissions: await this.getRolePermissions(role.id),
+            })),
+        )
     }
 
     async getRolePermissions(roleId: string) {

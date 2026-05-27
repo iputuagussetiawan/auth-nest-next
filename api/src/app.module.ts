@@ -11,6 +11,7 @@ import { AuthModule } from './modules/auth/auth.module'
 import { RbacModule } from './modules/rbac/rbac.module'
 import { UserModule } from './modules/user/user.module'
 import { SessionModule } from './modules/session/session.module'
+import { AppModuleModule } from './modules/app-module/app-module.module'
 
 @Module({
     imports: [
@@ -22,6 +23,7 @@ import { SessionModule } from './modules/session/session.module'
         RbacModule,
         UserModule,
         SessionModule,
+        AppModuleModule,
     ],
     controllers: [AppController],
     providers: [
