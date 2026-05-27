@@ -36,4 +36,9 @@ export class UpdateAppModuleDto {
     @IsArray()
     @IsUUID('all', { each: true })
     roleIds?: string[]
+
+    @IsOptional()
+    @IsArray()
+    @IsUUID('all', { each: true })
+    permissionIds?: string[]
 }

@@ -18,7 +18,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Switch } from '@/components/ui/switch'
-import type { IAppModule, IRole } from '../types/admin-types'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import type { IAppModule, IPermission, IRole } from '../types/admin-types'
+import { PermissionName } from '../permissions/permission-name'
 
 const schema = z.object({
     name: z.string().min(2).max(100),
@@ -28,6 +30,7 @@ const schema = z.object({
     description: z.string().max(255).optional(),
     isActive: z.boolean(),
     roleIds: z.array(z.string()),
+    permissionIds: z.array(z.string()),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -37,14 +40,15 @@ interface ModuleFormDialogProps {
     onOpenChange: (v: boolean) => void
     module: IAppModule | null
     roles: IRole[]
+    permissions: IPermission[]
     onSubmit: (values: FormValues) => void
     isPending: boolean
 }
 
-export function ModuleFormDialog({ open, onOpenChange, module, roles, onSubmit, isPending }: ModuleFormDialogProps) {
+export function ModuleFormDialog({ open, onOpenChange, module, roles, permissions, onSubmit, isPending }: ModuleFormDialogProps) {
     const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormValues>({
         resolver: zodResolver(schema),
-        defaultValues: { name: '', slug: '', path: '', icon: '', description: '', isActive: true, roleIds: [] },
+        defaultValues: { name: '', slug: '', path: '', icon: '', description: '', isActive: true, roleIds: [], permissionIds: [] },
     })
 
     useEffect(() => {
@@ -57,16 +61,16 @@ export function ModuleFormDialog({ open, onOpenChange, module, roles, onSubmit, 
                 description: module.description ?? '',
                 isActive: module.isActive,
                 roleIds: module.roleIds,
+                permissionIds: module.permissionIds,
             })
         } else {
-            reset({ name: '', slug: '', path: '', icon: '', description: '', isActive: true, roleIds: [] })
+            reset({ name: '', slug: '', path: '', icon: '', description: '', isActive: true, roleIds: [], permissionIds: [] })
         }
     }, [module, reset])
 
     const name = watch('name')
     const slug = watch('slug')
 
-    // auto-derive slug from name (create only)
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value
         setValue('name', val)
@@ -77,7 +81,6 @@ export function ModuleFormDialog({ open, onOpenChange, module, roles, onSubmit, 
         }
     }
 
-    // auto-update path when slug changes
     const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value
         setValue('slug', val)
@@ -86,8 +89,16 @@ export function ModuleFormDialog({ open, onOpenChange, module, roles, onSubmit, 
 
     const checkedRoles = watch('roleIds')
     const toggleRole = (id: string) => {
-        const next = checkedRoles.includes(id) ? checkedRoles.filter((x) => x !== id) : [...checkedRoles, id]
-        setValue('roleIds', next)
+        setValue('roleIds', checkedRoles.includes(id)
+            ? checkedRoles.filter((x) => x !== id)
+            : [...checkedRoles, id])
+    }
+
+    const checkedPerms = watch('permissionIds')
+    const togglePerm = (id: string) => {
+        setValue('permissionIds', checkedPerms.includes(id)
+            ? checkedPerms.filter((x) => x !== id)
+            : [...checkedPerms, id])
     }
 
     return (
@@ -97,24 +108,18 @@ export function ModuleFormDialog({ open, onOpenChange, module, roles, onSubmit, 
                     <DialogTitle>{module ? 'Edit Module' : 'New Module'}</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    {/* Name */}
                     <div className="space-y-1">
                         <Label>Name</Label>
-                        <Input
-                            value={name}
-                            onChange={handleNameChange}
-                            placeholder="e.g. Products"
-                        />
+                        <Input value={name} onChange={handleNameChange} placeholder="e.g. Products" />
                         {errors.name && <p className="text-destructive text-xs">{errors.name.message}</p>}
                     </div>
 
+                    {/* Slug + Path */}
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                             <Label>Slug</Label>
-                            <Input
-                                value={slug}
-                                onChange={handleSlugChange}
-                                placeholder="products"
-                            />
+                            <Input value={slug} onChange={handleSlugChange} placeholder="products" />
                             {errors.slug && <p className="text-destructive text-xs">{errors.slug.message}</p>}
                         </div>
                         <div className="space-y-1">
@@ -124,6 +129,7 @@ export function ModuleFormDialog({ open, onOpenChange, module, roles, onSubmit, 
                         </div>
                     </div>
 
+                    {/* Icon + Description */}
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                             <Label>Icon <span className="text-muted-foreground text-xs">(lucide name)</span></Label>
@@ -135,6 +141,7 @@ export function ModuleFormDialog({ open, onOpenChange, module, roles, onSubmit, 
                         </div>
                     </div>
 
+                    {/* Active toggle */}
                     <div className="flex items-center gap-3">
                         <Switch
                             id="isActive"
@@ -144,25 +151,62 @@ export function ModuleFormDialog({ open, onOpenChange, module, roles, onSubmit, 
                         <Label htmlFor="isActive">Active</Label>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label>Accessible by Roles</Label>
-                        <ScrollArea className="h-36 rounded-md border p-3">
-                            <div className="space-y-2">
-                                {roles.map((r) => (
-                                    <div key={r.id} className="flex items-center gap-2">
-                                        <Checkbox
-                                            id={`role-${r.id}`}
-                                            checked={checkedRoles.includes(r.id)}
-                                            onCheckedChange={() => toggleRole(r.id)}
-                                        />
-                                        <label htmlFor={`role-${r.id}`} className="cursor-pointer text-sm font-medium">
-                                            {r.name}
-                                        </label>
-                                    </div>
-                                ))}
-                            </div>
-                        </ScrollArea>
-                    </div>
+                    {/* Roles + Permissions tabs */}
+                    <Tabs defaultValue="roles">
+                        <TabsList className="w-full">
+                            <TabsTrigger value="roles" className="flex-1">
+                                Roles {checkedRoles.length > 0 && `(${checkedRoles.length})`}
+                            </TabsTrigger>
+                            <TabsTrigger value="permissions" className="flex-1">
+                                Permissions {checkedPerms.length > 0 && `(${checkedPerms.length})`}
+                            </TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="roles" className="mt-2">
+                            <ScrollArea className="h-36 rounded-md border p-3">
+                                <div className="space-y-2">
+                                    {roles.length === 0 ? (
+                                        <p className="text-muted-foreground text-xs">No roles found.</p>
+                                    ) : roles.map((r) => (
+                                        <div key={r.id} className="flex items-center gap-2">
+                                            <Checkbox
+                                                id={`role-${r.id}`}
+                                                checked={checkedRoles.includes(r.id)}
+                                                onCheckedChange={() => toggleRole(r.id)}
+                                            />
+                                            <label htmlFor={`role-${r.id}`} className="cursor-pointer text-sm font-medium capitalize">
+                                                {r.name}
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </ScrollArea>
+                        </TabsContent>
+
+                        <TabsContent value="permissions" className="mt-2">
+                            <ScrollArea className="h-36 rounded-md border p-3">
+                                <div className="space-y-2">
+                                    {permissions.length === 0 ? (
+                                        <p className="text-muted-foreground text-xs">No permissions found.</p>
+                                    ) : permissions.map((p) => (
+                                        <div key={p.id} className="flex items-center gap-2">
+                                            <Checkbox
+                                                id={`perm-${p.id}`}
+                                                checked={checkedPerms.includes(p.id)}
+                                                onCheckedChange={() => togglePerm(p.id)}
+                                            />
+                                            <label htmlFor={`perm-${p.id}`} className="flex cursor-pointer flex-wrap items-center gap-1.5">
+                                                <PermissionName name={p.name} />
+                                                {p.description && (
+                                                    <span className="text-muted-foreground text-xs">{p.description}</span>
+                                                )}
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </ScrollArea>
+                        </TabsContent>
+                    </Tabs>
 
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>

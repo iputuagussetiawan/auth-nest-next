@@ -30,7 +30,9 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { adminModuleService } from '../services/admin-module-service'
 import { adminRoleService } from '../services/admin-role-service'
+import { adminPermissionService } from '../services/admin-permission-service'
 import type { IAppModule } from '../types/admin-types'
+import { PermissionName } from '../permissions/permission-name'
 import { ModuleDeleteDialog } from './module-delete-dialog'
 import { ModuleFormDialog } from './module-form-dialog'
 
@@ -39,11 +41,12 @@ import { ModuleFormDialog } from './module-form-dialog'
 interface SortableRowProps {
     module: IAppModule
     roleMap: Record<string, string>
+    permMap: Record<string, string>
     onEdit: (m: IAppModule) => void
     onDelete: (m: IAppModule) => void
 }
 
-function SortableRow({ module, roleMap, onEdit, onDelete }: SortableRowProps) {
+function SortableRow({ module, roleMap, permMap, onEdit, onDelete }: SortableRowProps) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: module.id })
     const style = {
         transform: CSS.Transform.toString(transform),
@@ -83,15 +86,33 @@ function SortableRow({ module, roleMap, onEdit, onDelete }: SortableRowProps) {
             </div>
 
             {/* assigned roles */}
-            <div className="hidden flex-wrap gap-1 sm:flex">
-                {module.roleIds.length ? (
-                    module.roleIds.map((rid) => (
-                        <Badge key={rid} variant="secondary" className="text-xs">
-                            {roleMap[rid] ?? rid}
-                        </Badge>
-                    ))
-                ) : (
-                    <span className="text-muted-foreground text-xs">No roles</span>
+            <div className="hidden flex-col gap-1 sm:flex">
+                <div className="flex flex-wrap gap-1">
+                    {module.roleIds.length ? (
+                        module.roleIds.map((rid) => (
+                            <Badge key={rid} variant="secondary" className="text-xs capitalize">
+                                {roleMap[rid] ?? rid}
+                            </Badge>
+                        ))
+                    ) : (
+                        <span className="text-muted-foreground text-xs">No roles</span>
+                    )}
+                </div>
+                {module.permissionIds.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1">
+                        {module.permissionIds.map((pid) => {
+                            const permName = permMap[pid]
+                            const isAuto = permName?.startsWith(`${module.slug}:`)
+                            return permName ? (
+                                <span
+                                    key={pid}
+                                    className={`rounded border px-1.5 py-0.5 text-[10px] ${isAuto ? 'border-primary/30 bg-primary/5' : 'border-border bg-muted/40'}`}
+                                >
+                                    <PermissionName name={permName} />
+                                </span>
+                            ) : null
+                        })}
+                    </div>
                 )}
             </div>
 
@@ -137,12 +158,18 @@ export function ModulesPage() {
         queryFn: () => adminRoleService.getAll(),
     })
 
+    const { data: permsData } = useQuery({
+        queryKey: ['admin-permissions'],
+        queryFn: () => adminPermissionService.getAll(),
+    })
+
     const modules: IAppModule[] = modulesData?.data ?? []
     const roles = rolesData?.data ?? []
+    const permissions = permsData?.data ?? []
 
     const roleMap: Record<string, string> = Object.fromEntries(roles.map((r) => [r.id, r.name]))
+    const permMap: Record<string, string> = Object.fromEntries(permissions.map((p) => [p.id, p.name]))
 
-    // sync items with query data
     useEffect(() => { setItems(modules) }, [modulesData])
 
     const sensors = useSensors(useSensor(PointerSensor))
@@ -194,12 +221,11 @@ export function ModulesPage() {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight">Modules</h2>
                     <p className="text-muted-foreground text-sm">
-                        Manage app modules and their role access — {modules.length} total
+                        Manage app modules, role & permission access — {modules.length} total
                     </p>
                 </div>
                 <Button onClick={() => { setEditModule(null); setFormOpen(true) }}>
@@ -224,6 +250,7 @@ export function ModulesPage() {
                                     key={m.id}
                                     module={m}
                                     roleMap={roleMap}
+                                    permMap={permMap}
                                     onEdit={(mod) => { setEditModule(mod); setFormOpen(true) }}
                                     onDelete={setDeleteModule}
                                 />
@@ -238,6 +265,7 @@ export function ModulesPage() {
                 onOpenChange={setFormOpen}
                 module={editModule}
                 roles={roles}
+                permissions={permissions}
                 onSubmit={handleSubmit}
                 isPending={isPending}
             />

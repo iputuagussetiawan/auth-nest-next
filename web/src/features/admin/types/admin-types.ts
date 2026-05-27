@@ -72,6 +72,7 @@ export interface IAppModule {
     order: number
     isActive: boolean
     roleIds: string[]
+    permissionIds: string[]
     createdAt: string
     updatedAt: string
 }

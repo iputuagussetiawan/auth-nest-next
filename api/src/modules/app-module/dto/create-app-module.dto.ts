@@ -33,4 +33,9 @@ export class CreateAppModuleDto {
     @IsArray()
     @IsUUID('all', { each: true })
     roleIds?: string[]
+
+    @IsOptional()
+    @IsArray()
+    @IsUUID('all', { each: true })
+    permissionIds?: string[]
 }
