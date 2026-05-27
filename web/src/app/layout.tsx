@@ -4,6 +4,7 @@ import './globals.css'
 
 import QueryProvider from '@/providers/query-provider'
 import { ThemeProvider } from '@/providers/theme-provider'
+import { DbThemeProvider } from '@/providers/db-theme-provider'
 
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -27,7 +28,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     disableTransitionOnChange
                 >
                     <QueryProvider>
-                        <TooltipProvider>{children}</TooltipProvider>
+                        <DbThemeProvider>
+                            <TooltipProvider>{children}</TooltipProvider>
+                        </DbThemeProvider>
                     </QueryProvider>
                 </ThemeProvider>
                 <Toaster />

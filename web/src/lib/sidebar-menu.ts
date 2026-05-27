@@ -7,6 +7,7 @@ import {
     LayoutList,
     Palette,
     Search,
+    Settings,
     Shield,
     Users,
 } from 'lucide-react'
@@ -118,6 +119,11 @@ export const getSidebarData = (user?: IUserProfile) => {
             group: 'Administration',
             roles: ['admin'],
             item: { title: 'Themes', url: '/dashboard/themes', icon: Palette },
+        },
+        {
+            group: 'Administration',
+            roles: ['admin'],
+            item: { title: 'Site Settings', url: '/dashboard/settings', icon: Settings },
         },
     ]
 

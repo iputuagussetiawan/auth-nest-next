@@ -232,6 +232,11 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
         const isCollapsed = collapsed.has(slug)
         const headerPL = 16 + depth * 16
         const bgClass = pinned ? 'bg-primary/8' : depth === 0 ? 'bg-muted/40' : 'bg-muted/25'
+        const stickyBg = pinned
+            ? 'bg-primary/10 backdrop-blur-md supports-backdrop-filter:bg-primary/8'
+            : depth === 0
+                ? 'bg-muted/60 backdrop-blur-md supports-backdrop-filter:bg-muted/40'
+                : 'bg-muted/40 backdrop-blur-md supports-backdrop-filter:bg-muted/25'
 
         return (
             <tr
@@ -239,7 +244,7 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
                 onClick={() => toggleGroup(slug)}
             >
                 <td
-                    className={`sticky left-0 z-10 border-r ${bgClass} py-2 pr-4 transition-colors hover:bg-muted/60`}
+                    className={`sticky left-0 z-10 border-r ${stickyBg} py-2 pr-4 transition-colors hover:bg-muted/60`}
                     style={{ paddingLeft: headerPL }}
                 >
                     <div className="flex items-center gap-2">
@@ -272,11 +277,14 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
         const rowPL = 32 + depth * 16
         const isProtected = slug === 'user' || slug === 'role'
         const rowBg = idx % 2 === 0 ? 'bg-background' : 'bg-muted/10'
+        const stickyRowBg = idx % 2 === 0
+            ? 'bg-background/80 backdrop-blur-md supports-backdrop-filter:bg-background/70'
+            : 'bg-muted/20 backdrop-blur-md supports-backdrop-filter:bg-muted/10'
 
         return (
             <tr key={perm.id} className={`group ${rowBg} hover:bg-muted/30`}>
                 <td
-                    className={`sticky left-0 z-10 border-r py-3 pr-4 ${rowBg}`}
+                    className={`sticky left-0 z-10 border-r py-3 pr-4 ${stickyRowBg}`}
                     style={{ paddingLeft: rowPL }}
                 >
                     <div className="flex items-center justify-between gap-2">
@@ -343,7 +351,7 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
     const totalVisible = pinnedEntries.length + flatEntries.length + orphanedEntries.length + (otherPerms ? 1 : 0)
 
     return (
-        <div className="space-y-3">
+        <div className="min-w-0 space-y-3">
             <div className="relative max-w-sm">
                 <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
                 <Input
@@ -354,15 +362,15 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
                 />
             </div>
 
-            <div className="overflow-x-auto rounded-lg border">
-                <table className="w-full text-sm">
-                    <thead>
-                        <tr className="bg-muted/50 border-b">
-                            <th className="bg-muted/50 sticky left-0 z-10 min-w-[260px] border-r px-4 py-3 text-left font-semibold">
+            <div className="max-h-[70vh] overflow-auto rounded-lg border">
+                <table className="min-w-full text-sm">
+                    <thead className="sticky top-0 z-20 backdrop-blur-md">
+                        <tr className="border-b bg-background/70 supports-backdrop-filter:bg-background/60">
+                            <th className="sticky left-0 z-30 min-w-[260px] border-r bg-background/70 px-4 py-3 text-left font-semibold backdrop-blur-md supports-backdrop-filter:bg-background/60">
                                 Permission
                             </th>
                             {roles.map(role => (
-                                <th key={role.id} className="min-w-[130px] px-4 py-3 text-center">
+                                <th key={role.id} className="min-w-[130px] bg-background/70 px-4 py-3 text-center backdrop-blur-md supports-backdrop-filter:bg-background/60">
                                     <div className="flex flex-col items-center gap-1">
                                         <div className="bg-primary/10 flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border">
                                             {role.icon?.startsWith('http') ? (

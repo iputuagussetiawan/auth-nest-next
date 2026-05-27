@@ -83,17 +83,47 @@ export interface IAppModulesResponse {
     data: IAppModule[]
 }
 
+export interface IThemeVars {
+    background: string
+    foreground: string
+    card: string
+    cardForeground: string
+    popover: string
+    popoverForeground: string
+    primary: string
+    primaryForeground: string
+    secondary: string
+    secondaryForeground: string
+    muted: string
+    mutedForeground: string
+    accent: string
+    accentForeground: string
+    destructive: string
+    border: string
+    input: string
+    ring: string
+    chart1: string
+    chart2: string
+    chart3: string
+    chart4: string
+    chart5: string
+    sidebar: string
+    sidebarForeground: string
+    sidebarPrimary: string
+    sidebarPrimaryForeground: string
+    sidebarAccent: string
+    sidebarAccentForeground: string
+    sidebarBorder: string
+    sidebarRing: string
+}
+
 export interface IThemeConfig {
-    primaryColor: string
-    accentColor: string
-    backgroundColor: string
-    foregroundColor: string
-    cardColor: string
-    borderRadius: string
+    light: IThemeVars
+    dark: IThemeVars
+    radius: string
     fontFamily: string
     heroVariant: 'centered' | 'fullwidth'
     heroBackground: 'gradient' | 'solid' | 'mesh'
-    darkMode: boolean
 }
 
 export interface ITheme {
@@ -116,4 +146,53 @@ export interface IThemeResponse {
     status: string
     message: string
     data: ITheme
+}
+
+export interface ISiteSettings {
+    id: string | null
+    siteName: string
+    tagline: string | null
+    description: string | null
+    logoUrl: string | null
+    faviconUrl: string | null
+    contactEmail: string | null
+    contactPhone: string | null
+    contactAddress: string | null
+    socialTwitter: string | null
+    socialFacebook: string | null
+    socialInstagram: string | null
+    socialLinkedin: string | null
+    socialYoutube: string | null
+    metaTitle: string | null
+    metaDescription: string | null
+    metaKeywords: string | null
+    googleAnalyticsId: string | null
+    maintenanceMode: boolean
+    maintenanceMessage: string | null
+    createdAt: string
+    updatedAt: string
+}
+
+export interface ISiteSettingsResponse {
+    status: string
+    message: string
+    data: ISiteSettings
+}
+
+export interface IDashboardStats {
+    totalUsers: number
+    activeUsers: number
+    unverifiedEmails: number
+    activeSessions: number
+    totalRoles: number
+    totalModules: number
+    totalPermissions: number
+    usersByRole: { role: string; count: number }[]
+    userGrowth: { month: string; users: number; sessions: number }[]
+}
+
+export interface IDashboardStatsResponse {
+    status: string
+    message: string
+    data: IDashboardStats
 }

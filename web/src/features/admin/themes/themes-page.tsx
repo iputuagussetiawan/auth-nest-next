@@ -10,10 +10,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { adminThemeService } from '../services/admin-theme-service'
 import type { ITheme, IThemeConfig } from '../types/admin-types'
-import { ThemeFormDialog } from './theme-form-dialog'
+import { ThemeEditor } from './theme-editor'
 import { ThemeDeleteDialog } from './theme-delete-dialog'
 
-function ColorDot({ color }: { color: string }) {
+function ColorSwatch({ color }: { color: string }) {
     return (
         <span
             className="inline-block h-4 w-4 rounded-full border border-border"
@@ -36,13 +36,14 @@ function ThemeCard({
     activatePending: boolean
 }) {
     const { config } = theme
+    const light = config.light ?? {} as any
     return (
         <Card className={theme.isActive ? 'ring-2 ring-primary' : ''}>
             <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2">
                     <div>
                         <CardTitle className="text-base">{theme.name}</CardTitle>
-                        <p className="text-muted-foreground text-xs mt-0.5 font-mono">{theme.slug}</p>
+                        <p className="mt-0.5 font-mono text-xs text-muted-foreground">{theme.slug}</p>
                     </div>
                     {theme.isActive && (
                         <Badge className="gap-1 text-xs">
@@ -52,22 +53,19 @@ function ThemeCard({
                 </div>
             </CardHeader>
             <CardContent className="space-y-3">
-                {/* Color swatches */}
-                <div className="flex items-center gap-2 flex-wrap">
-                    <ColorDot color={config.primaryColor} />
-                    <ColorDot color={config.accentColor} />
-                    <ColorDot color={config.backgroundColor} />
-                    <ColorDot color={config.foregroundColor} />
-                    <ColorDot color={config.cardColor} />
-                    <span className="text-muted-foreground text-xs ml-1">{config.fontFamily}</span>
+                {/* Color swatches for main vars */}
+                <div className="flex flex-wrap items-center gap-1.5">
+                    {[light.background, light.foreground, light.primary, light.secondary, light.accent, light.destructive, light.chart1, light.chart2, light.chart3]
+                        .filter(Boolean)
+                        .map((c, i) => <ColorSwatch key={i} color={c} />)}
+                    <span className="ml-1 text-xs text-muted-foreground">{config.fontFamily}</span>
                 </div>
 
                 {/* Config badges */}
                 <div className="flex flex-wrap gap-1.5 text-xs">
-                    <Badge variant="outline">{config.heroVariant}</Badge>
-                    <Badge variant="outline">{config.heroBackground}</Badge>
-                    <Badge variant="outline">r={config.borderRadius}rem</Badge>
-                    {config.darkMode && <Badge variant="outline">dark</Badge>}
+                    {config.heroVariant && <Badge variant="outline">{config.heroVariant}</Badge>}
+                    {config.heroBackground && <Badge variant="outline">{config.heroBackground}</Badge>}
+                    {(config.radius) && <Badge variant="outline">r={config.radius}rem</Badge>}
                 </div>
 
                 {/* Actions */}
@@ -103,7 +101,7 @@ function ThemeCard({
 
 export function ThemesPage() {
     const qc = useQueryClient()
-    const [formOpen, setFormOpen] = useState(false)
+    const [editorOpen, setEditorOpen] = useState(false)
     const [deleteOpen, setDeleteOpen] = useState(false)
     const [editTheme, setEditTheme] = useState<ITheme | null>(null)
     const [deleteTheme, setDeleteTheme] = useState<ITheme | null>(null)
@@ -119,14 +117,14 @@ export function ThemesPage() {
     const createMutation = useMutation({
         mutationFn: (values: { name: string; slug: string; isActive: boolean; config: IThemeConfig }) =>
             adminThemeService.create(values),
-        onSuccess: () => { toast.success('Theme created'); invalidate(); setFormOpen(false) },
+        onSuccess: () => { toast.success('Theme created'); invalidate(); setEditorOpen(false) },
         onError: (e: any) => toast.error(e?.message ?? 'Failed to create theme'),
     })
 
     const updateMutation = useMutation({
         mutationFn: ({ id, values }: { id: string; values: any }) =>
             adminThemeService.update(id, values),
-        onSuccess: () => { toast.success('Theme updated'); invalidate(); setFormOpen(false) },
+        onSuccess: () => { toast.success('Theme updated'); invalidate(); setEditorOpen(false) },
         onError: (e: any) => toast.error(e?.message ?? 'Failed to update theme'),
     })
 
@@ -142,7 +140,7 @@ export function ThemesPage() {
         onError: (e: any) => toast.error(e?.message ?? 'Failed to delete theme'),
     })
 
-    const handleFormSubmit = (values: { name: string; slug: string; isActive: boolean; config: IThemeConfig }) => {
+    const handleEditorSubmit = (values: { name: string; slug: string; isActive: boolean; config: IThemeConfig }) => {
         if (editTheme) {
             updateMutation.mutate({ id: editTheme.id, values })
         } else {
@@ -150,28 +148,33 @@ export function ThemesPage() {
         }
     }
 
-    const openEdit = (t: ITheme) => { setEditTheme(t); setFormOpen(true) }
+    const openEdit = (t: ITheme) => { setEditTheme(t); setEditorOpen(true) }
     const openDelete = (t: ITheme) => { setDeleteTheme(t); setDeleteOpen(true) }
-    const openCreate = () => { setEditTheme(null); setFormOpen(true) }
+    const openCreate = () => { setEditTheme(null); setEditorOpen(true) }
 
-    const formPending = createMutation.isPending || updateMutation.isPending
+    const editorPending = createMutation.isPending || updateMutation.isPending
 
     return (
         <div className="space-y-6 p-6">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Themes</h1>
-                    <p className="text-muted-foreground text-sm">Manage landing page themes</p>
+                    <p className="text-sm text-muted-foreground">Manage shadcn CSS variable themes</p>
                 </div>
                 <Button onClick={openCreate} className="gap-2">
-                    <Plus className="h-4 w-4" /> Add Theme
+                    <Plus className="h-4 w-4" /> New Theme
                 </Button>
             </div>
 
             {isLoading ? (
-                <div className="text-muted-foreground text-sm">Loading...</div>
+                <div className="text-sm text-muted-foreground">Loading...</div>
             ) : themes.length === 0 ? (
-                <div className="text-muted-foreground text-sm">No themes yet. Create one to get started.</div>
+                <div className="flex flex-col items-center gap-3 py-16 text-center">
+                    <p className="text-sm text-muted-foreground">No themes yet.</p>
+                    <Button onClick={openCreate} variant="outline" className="gap-2">
+                        <Plus className="h-4 w-4" /> Create your first theme
+                    </Button>
+                </div>
             ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {themes.map((t) => (
@@ -187,12 +190,12 @@ export function ThemesPage() {
                 </div>
             )}
 
-            <ThemeFormDialog
-                open={formOpen}
-                onOpenChange={setFormOpen}
+            <ThemeEditor
+                open={editorOpen}
+                onOpenChange={setEditorOpen}
                 theme={editTheme}
-                onSubmit={handleFormSubmit}
-                isPending={formPending}
+                onSubmit={handleEditorSubmit}
+                isPending={editorPending}
             />
 
             <ThemeDeleteDialog
