@@ -30,9 +30,8 @@ export class CreateAppModuleDto {
     isActive?: boolean
 
     @IsOptional()
-    @IsArray()
-    @IsUUID('all', { each: true })
-    roleIds?: string[]
+    @IsUUID()
+    parentId?: string
 
     @IsOptional()
     @IsArray()

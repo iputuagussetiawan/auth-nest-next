@@ -13,20 +13,20 @@ export const adminModuleService = {
     create: (data: {
         name: string; slug: string; path: string
         icon?: string; description?: string; isActive?: boolean
-        roleIds?: string[]; permissionIds?: string[]
+        permissionIds?: string[]
     }) =>
         api.API<any>('/api/app-modules', { method: 'POST', body: JSON.stringify(data), cache: 'no-store' }),
 
     update: (id: string, data: {
         name?: string; slug?: string; path?: string
         icon?: string; description?: string; isActive?: boolean
-        roleIds?: string[]; permissionIds?: string[]
+        permissionIds?: string[]
     }) =>
         api.API<any>(`/api/app-modules/${id}`, { method: 'PATCH', body: JSON.stringify(data), cache: 'no-store' }),
 
     delete: (id: string) =>
         api.API<any>(`/api/app-modules/${id}`, { method: 'DELETE', cache: 'no-store' }),
 
-    reorder: (ids: string[]) =>
-        api.API<any>('/api/app-modules/reorder', { method: 'PATCH', body: JSON.stringify({ ids }), cache: 'no-store' }),
+    reorder: (items: { id: string; parentId: string | null; order: number }[]) =>
+        api.API<any>('/api/app-modules/reorder', { method: 'PATCH', body: JSON.stringify({ items }), cache: 'no-store' }),
 }

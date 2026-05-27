@@ -7,7 +7,6 @@ import * as path from 'path'
 import { DRIZZLE } from '../../database/drizzle.provider'
 import * as schema from '../../database/schema'
 import { appModules } from '../../database/schema/app-modules.schema'
-import { roleModules } from '../../database/schema/role-modules.schema'
 import { permissionModules } from '../../database/schema/permission-modules.schema'
 import { permissions } from '../../database/schema/permissions.schema'
 import { userRoles } from '../../database/schema/user-roles.schema'
@@ -28,34 +27,24 @@ export class AppModuleService {
 
     async getAll() {
         const rows = await this.db.select().from(appModules).orderBy(appModules.order)
-        const allRoleModules = await this.db.select().from(roleModules)
         const allPermModules = await this.db.select().from(permissionModules)
 
         return rows.map((m) => ({
             ...m,
-            roleIds: allRoleModules.filter((rm) => rm.moduleId === m.id).map((rm) => rm.roleId),
             permissionIds: allPermModules.filter((pm) => pm.moduleId === m.id).map((pm) => pm.permissionId),
         }))
     }
 
     async create(dto: CreateAppModuleDto) {
-        const { roleIds, permissionIds, ...rest } = dto
+        const { permissionIds, ...rest } = dto
         const [created] = await this.db
             .insert(appModules)
             .values({ ...rest, isActive: rest.isActive ?? true })
             .returning()
 
-        if (roleIds?.length) {
-            await this.db.insert(roleModules).values(
-                roleIds.map((roleId) => ({ roleId, moduleId: created.id })),
-            )
-        }
-
-        // Auto-seed permissions for this module, then merge with any manually supplied ones
         const autoPermIds = await this.seedModulePermissions(created.id, created.slug, created.name)
         const mergedPermIds = [...new Set([...autoPermIds, ...(permissionIds ?? [])])]
 
-        // Link any manually supplied permissions not already seeded
         const extra = mergedPermIds.filter((id) => !autoPermIds.includes(id))
         if (extra.length) {
             await this.db.insert(permissionModules).values(
@@ -65,14 +54,14 @@ export class AppModuleService {
 
         this.writePageFile(created.slug, created.name)
 
-        return { ...created, roleIds: roleIds ?? [], permissionIds: mergedPermIds }
+        return { ...created, permissionIds: mergedPermIds }
     }
 
     async update(id: string, dto: UpdateAppModuleDto) {
         const [existing] = await this.db.select().from(appModules).where(eq(appModules.id, id)).limit(1)
         if (!existing) throw new NotFoundException('Module not found')
 
-        const { roleIds, permissionIds, ...rest } = dto
+        const { permissionIds, ...rest } = dto
         const slugChanged = rest.slug && rest.slug !== existing.slug
         const newSlug = rest.slug ?? existing.slug
         const newName = rest.name ?? existing.name
@@ -87,15 +76,6 @@ export class AppModuleService {
             .where(eq(appModules.id, id))
             .returning()
 
-        if (roleIds !== undefined) {
-            await this.db.delete(roleModules).where(eq(roleModules.moduleId, id))
-            if (roleIds.length) {
-                await this.db.insert(roleModules).values(
-                    roleIds.map((roleId) => ({ roleId, moduleId: id })),
-                )
-            }
-        }
-
         if (permissionIds !== undefined) {
             await this.db.delete(permissionModules).where(eq(permissionModules.moduleId, id))
             if (permissionIds.length) {
@@ -105,10 +85,9 @@ export class AppModuleService {
             }
         }
 
-        const finalRoleIds = roleIds ?? (await this.db.select({ roleId: roleModules.roleId }).from(roleModules).where(eq(roleModules.moduleId, id))).map((r) => r.roleId)
         const finalPermIds = permissionIds ?? (await this.db.select({ permissionId: permissionModules.permissionId }).from(permissionModules).where(eq(permissionModules.moduleId, id))).map((p) => p.permissionId)
 
-        return { ...updated, roleIds: finalRoleIds, permissionIds: finalPermIds }
+        return { ...updated, permissionIds: finalPermIds }
     }
 
     async delete(id: string) {
@@ -143,17 +122,18 @@ export class AppModuleService {
 
         return all.filter((m) => {
             if (!m.isActive) return false
-            const unrestricted = m.roleIds.length === 0 && m.permissionIds.length === 0
-            const roleMatch = userRoleId ? m.roleIds.includes(userRoleId) : false
+            const unrestricted = m.permissionIds.length === 0
             const permMatch = userPermIds.some((pid) => m.permissionIds.includes(pid))
-            return unrestricted || roleMatch || permMatch
+            return unrestricted || permMatch
         })
     }
 
-    async reorder(ids: string[]) {
+    async reorder(items: { id: string; parentId: string | null; order: number }[]) {
         await Promise.all(
-            ids.map((id, index) =>
-                this.db.update(appModules).set({ order: index, updatedAt: new Date() }).where(eq(appModules.id, id)),
+            items.map(({ id, parentId, order }) =>
+                this.db.update(appModules)
+                    .set({ parentId: parentId ?? null, order, updatedAt: new Date() })
+                    .where(eq(appModules.id, id)),
             ),
         )
         return { message: 'Modules reordered' }

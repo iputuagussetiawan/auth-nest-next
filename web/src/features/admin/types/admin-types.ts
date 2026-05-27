@@ -64,6 +64,7 @@ export interface IPermissionsResponse {
 
 export interface IAppModule {
     id: string
+    parentId: string | null
     name: string
     slug: string
     path: string
@@ -71,7 +72,6 @@ export interface IAppModule {
     description: string | null
     order: number
     isActive: boolean
-    roleIds: string[]
     permissionIds: string[]
     createdAt: string
     updatedAt: string

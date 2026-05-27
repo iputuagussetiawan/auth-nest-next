@@ -49,7 +49,7 @@ export class AppModuleController {
     @Roles('admin')
     @ApiOperation({ summary: 'Reorder modules (admin)' })
     async reorder(@Body() dto: ReorderModulesDto) {
-        const data = await this.appModuleService.reorder(dto.ids)
+        const data = await this.appModuleService.reorder(dto.items)
         return successResponse(data.message)
     }
 

@@ -1,7 +1,9 @@
 import { pgTable, uuid, varchar, integer, boolean, timestamp } from 'drizzle-orm/pg-core'
+import type { AnyPgColumn } from 'drizzle-orm/pg-core'
 
 export const appModules = pgTable('app_modules', {
     id: uuid('id').defaultRandom().primaryKey(),
+    parentId: uuid('parent_id').references((): AnyPgColumn => appModules.id, { onDelete: 'set null' }),
     name: varchar('name', { length: 100 }).notNull(),
     slug: varchar('slug', { length: 100 }).notNull().unique(),
     path: varchar('path', { length: 255 }).notNull(),
