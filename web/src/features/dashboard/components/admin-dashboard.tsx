@@ -17,12 +17,12 @@ import { adminDashboardService } from '@/features/admin/services/admin-dashboard
 import { StatCard } from './stat-card'
 
 const growthChartConfig = {
-    users: { label: 'New Users', color: 'hsl(var(--primary))' },
-    sessions: { label: 'Sessions', color: 'hsl(var(--chart-2, 160 60% 45%))' },
+    users: { label: 'New Users', color: 'var(--primary)' },
+    sessions: { label: 'Sessions', color: 'var(--chart-2)' },
 }
 
 const roleChartConfig = {
-    count: { label: 'Users', color: 'hsl(var(--primary))' },
+    count: { label: 'Users', color: 'var(--primary)' },
 }
 
 function StatCardSkeleton() {

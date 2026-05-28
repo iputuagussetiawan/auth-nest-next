@@ -24,11 +24,11 @@ const recentApplications = [
 ]
 
 const statusPieData = [
-    { name: 'Pending', value: 6, fill: 'hsl(var(--chart-1, 220 70% 50%))' },
-    { name: 'Under Review', value: 5, fill: 'hsl(var(--chart-2, 160 60% 45%))' },
-    { name: 'Interview', value: 2, fill: 'hsl(var(--chart-3, 30 80% 55%))' },
-    { name: 'Rejected', value: 1, fill: 'hsl(var(--destructive))' },
-    { name: 'Offer', value: 1, fill: 'hsl(var(--chart-4, 280 65% 60%))' },
+    { name: 'Pending', value: 6, fill: 'var(--chart-1)' },
+    { name: 'Under Review', value: 5, fill: 'var(--chart-2)' },
+    { name: 'Interview', value: 2, fill: 'var(--chart-3)' },
+    { name: 'Rejected', value: 1, fill: 'var(--destructive)' },
+    { name: 'Offer', value: 1, fill: 'var(--chart-4)' },
 ]
 
 const monthlyData = [
@@ -45,7 +45,7 @@ const pieChartConfig = Object.fromEntries(
 )
 
 const monthlyChartConfig = {
-    applied: { label: 'Applications', color: 'hsl(var(--primary))' },
+    applied: { label: 'Applications', color: 'var(--primary)' },
 }
 
 const statusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
