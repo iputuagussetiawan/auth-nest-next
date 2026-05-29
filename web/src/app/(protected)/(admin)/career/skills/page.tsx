@@ -1,3 +1,7 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = { title: 'Skill Up' }
+
 export default function SkillUpPage() {
     return (
         <div className="space-y-4">

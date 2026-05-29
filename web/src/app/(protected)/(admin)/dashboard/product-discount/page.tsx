@@ -1,3 +1,7 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = { title: 'Product Discount' }
+
 export default function ProductDiscountPage() {
     return (
         <div className="p-6">

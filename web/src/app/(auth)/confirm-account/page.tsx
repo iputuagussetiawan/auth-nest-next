@@ -1,6 +1,12 @@
+import type { Metadata } from 'next'
 import { GalleryVerticalEnd } from 'lucide-react'
 
 import { ConfirmAccountForm } from '@/features/auth/components/confirm-account-form'
+
+export const metadata: Metadata = {
+    title: 'Confirm Account',
+    description: 'Confirm your email address to activate your account.',
+}
 
 export default function ConfirmAccountPage() {
     return (

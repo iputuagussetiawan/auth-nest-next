@@ -362,7 +362,7 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
                 />
             </div>
 
-            <div className="max-h-[70vh] overflow-auto rounded-lg border">
+            <div className="scrollbar-flat max-h-[70vh] overflow-auto rounded-lg border">
                 <table className="min-w-full text-sm">
                     <thead className="sticky top-0 z-20 backdrop-blur-md">
                         <tr className="border-b bg-background/70 supports-backdrop-filter:bg-background/60">

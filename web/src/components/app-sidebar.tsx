@@ -7,6 +7,7 @@ import { FileText } from 'lucide-react'
 import { useAuthContext } from '@/providers/auth-provider'
 import { getSidebarData } from '@/lib/sidebar-menu'
 import { adminModuleService } from '@/features/admin/services/admin-module-service'
+import { adminSiteSettingsService } from '@/features/admin/services/admin-site-settings-service'
 import type { NavMainGroup } from '@/components/nav-main'
 
 import { NavMain } from './nav-main'
@@ -24,6 +25,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         queryFn: () => adminModuleService.getMyModules(),
         enabled: !!user,
         staleTime: 60_000,
+    })
+
+    const { data: siteSettingsData } = useQuery({
+        queryKey: ['site-settings'],
+        queryFn: () => adminSiteSettingsService.get(),
+        staleTime: 5 * 60_000,
     })
 
     const sidebarData = React.useMemo(() => {
@@ -54,10 +61,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         )
     }
 
+    const logoUrl = siteSettingsData?.data?.logoUrl ?? ''
+    const siteName = siteSettingsData?.data?.siteName ?? ''
+
     return (
         <Sidebar collapsible="icon" {...props}>
             <SidebarHeader>
-                <TeamSwitcher teams={sidebarData.teams} />
+                <TeamSwitcher
+                    teams={sidebarData.teams}
+                    logoUrl={logoUrl || undefined}
+                    siteName={siteName || undefined}
+                />
             </SidebarHeader>
             <SidebarContent>
                 <NavMain key={user?.id || 'guest'} groups={sidebarData.navGroups} />

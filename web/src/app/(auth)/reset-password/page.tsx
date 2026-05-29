@@ -1,6 +1,12 @@
+import type { Metadata } from 'next'
 import { GalleryVerticalEnd } from 'lucide-react'
 
 import { ResetPasswordForm } from '@/features/auth/components/reset-password-form'
+
+export const metadata: Metadata = {
+    title: 'Reset Password',
+    description: 'Set a new password for your account.',
+}
 
 export default function ConfirmAccountPage() {
     return (

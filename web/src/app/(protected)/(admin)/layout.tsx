@@ -1,6 +1,11 @@
+import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 
 import { AppSidebar } from '@/components/app-sidebar'
+
+export const metadata: Metadata = {
+    title: { template: '%s | Dashboard', default: 'Dashboard' },
+}
 import { DynamicBreadcrumbs } from '@/components/dynamic-breadcrumbs'
 import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
