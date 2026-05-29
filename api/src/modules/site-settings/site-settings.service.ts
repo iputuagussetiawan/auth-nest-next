@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
+import { eq } from 'drizzle-orm'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
 import { DRIZZLE } from '../../database/drizzle.provider'
@@ -45,6 +46,7 @@ export class SiteSettingsService {
             const [updated] = await this.db
                 .update(siteSettings)
                 .set({ ...dto, updatedAt: new Date() })
+                .where(eq(siteSettings.id, existing.id))
                 .returning()
             return updated
         }

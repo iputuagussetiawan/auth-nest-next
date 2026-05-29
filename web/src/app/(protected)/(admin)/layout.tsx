@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { AppSidebar } from '@/components/app-sidebar'
 
 export const metadata: Metadata = {
-    title: { template: '%s | Dashboard', default: 'Dashboard' },
+    title: { absolute: 'Dashboard', template: '%s | Dashboard' },
 }
 import { DynamicBreadcrumbs } from '@/components/dynamic-breadcrumbs'
 import { Separator } from '@/components/ui/separator'

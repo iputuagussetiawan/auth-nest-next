@@ -40,7 +40,7 @@ export function PermissionModuleMatrix() {
     const modules: IAppModule[] = useMemo(() => modulesData?.data ?? [], [modulesData])
 
     const [access, setAccess] = useState<AccessMap>({})
-    const [pendingCell, setPendingCell] = useState<string | null>(null) // "moduleId-permId"
+    const [pendingModule, setPendingModule] = useState<string | null>(null)
 
     useEffect(() => {
         if (modules.length) setAccess(buildAccessMap(modules))
@@ -57,11 +57,12 @@ export function PermissionModuleMatrix() {
             if (orig) setAccess((prev) => ({ ...prev, [id]: new Set(orig.permissionIds) }))
             toast.error(e?.message ?? 'Failed to update access')
         },
-        onSettled: () => setPendingCell(null),
+        onSettled: () => setPendingModule(null),
     })
 
     const toggle = (moduleId: string, permId: string) => {
-        setPendingCell(`${moduleId}-${permId}`)
+        if (pendingModule === moduleId) return
+        setPendingModule(moduleId)
         const current = new Set(access[moduleId] ?? [])
         if (current.has(permId)) { current.delete(permId) } else { current.add(permId) }
         setAccess((prev) => ({ ...prev, [moduleId]: current }))
@@ -127,9 +128,8 @@ export function PermissionModuleMatrix() {
                             </td>
 
                             {modules.map((mod) => {
-                                const cellKey = `${mod.id}-${perm.id}`
                                 const checked = access[mod.id]?.has(perm.id) ?? false
-                                const isPending = pendingCell === cellKey && updateMutation.isPending
+                                const isPending = pendingModule === mod.id && updateMutation.isPending
 
                                 return (
                                     <td key={mod.id} className="px-4 py-3 text-center">

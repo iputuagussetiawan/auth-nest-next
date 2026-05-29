@@ -127,7 +127,7 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
 
     const [search, setSearch] = useState('')
     const [access, setAccess] = useState<AccessMap>({})
-    const [pendingCell, setPendingCell] = useState<string | null>(null)
+    const [pendingRole, setPendingRole] = useState<string | null>(null)
     const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
 
     const filteredGrouped = useMemo(() => {
@@ -199,12 +199,12 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
             if (orig) setAccess(prev => ({ ...prev, [roleId]: new Set(orig.permissions.map(p => p.id)) }))
             toast.error(e?.message ?? 'Failed to update permission')
         },
-        onSettled: () => setPendingCell(null),
+        onSettled: () => setPendingRole(null),
     })
 
     const toggle = (roleId: string, permId: string) => {
-        const cellKey = `${roleId}-${permId}`
-        setPendingCell(cellKey)
+        if (pendingRole === roleId) return
+        setPendingRole(roleId)
         const current = new Set(access[roleId] ?? [])
         if (current.has(permId)) { current.delete(permId) } else { current.add(permId) }
         setAccess(prev => ({ ...prev, [roleId]: current }))
@@ -315,9 +315,8 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
                     </div>
                 </td>
                 {roles.map(role => {
-                    const cellKey = `${role.id}-${perm.id}`
                     const checked = access[role.id]?.has(perm.id) ?? false
-                    const isPending = pendingCell === cellKey && assignMutation.isPending
+                    const isPending = pendingRole === role.id && assignMutation.isPending
                     return (
                         <td key={role.id} className="px-4 py-3 text-center">
                             {isPending ? (

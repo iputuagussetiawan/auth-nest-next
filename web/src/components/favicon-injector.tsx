@@ -14,14 +14,18 @@ export function FaviconInjector() {
     const faviconUrl = data?.data?.faviconUrl
 
     useEffect(() => {
-        if (!faviconUrl) return
-        let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']")
-        if (!link) {
-            link = document.createElement('link')
-            link.rel = 'icon'
-            document.head.appendChild(link)
+        const link = document.querySelector<HTMLLinkElement>("link[rel~='icon']")
+            ?? (() => {
+                const el = document.createElement('link')
+                el.rel = 'icon'
+                document.head.appendChild(el)
+                return el
+            })()
+        if (faviconUrl) {
+            link.href = faviconUrl
+        } else {
+            link.href = '/favicon.ico'
         }
-        link.href = faviconUrl
     }, [faviconUrl])
 
     return null
