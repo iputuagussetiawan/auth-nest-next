@@ -23,6 +23,7 @@ const DEFAULTS = {
     metaTitle: null,
     metaDescription: null,
     metaKeywords: null,
+    ogImageUrl: null,
     googleAnalyticsId: null,
     maintenanceMode: false,
     maintenanceMessage: null,

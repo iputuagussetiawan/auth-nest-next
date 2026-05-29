@@ -166,6 +166,7 @@ export interface ISiteSettings {
     metaTitle: string | null
     metaDescription: string | null
     metaKeywords: string | null
+    ogImageUrl: string | null
     googleAnalyticsId: string | null
     maintenanceMode: boolean
     maintenanceMessage: string | null

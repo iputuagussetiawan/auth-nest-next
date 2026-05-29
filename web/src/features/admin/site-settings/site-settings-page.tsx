@@ -49,6 +49,7 @@ const schema = z.object({
     metaTitle: z.string().max(200).optional().or(z.literal('')),
     metaDescription: z.string().max(500).optional().or(z.literal('')),
     metaKeywords: z.string().max(300).optional().or(z.literal('')),
+    ogImageUrl: z.string().max(500).optional().or(z.literal('')),
     googleAnalyticsId: z.string().max(50).optional().or(z.literal('')),
     maintenanceMode: z.boolean(),
     maintenanceMessage: z.string().max(500).optional().or(z.literal('')),
@@ -61,7 +62,7 @@ const EMPTY: FormValues = {
     logoUrl: '', faviconUrl: '',
     contactEmail: '', contactPhone: '', contactAddress: '',
     socialTwitter: '', socialFacebook: '', socialInstagram: '', socialLinkedin: '', socialYoutube: '',
-    metaTitle: '', metaDescription: '', metaKeywords: '', googleAnalyticsId: '',
+    metaTitle: '', metaDescription: '', metaKeywords: '', ogImageUrl: '', googleAnalyticsId: '',
     maintenanceMode: false, maintenanceMessage: '',
 }
 
@@ -305,6 +306,7 @@ export function SiteSettingsPage() {
             metaTitle: s.metaTitle ?? '',
             metaDescription: s.metaDescription ?? '',
             metaKeywords: s.metaKeywords ?? '',
+            ogImageUrl: s.ogImageUrl ?? '',
             googleAnalyticsId: s.googleAnalyticsId ?? '',
             maintenanceMode: s.maintenanceMode ?? false,
             maintenanceMessage: s.maintenanceMessage ?? '',
@@ -328,6 +330,7 @@ export function SiteSettingsPage() {
     const maintenanceMode = watch('maintenanceMode')
     const logoUrl = watch('logoUrl') ?? ''
     const faviconUrl = watch('faviconUrl') ?? ''
+    const ogImageUrl = watch('ogImageUrl') ?? ''
 
     return (
         <div className="space-y-6 p-6">
@@ -534,6 +537,14 @@ export function SiteSettingsPage() {
                                     <Field label="Meta Keywords" hint="Comma-separated keywords">
                                         <Input {...register('metaKeywords')} placeholder="app, dashboard, saas" />
                                     </Field>
+                                    <Separator />
+                                    <ImageUploader
+                                        label="OG Image"
+                                        hint="Shown when shared on social media. 1200×630px recommended."
+                                        value={ogImageUrl}
+                                        onChange={(url) => setValue('ogImageUrl', url, { shouldDirty: true })}
+                                        previewSize="logo"
+                                    />
                                     <Separator />
                                     <Field label="Google Analytics ID" hint="e.g. G-XXXXXXXXXX or UA-XXXXXX-X">
                                         <Input {...register('googleAnalyticsId')} placeholder="G-XXXXXXXXXX" className="font-mono" />

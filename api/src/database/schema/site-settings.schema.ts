@@ -23,6 +23,7 @@ export const siteSettings = pgTable('site_settings', {
     metaTitle: varchar('meta_title', { length: 200 }),
     metaDescription: varchar('meta_description', { length: 500 }),
     metaKeywords: varchar('meta_keywords', { length: 300 }),
+    ogImageUrl: varchar('og_image_url', { length: 500 }),
     googleAnalyticsId: varchar('google_analytics_id', { length: 50 }),
     // Maintenance
     maintenanceMode: boolean('maintenance_mode').notNull().default(false),

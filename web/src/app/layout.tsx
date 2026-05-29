@@ -17,7 +17,11 @@ export async function generateMetadata(): Promise<Metadata> {
             openGraph: {
                 siteName: name,
                 description: desc || undefined,
-                images: s?.logoUrl ? [{ url: s.logoUrl }] : [],
+                images: s?.ogImageUrl ? [{ url: s.ogImageUrl, width: 1200, height: 630 }] : [],
+            },
+            twitter: {
+                card: 'summary_large_image',
+                images: s?.ogImageUrl ? [s.ogImageUrl] : [],
             },
         }
     } catch {

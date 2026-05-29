@@ -25,6 +25,7 @@ export class UpdateSiteSettingsDto {
     @IsOptional() @IsString() @MaxLength(200) metaTitle?: string
     @IsOptional() @IsString() @MaxLength(500) metaDescription?: string
     @IsOptional() @IsString() @MaxLength(300) metaKeywords?: string
+    @IsOptional() @IsString() @MaxLength(500) ogImageUrl?: string
     @IsOptional() @IsString() @MaxLength(50) googleAnalyticsId?: string
 
     @IsOptional() @IsBoolean() maintenanceMode?: boolean
