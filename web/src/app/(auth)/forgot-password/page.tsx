@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 import { GalleryVerticalEnd } from 'lucide-react'
 
 import { ForgotPasswordForm } from '@/features/auth/components/forgot-password-form'
+import { Suspense } from 'react'
 
 export const metadata: Metadata = {
     title: 'Forgot Password',
@@ -24,7 +25,10 @@ export default function SignupPage() {
                 </div>
                 <div className="flex flex-1 items-center justify-center">
                     <div className="w-full max-w-xs">
-                        <ForgotPasswordForm />
+                         <Suspense>
+                            <ForgotPasswordForm />
+                         </Suspense>
+                        
                     </div>
                 </div>
             </div>

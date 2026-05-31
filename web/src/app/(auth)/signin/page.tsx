@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 import { GalleryVerticalEnd } from 'lucide-react'
 
 import { SignInForm } from '@/features/auth/components/signin-form'
+import { Suspense } from 'react'
 
 export const metadata: Metadata = {
     title: 'Sign In',
@@ -24,7 +25,10 @@ export default function SignupPage() {
                 </div>
                 <div className="flex flex-1 items-center justify-center">
                     <div className="w-full max-w-xs">
-                        <SignInForm />
+                        <Suspense>
+                            <SignInForm />
+                        </Suspense>
+                        
                     </div>
                 </div>
             </div>
