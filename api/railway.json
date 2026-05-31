@@ -1,0 +1,7 @@
+{
+  "build": {
+    "builder": "railpack",
+    "buildCommand": "pnpm install && pnpm run build",
+    "startCommand": "node dist/main.js"
+  }
+}
