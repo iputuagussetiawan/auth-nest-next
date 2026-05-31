@@ -25,7 +25,10 @@ class FetchFactory {
     }
 
     async API<T>(endpoint: string, options: ApiOptions = {}): Promise<T> {
-        const apiBaseUrl = process.env.NEXT_PUBLIC_APP_BASE_URL
+        const isServer = typeof window === 'undefined'
+        const apiBaseUrl = isServer
+            ? (process.env.BACKEND_URL ?? process.env.NEXT_PUBLIC_APP_BASE_URL)
+            : process.env.NEXT_PUBLIC_APP_BASE_URL
         const defaultHeaders = await this.getRequestConfig()
 
         const mergedHeaders: Record<string, string> = {
@@ -37,7 +40,8 @@ class FetchFactory {
             delete mergedHeaders['Content-Type']
         }
 
-        let fullUrl = `${apiBaseUrl}${endpoint}`
+        const resolvedEndpoint = isServer ? endpoint.replace(/^\/api/, '') : endpoint
+        let fullUrl = `${apiBaseUrl}${resolvedEndpoint}`
 
         if (options.params) {
             const searchParams = new URLSearchParams()
