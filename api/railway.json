@@ -5,7 +5,7 @@
         "buildCommand": "pnpm install --frozen-lockfile && pnpm turbo run build --filter=api"
     },
     "deploy": {
-        "startCommand": "node api/dist/main",
+        "startCommand": "node api/dist/src/main",
         "releaseCommand": "cd api && npx drizzle-kit migrate",
         "restartPolicyType": "ON_FAILURE",
         "restartPolicyMaxRetries": 10
