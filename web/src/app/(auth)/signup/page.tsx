@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+
+export const dynamic = 'force-dynamic'
 import { GalleryVerticalEnd } from 'lucide-react'
 
 import { SignupForm } from '@/features/auth/components/signup-form'
