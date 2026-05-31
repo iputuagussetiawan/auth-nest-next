@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 
+export const dynamic = 'force-dynamic'
+
 import './globals.css'
 
 export async function generateMetadata(): Promise<Metadata> {
