@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { GalleryVerticalEnd } from 'lucide-react'
 
@@ -22,7 +23,9 @@ export default function ConfirmAccountPage() {
                 </div>
                 <div className="flex flex-1 items-center justify-center">
                     <div className="w-full max-w-xs">
-                        <ResetPasswordForm />
+                        <Suspense>
+                                <ResetPasswordForm />
+                            </Suspense>
                     </div>
                 </div>
             </div>
