@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+
+export const dynamic = 'force-dynamic'
 import { GalleryVerticalEnd } from 'lucide-react'
 
 import { ForgotPasswordForm } from '@/features/auth/components/forgot-password-form'
