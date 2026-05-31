@@ -1,11 +1,12 @@
 {
     "$schema": "https://railway.com/railway.schema.json",
     "build": {
-        "builder": "NIXPACKS"
+        "builder": "NIXPACKS",
+        "buildCommand": "cd api && pnpm install && pnpm build"
     },
     "deploy": {
-        "startCommand": "node dist/main",
-        "releaseCommand": "npx drizzle-kit migrate",
+        "startCommand": "node api/dist/main",
+        "releaseCommand": "cd api && npx drizzle-kit migrate",
         "restartPolicyType": "ON_FAILURE",
         "restartPolicyMaxRetries": 10
     }
