@@ -1,5 +1,7 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
+
+export const dynamic = 'force-dynamic'
 import { GalleryVerticalEnd } from 'lucide-react'
 
 import { ResetPasswordForm } from '@/features/auth/components/reset-password-form'

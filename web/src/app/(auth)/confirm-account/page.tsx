@@ -1,5 +1,7 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
+
+export const dynamic = 'force-dynamic'
 import { GalleryVerticalEnd } from 'lucide-react'
 
 import { ConfirmAccountForm } from '@/features/auth/components/confirm-account-form'
