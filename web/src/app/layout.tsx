@@ -5,7 +5,8 @@ import './globals.css'
 
 export async function generateMetadata(): Promise<Metadata> {
     try {
-        const base = process.env.BACKEND_URL ?? ''
+        const base = process.env.BACKEND_URL
+        if (!base) return { title: { default: 'App', template: '%s | App' } }
         const res = await fetch(`${base}/site-settings`, { next: { revalidate: 300 }, signal: AbortSignal.timeout(5000) })
         const json = res.ok ? await res.json() : null
         const s = json?.data
