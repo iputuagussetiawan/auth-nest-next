@@ -69,7 +69,11 @@ export function RolesPage() {
 
     const deleteMutation = useMutation({
         mutationFn: (id: string) => adminRoleService.delete(id),
-        onSuccess: () => { toast.success('Role deleted'); qc.invalidateQueries({ queryKey: ['admin-roles'] }); setDeleteRole(null) },
+        onSuccess: () => {
+            toast.success('Role deleted')
+            qc.invalidateQueries({ queryKey: ['admin-roles'] })
+            setDeleteRole(null)
+        },
         onError: (e: any) => toast.error(e.message),
     })
 
@@ -130,7 +134,7 @@ export function RolesPage() {
                                 : <span className="text-primary text-sm font-bold">{name[0].toUpperCase()}</span>
                             }
                         </div>
-                        <span className="font-medium">{name}</span>
+                        <span className="font-medium capitalize">{name}</span>
                     </div>
                 )
             },
@@ -180,7 +184,7 @@ export function RolesPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight">Roles</h2>
-                    <p className="text-muted-foreground text-sm">Manage roles and their permissions</p>
+                    <p className="text-muted-foreground text-sm">Manage roles and module access</p>
                 </div>
                 <Button onClick={openCreate}>
                     <Plus className="mr-2 h-4 w-4" /> Add Role

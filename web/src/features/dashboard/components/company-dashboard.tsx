@@ -40,16 +40,16 @@ const jobsPerRoleData = [
 ]
 
 const statusChartConfig = {
-    count: { label: 'Applications', color: 'hsl(var(--primary))' },
+    count: { label: 'Applications', color: 'var(--primary)' },
 }
 
 const trendChartConfig = {
-    applications: { label: 'Applications', color: 'hsl(var(--primary))' },
-    hired: { label: 'Hired', color: 'hsl(var(--chart-2, 160 60% 45%))' },
+    applications: { label: 'Applications', color: 'var(--primary)' },
+    hired: { label: 'Hired', color: 'var(--chart-2)' },
 }
 
 const jobsChartConfig = {
-    jobs: { label: 'Open Jobs', color: 'hsl(var(--primary))' },
+    jobs: { label: 'Open Jobs', color: 'var(--primary)' },
 }
 
 export function CompanyDashboard() {

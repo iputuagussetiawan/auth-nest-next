@@ -1,3 +1,7 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = { title: 'Saved Jobs' }
+
 export default function SavedJobsPage() {
     return (
         <div className="space-y-4">

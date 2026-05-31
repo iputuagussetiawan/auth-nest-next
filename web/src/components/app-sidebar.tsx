@@ -1,9 +1,14 @@
 'use client'
 
 import * as React from 'react'
-import { useAuthContext } from '@/providers/auth-provider'
+import { useQuery } from '@tanstack/react-query'
+import { FileText } from 'lucide-react'
 
+import { useAuthContext } from '@/providers/auth-provider'
 import { getSidebarData } from '@/lib/sidebar-menu'
+import { adminModuleService } from '@/features/admin/services/admin-module-service'
+import { adminSiteSettingsService } from '@/features/admin/services/admin-site-settings-service'
+import type { NavMainGroup } from '@/components/nav-main'
 
 import { NavMain } from './nav-main'
 import { NavUser } from './nav-user'
@@ -11,16 +16,41 @@ import { TeamSwitcher } from './team-switcher'
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from './ui/sidebar'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    // 1. Destructure isFetching to be more precise about background updates
-    const { isLoading, isFetching, user } = useAuthContext()
+    const { isLoading, user } = useAuthContext()
 
-    // 2. Memoize sidebar data so it updates exactly when the user/role arrives
+    // Uses /app-modules/my — server filters by user's role + permissions
+    // Works for ALL roles, not just admins
+    const { data: myModulesData } = useQuery({
+        queryKey: ['my-modules', user?.id],
+        queryFn: () => adminModuleService.getMyModules(),
+        enabled: !!user,
+        staleTime: 60_000,
+    })
+
+    const { data: siteSettingsData } = useQuery({
+        queryKey: ['site-settings'],
+        queryFn: () => adminSiteSettingsService.get(),
+        staleTime: 5 * 60_000,
+    })
+
     const sidebarData = React.useMemo(() => {
-        return getSidebarData(user)
-    }, [user])
+        const base = getSidebarData(user)
+        const modules = myModulesData?.data ?? []
 
-    // 3. IMPORTANT: Show a skeleton or nothing while the initial load is happening
-    // If you don't do this, sidebarData will be generated with 'undefined' role
+        if (!modules.length) return base
+
+        const dynamicGroup: NavMainGroup = {
+            label: 'Pages',
+            items: modules.map((m) => ({
+                title: m.name,
+                url: m.path,
+                icon: FileText,
+            })),
+        }
+
+        return { ...base, navGroups: [...base.navGroups, dynamicGroup] }
+    }, [user, myModulesData])
+
     if (isLoading) {
         return (
             <Sidebar collapsible="icon" {...props}>
@@ -30,10 +60,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </Sidebar>
         )
     }
+
+    const logoUrl = siteSettingsData?.data?.logoUrl ?? ''
+    const siteName = siteSettingsData?.data?.siteName ?? ''
+
     return (
         <Sidebar collapsible="icon" {...props}>
             <SidebarHeader>
-                <TeamSwitcher teams={sidebarData.teams} />
+                <TeamSwitcher
+                    teams={sidebarData.teams}
+                    logoUrl={logoUrl || undefined}
+                    siteName={siteName || undefined}
+                />
             </SidebarHeader>
             <SidebarContent>
                 <NavMain key={user?.id || 'guest'} groups={sidebarData.navGroups} />

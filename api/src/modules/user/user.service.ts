@@ -54,6 +54,7 @@ export class UserService {
         return {
             ...user,
             role: userRoles[0]?.name ?? null,
+            roleId: userRoles[0]?.id ?? null,
             permissions,
             sessions,
         }

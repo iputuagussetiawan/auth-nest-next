@@ -1,6 +1,12 @@
+import type { Metadata } from 'next'
 import { GalleryVerticalEnd } from 'lucide-react'
 
 import { SignInForm } from '@/features/auth/components/signin-form'
+
+export const metadata: Metadata = {
+    title: 'Sign In',
+    description: 'Sign in to your account.',
+}
 
 export default function SignupPage() {
     return (

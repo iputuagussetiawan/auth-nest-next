@@ -1,3 +1,7 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = { title: 'View CV' }
+
 export default function CvPreviewPage() {
     return (
         <div className="space-y-4">

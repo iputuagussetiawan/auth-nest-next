@@ -5,25 +5,56 @@ import { eq } from 'drizzle-orm'
 import { DRIZZLE } from '../../database/drizzle.provider'
 import * as schema from '../../database/schema'
 import { themes } from '../../database/schema/themes.schema'
+import { users } from '../../database/schema/users.schema'
 import { NotFoundException } from '../../common/exceptions/app-error'
 import { CreateThemeDto } from './dto/create-theme.dto'
 import { UpdateThemeDto } from './dto/update-theme.dto'
+
+const DEFAULT_LIGHT = {
+    background: '#ffffff', foreground: '#0a0a0a',
+    card: '#ffffff', cardForeground: '#0a0a0a',
+    popover: '#ffffff', popoverForeground: '#0a0a0a',
+    primary: '#171717', primaryForeground: '#fafafa',
+    secondary: '#f5f5f5', secondaryForeground: '#171717',
+    muted: '#f5f5f5', mutedForeground: '#737373',
+    accent: '#f5f5f5', accentForeground: '#171717',
+    destructive: '#ef4444',
+    border: '#e5e5e5', input: '#e5e5e5', ring: '#a3a3a3',
+    chart1: '#e76e50', chart2: '#2a9d8f', chart3: '#264653', chart4: '#e9c46a', chart5: '#f4a261',
+    sidebar: '#fafafa', sidebarForeground: '#3f3f46',
+    sidebarPrimary: '#18181b', sidebarPrimaryForeground: '#fafafa',
+    sidebarAccent: '#f4f4f5', sidebarAccentForeground: '#18181b',
+    sidebarBorder: '#e4e4e7', sidebarRing: '#3b82f6',
+}
+
+const DEFAULT_DARK = {
+    background: '#0a0a0a', foreground: '#fafafa',
+    card: '#171717', cardForeground: '#fafafa',
+    popover: '#171717', popoverForeground: '#fafafa',
+    primary: '#fafafa', primaryForeground: '#171717',
+    secondary: '#262626', secondaryForeground: '#fafafa',
+    muted: '#262626', mutedForeground: '#a3a3a3',
+    accent: '#404040', accentForeground: '#fafafa',
+    destructive: '#7f1d1d',
+    border: '#262626', input: '#262626', ring: '#d4d4d4',
+    chart1: '#e76e50', chart2: '#2a9d8f', chart3: '#264653', chart4: '#e9c46a', chart5: '#f4a261',
+    sidebar: '#18181b', sidebarForeground: '#a1a1aa',
+    sidebarPrimary: '#3b82f6', sidebarPrimaryForeground: '#ffffff',
+    sidebarAccent: '#27272a', sidebarAccentForeground: '#fafafa',
+    sidebarBorder: '#27272a', sidebarRing: '#3b82f6',
+}
 
 const DEFAULT_THEME = {
     name: 'Default',
     slug: 'default',
     isActive: true,
     config: {
-        primaryColor: '#6366f1',
-        accentColor: '#8b5cf6',
-        backgroundColor: '#ffffff',
-        foregroundColor: '#0f172a',
-        cardColor: '#ffffff',
-        borderRadius: '0.5',
+        light: DEFAULT_LIGHT,
+        dark: DEFAULT_DARK,
+        radius: '0.625',
         fontFamily: 'Inter',
         heroVariant: 'centered' as const,
         heroBackground: 'gradient' as const,
-        darkMode: false,
     },
 }
 
@@ -84,7 +115,43 @@ export class ThemeService {
     async delete(id: string) {
         const [existing] = await this.db.select().from(themes).where(eq(themes.id, id)).limit(1)
         if (!existing) throw new NotFoundException('Theme not found')
+        // Clear any user preferences pointing to this theme
+        await this.db.update(users).set({ preferredThemeId: null, updatedAt: new Date() }).where(eq(users.preferredThemeId, id))
         await this.db.delete(themes).where(eq(themes.id, id))
         return { message: 'Theme deleted' }
+    }
+
+    async getAllPublic() {
+        return this.db.select().from(themes).orderBy(themes.createdAt)
+    }
+
+    async getMyTheme(userId?: string | null) {
+        if (userId) {
+            const [user] = await this.db
+                .select({ preferredThemeId: users.preferredThemeId })
+                .from(users)
+                .where(eq(users.id, userId))
+                .limit(1)
+
+            if (user?.preferredThemeId) {
+                const [preferred] = await this.db
+                    .select()
+                    .from(themes)
+                    .where(eq(themes.id, user.preferredThemeId))
+                    .limit(1)
+                if (preferred) return preferred
+            }
+        }
+        return this.getActive()
+    }
+
+    async setPreference(userId: string, themeId: string) {
+        const [theme] = await this.db.select().from(themes).where(eq(themes.id, themeId)).limit(1)
+        if (!theme) throw new NotFoundException('Theme not found')
+        await this.db
+            .update(users)
+            .set({ preferredThemeId: themeId, updatedAt: new Date() })
+            .where(eq(users.id, userId))
+        return { themeId }
     }
 }

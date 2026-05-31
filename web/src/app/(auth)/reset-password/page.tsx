@@ -1,6 +1,13 @@
+import { Suspense } from 'react'
+import type { Metadata } from 'next'
 import { GalleryVerticalEnd } from 'lucide-react'
 
 import { ResetPasswordForm } from '@/features/auth/components/reset-password-form'
+
+export const metadata: Metadata = {
+    title: 'Reset Password',
+    description: 'Set a new password for your account.',
+}
 
 export default function ConfirmAccountPage() {
     return (
@@ -16,7 +23,9 @@ export default function ConfirmAccountPage() {
                 </div>
                 <div className="flex flex-1 items-center justify-center">
                     <div className="w-full max-w-xs">
-                        <ResetPasswordForm />
+                        <Suspense>
+                                <ResetPasswordForm />
+                            </Suspense>
                     </div>
                 </div>
             </div>

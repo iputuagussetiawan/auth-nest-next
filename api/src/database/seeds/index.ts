@@ -5,6 +5,7 @@ import { drizzle } from 'drizzle-orm/node-postgres'
 import * as schema from '../schema'
 import { runRoleSeed } from './role.seed'
 import { runUserSeed } from './user.seed'
+import { runThemeSeed } from './theme.seed'
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 const db = drizzle(pool, { schema })
@@ -12,6 +13,7 @@ const db = drizzle(pool, { schema })
 async function main() {
     const roleMap = await runRoleSeed(db)
     await runUserSeed(db, roleMap)
+    await runThemeSeed(db)
     console.log('\nDone.')
 }
 

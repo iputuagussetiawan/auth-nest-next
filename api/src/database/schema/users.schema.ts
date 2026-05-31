@@ -12,6 +12,7 @@ export const users = pgTable('users', {
     provider: varchar('provider', { length: 50 }).default('email'),
     providerId: varchar('provider_id', { length: 255 }),
     lastLogin: timestamp('last_login'),
+    preferredThemeId: uuid('preferred_theme_id'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })

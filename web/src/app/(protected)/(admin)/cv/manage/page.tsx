@@ -1,3 +1,7 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = { title: 'Manage CV' }
+
 export default function CvManagePage() {
     return (
         <div className="space-y-4">

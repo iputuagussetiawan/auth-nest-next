@@ -27,6 +27,7 @@ export interface IUserProfile {
     createdAt: string
     updatedAt: string
     role: string | null
+    roleId: string | null
     permissions: string[]
     sessions: ISession[]
 }

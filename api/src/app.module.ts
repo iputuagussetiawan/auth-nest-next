@@ -13,6 +13,8 @@ import { UserModule } from './modules/user/user.module'
 import { SessionModule } from './modules/session/session.module'
 import { AppModuleModule } from './modules/app-module/app-module.module'
 import { ThemeModule } from './modules/theme/theme.module'
+import { AdminStatsModule } from './modules/admin-stats/admin-stats.module'
+import { SiteSettingsModule } from './modules/site-settings/site-settings.module'
 
 @Module({
     imports: [
@@ -26,6 +28,8 @@ import { ThemeModule } from './modules/theme/theme.module'
         SessionModule,
         AppModuleModule,
         ThemeModule,
+        AdminStatsModule,
+        SiteSettingsModule,
     ],
     controllers: [AppController],
     providers: [

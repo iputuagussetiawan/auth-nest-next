@@ -1,3 +1,7 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = { title: 'Target Achieved' }
+
 export default function TargetAchievedPage() {
     return (
         <div className="space-y-4">

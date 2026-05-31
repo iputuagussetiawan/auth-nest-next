@@ -23,7 +23,7 @@ const loginActivityData = [
 ]
 
 const activityChartConfig = {
-    logins: { label: 'Logins', color: 'hsl(var(--primary))' },
+    logins: { label: 'Logins', color: 'var(--primary)' },
 }
 
 export function UserDashboard({ user }: UserDashboardProps) {

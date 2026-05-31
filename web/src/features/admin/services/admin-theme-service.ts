@@ -16,4 +16,13 @@ export const adminThemeService = {
 
     delete: (id: string) =>
         api.API<any>(`/api/themes/${id}`, { method: 'DELETE', cache: 'no-store' }),
+
+    listPublic: () =>
+        api.API<IThemesResponse>('/api/themes/list', { method: 'GET', cache: 'no-store' }),
+
+    getMyTheme: () =>
+        api.API<IThemeResponse>('/api/themes/my', { method: 'GET', cache: 'no-store' }),
+
+    setPreference: (themeId: string) =>
+        api.API<any>('/api/themes/preference', { method: 'PATCH', body: JSON.stringify({ themeId }), cache: 'no-store' }),
 }

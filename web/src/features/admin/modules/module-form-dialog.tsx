@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
     Dialog,
     DialogContent,
@@ -16,9 +15,8 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Switch } from '@/components/ui/switch'
-import type { IAppModule, IRole } from '../types/admin-types'
+import type { IAppModule } from '../types/admin-types'
 
 const schema = z.object({
     name: z.string().min(2).max(100),
@@ -27,7 +25,6 @@ const schema = z.object({
     icon: z.string().max(100).optional(),
     description: z.string().max(255).optional(),
     isActive: z.boolean(),
-    roleIds: z.array(z.string()),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -36,15 +33,14 @@ interface ModuleFormDialogProps {
     open: boolean
     onOpenChange: (v: boolean) => void
     module: IAppModule | null
-    roles: IRole[]
     onSubmit: (values: FormValues) => void
     isPending: boolean
 }
 
-export function ModuleFormDialog({ open, onOpenChange, module, roles, onSubmit, isPending }: ModuleFormDialogProps) {
+export function ModuleFormDialog({ open, onOpenChange, module, onSubmit, isPending }: ModuleFormDialogProps) {
     const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormValues>({
         resolver: zodResolver(schema),
-        defaultValues: { name: '', slug: '', path: '', icon: '', description: '', isActive: true, roleIds: [] },
+        defaultValues: { name: '', slug: '', path: '', icon: '', description: '', isActive: true },
     })
 
     useEffect(() => {
@@ -56,17 +52,15 @@ export function ModuleFormDialog({ open, onOpenChange, module, roles, onSubmit, 
                 icon: module.icon ?? '',
                 description: module.description ?? '',
                 isActive: module.isActive,
-                roleIds: module.roleIds,
             })
         } else {
-            reset({ name: '', slug: '', path: '', icon: '', description: '', isActive: true, roleIds: [] })
+            reset({ name: '', slug: '', path: '', icon: '', description: '', isActive: true })
         }
     }, [module, reset])
 
     const name = watch('name')
     const slug = watch('slug')
 
-    // auto-derive slug from name (create only)
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value
         setValue('name', val)
@@ -77,17 +71,10 @@ export function ModuleFormDialog({ open, onOpenChange, module, roles, onSubmit, 
         }
     }
 
-    // auto-update path when slug changes
     const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value
         setValue('slug', val)
         if (!module) setValue('path', `/dashboard/${val}`)
-    }
-
-    const checkedRoles = watch('roleIds')
-    const toggleRole = (id: string) => {
-        const next = checkedRoles.includes(id) ? checkedRoles.filter((x) => x !== id) : [...checkedRoles, id]
-        setValue('roleIds', next)
     }
 
     return (
@@ -99,22 +86,14 @@ export function ModuleFormDialog({ open, onOpenChange, module, roles, onSubmit, 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-1">
                         <Label>Name</Label>
-                        <Input
-                            value={name}
-                            onChange={handleNameChange}
-                            placeholder="e.g. Products"
-                        />
+                        <Input value={name} onChange={handleNameChange} placeholder="e.g. Products" />
                         {errors.name && <p className="text-destructive text-xs">{errors.name.message}</p>}
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                             <Label>Slug</Label>
-                            <Input
-                                value={slug}
-                                onChange={handleSlugChange}
-                                placeholder="products"
-                            />
+                            <Input value={slug} onChange={handleSlugChange} placeholder="products" />
                             {errors.slug && <p className="text-destructive text-xs">{errors.slug.message}</p>}
                         </div>
                         <div className="space-y-1">
@@ -142,26 +121,6 @@ export function ModuleFormDialog({ open, onOpenChange, module, roles, onSubmit, 
                             onCheckedChange={(v) => setValue('isActive', v)}
                         />
                         <Label htmlFor="isActive">Active</Label>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label>Accessible by Roles</Label>
-                        <ScrollArea className="h-36 rounded-md border p-3">
-                            <div className="space-y-2">
-                                {roles.map((r) => (
-                                    <div key={r.id} className="flex items-center gap-2">
-                                        <Checkbox
-                                            id={`role-${r.id}`}
-                                            checked={checkedRoles.includes(r.id)}
-                                            onCheckedChange={() => toggleRole(r.id)}
-                                        />
-                                        <label htmlFor={`role-${r.id}`} className="cursor-pointer text-sm font-medium">
-                                            {r.name}
-                                        </label>
-                                    </div>
-                                ))}
-                            </div>
-                        </ScrollArea>
                     </div>
 
                     <DialogFooter>

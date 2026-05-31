@@ -1,4 +1,7 @@
+export const dynamic = 'force-dynamic'
+
 import { buildThemeCss } from '@/lib/theme-utils'
+import { MaintenancePage } from './maintenance-page'
 import Link from 'next/link'
 import {
     ArrowRight,
@@ -340,24 +343,72 @@ function Footer() {
     )
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
-async function getActiveThemeCss(): Promise<string> {
-    try {
-        const res = await fetch(`${process.env.BACKEND_URL}/themes/active`, {
-            next: { revalidate: 60 },
-        })
-        if (!res.ok) return ''
-        const json = await res.json()
-        const config = json?.data?.config
-        if (!config) return ''
-        return buildThemeCss(config)
-    } catch {
-        return ''
+// ── Page data ─────────────────────────────────────────────────────────────────
+
+interface SiteData {
+    themeCss: string
+    maintenanceMode: boolean
+    maintenanceMessage: string | null
+    siteName: string
+    logoUrl: string | null
+}
+
+async function getSiteData(): Promise<SiteData> {
+    const base = process.env.BACKEND_URL ?? ''
+
+    const [themeRes, settingsRes] = await Promise.allSettled([
+        fetch(`${base}/themes/active`, { next: { revalidate: 60 } }),
+        fetch(`${base}/site-settings`, { cache: 'no-store' }),
+    ])
+
+    console.log('[getSiteData] base:', base)
+    console.log('[getSiteData] settingsRes status:', settingsRes.status, settingsRes.status === 'fulfilled' ? settingsRes.value.status : (settingsRes as any).reason)
+
+    let themeCss = ''
+    if (themeRes.status === 'fulfilled' && themeRes.value.ok) {
+        try {
+            const json = await themeRes.value.json()
+            const config = json?.data?.config
+            if (config) themeCss = buildThemeCss(config)
+        } catch (e) { console.error('[getSiteData] theme parse error:', e) }
     }
+
+    let maintenanceMode = false
+    let maintenanceMessage: string | null = null
+    let siteName = 'Acme Inc.'
+    let logoUrl: string | null = null
+
+    if (settingsRes.status === 'fulfilled' && settingsRes.value.ok) {
+        try {
+            const json = await settingsRes.value.json()
+            console.log('[getSiteData] settings json:', JSON.stringify(json?.data).slice(0, 200))
+            const s = json?.data
+            if (s) {
+                maintenanceMode = s.maintenanceMode ?? false
+                maintenanceMessage = s.maintenanceMessage ?? null
+                siteName = s.siteName ?? 'Acme Inc.'
+                logoUrl = s.logoUrl ?? null
+            }
+        } catch (e) { console.error('[getSiteData] settings parse error:', e) }
+    }
+
+    console.log('[getSiteData] maintenanceMode:', maintenanceMode)
+    return { themeCss, maintenanceMode, maintenanceMessage, siteName, logoUrl }
 }
 
 export default async function LandingPage() {
-    const themeCss = await getActiveThemeCss()
+    const { themeCss, maintenanceMode, maintenanceMessage, siteName, logoUrl } = await getSiteData()
+
+    if (maintenanceMode) {
+        return (
+            <MaintenancePage
+                siteName={siteName}
+                message={maintenanceMessage}
+                logoUrl={logoUrl}
+                themeCss={themeCss}
+            />
+        )
+    }
 
     return (
         <div className="min-h-screen">

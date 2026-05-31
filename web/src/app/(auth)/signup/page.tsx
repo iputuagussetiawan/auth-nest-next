@@ -1,6 +1,12 @@
+import type { Metadata } from 'next'
 import { GalleryVerticalEnd } from 'lucide-react'
 
 import { SignupForm } from '@/features/auth/components/signup-form'
+
+export const metadata: Metadata = {
+    title: 'Create Account',
+    description: 'Create a free account and get started.',
+}
 
 export default function SignupPage() {
     return (
