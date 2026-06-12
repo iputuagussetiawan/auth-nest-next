@@ -26,9 +26,11 @@ function buildRetryHeaders(original: Headers, existingCookie: string, newToken: 
     return updated
 }
 
+const STRIP_HEADERS = new Set(['set-cookie', 'content-encoding', 'content-length', 'transfer-encoding'])
+
 function copyResponseHeaders(from: Response, to: NextResponse) {
     from.headers.forEach((value, key) => {
-        if (key.toLowerCase() !== 'set-cookie') to.headers.set(key, value)
+        if (!STRIP_HEADERS.has(key.toLowerCase())) to.headers.set(key, value)
     })
     from.headers.getSetCookie?.().forEach((c) => to.headers.append('set-cookie', c))
 }
@@ -97,11 +99,12 @@ async function proxyRequest(request: NextRequest) {
             return NextResponse.json({ message: 'Session expired' }, { status: 401 })
         }
 
-        return new NextResponse(response.body, {
+        const nextRes = new NextResponse(response.body, {
             status: response.status,
             statusText: response.statusText,
-            headers: response.headers,
         })
+        copyResponseHeaders(response, nextRes)
+        return nextRes
     } catch (error) {
         console.error('Proxy Error:', error)
         return NextResponse.json({ message: 'Internal Proxy Error' }, { status: 500 })
