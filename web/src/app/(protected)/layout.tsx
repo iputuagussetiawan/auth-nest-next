@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation'
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'
 
 import { AUTH_COOKIE_NAME, SIGNIN_URL } from '@/lib/constants'
-import { userService } from '@/features/user/services/user-service'
+import { accountService } from '@/features/admin/account/services/AccountService'
 import { AuthProvider } from '@/providers/auth-provider'
 
 export default async function ProtectedLayout({ children }: { children: ReactNode }) {
@@ -19,7 +19,7 @@ export default async function ProtectedLayout({ children }: { children: ReactNod
 
     await queryClient.prefetchQuery({
         queryKey: ['user'],
-        queryFn: userService.getMe,
+        queryFn: accountService.getMe,
     })
 
     const dehydratedState = dehydrate(queryClient)

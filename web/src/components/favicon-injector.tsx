@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { adminSiteSettingsService } from '@/features/admin/services/admin-site-settings-service'
+import { adminSiteSettingsService } from '@/features/admin/site-settings/services/SiteSettingsService'
 
 export function FaviconInjector() {
     const { data } = useQuery({

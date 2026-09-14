@@ -4,7 +4,6 @@ import {
     GalleryVerticalEnd,
     KeyRound,
     LayoutDashboard,
-    LayoutList,
     Palette,
     Search,
     Settings,
@@ -12,7 +11,7 @@ import {
     Users,
 } from 'lucide-react'
 
-import type { IUserProfile } from '@/features/user/types/user-type'
+import type { IUserProfile } from '@/features/admin/account/types/AccountTypes'
 import type { NavMainGroup } from '@/components/nav-main'
 
 function canAccess(
@@ -40,7 +39,7 @@ export const getSidebarData = (user?: IUserProfile) => {
     }[] = [
         // --- General (all users) ---
         {
-            group: undefined,
+            group: 'General',
             item: {
                 title: 'Dashboard',
                 url: '/dashboard',
@@ -53,7 +52,7 @@ export const getSidebarData = (user?: IUserProfile) => {
         },
         // --- Job Seeker ---
         {
-            group: undefined,
+            group: 'General',
             roles: ['jobseeker'],
             item: {
                 title: 'My Resume',
@@ -66,7 +65,7 @@ export const getSidebarData = (user?: IUserProfile) => {
             },
         },
         {
-            group: undefined,
+            group: 'General',
             roles: ['jobseeker'],
             item: {
                 title: 'Job Search',
@@ -80,7 +79,7 @@ export const getSidebarData = (user?: IUserProfile) => {
             },
         },
         {
-            group: undefined,
+            group: 'General',
             roles: ['jobseeker'],
             item: {
                 title: 'My Career',
@@ -94,34 +93,30 @@ export const getSidebarData = (user?: IUserProfile) => {
                 ],
             },
         },
-        // --- Administration ---
+        // --- User Management ---
         {
-            group: 'Administration',
+            group: 'User Management',
             roles: ['admin'],
             item: { title: 'Users', url: '/dashboard/users', icon: Users },
         },
         {
-            group: 'Administration',
+            group: 'User Management',
             roles: ['admin'],
             item: { title: 'Roles', url: '/dashboard/roles', icon: Shield },
         },
         {
-            group: 'Administration',
+            group: 'User Management',
             roles: ['admin'],
             item: { title: 'Permissions', url: '/dashboard/permissions', icon: KeyRound },
         },
+        // --- Configuration ---
         {
-            group: 'Administration',
-            roles: ['admin'],
-            item: { title: 'Modules', url: '/dashboard/modules', icon: LayoutList },
-        },
-        {
-            group: 'Administration',
+            group: 'Configuration',
             roles: ['admin'],
             item: { title: 'Themes', url: '/dashboard/themes', icon: Palette },
         },
         {
-            group: 'Administration',
+            group: 'Configuration',
             roles: ['admin'],
             item: { title: 'Site Settings', url: '/dashboard/settings', icon: Settings },
         },

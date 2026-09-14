@@ -7,9 +7,9 @@ import * as crypto from 'crypto'
 
 import { DRIZZLE } from '../../database/drizzle.provider'
 import * as schema from '../../database/schema'
-import { users } from '../../database/schema/users.schema'
-import { sessions } from '../../database/schema/sessions.schema'
-import { verificationCodes, VerificationTypeEnum } from '../../database/schema/verification-codes.schema'
+import { users } from '../../database/schema/auth/users.schema'
+import { sessions } from '../../database/schema/auth/sessions.schema'
+import { verificationCodes, VerificationTypeEnum } from '../../database/schema/auth/verification-codes.schema'
 import { MailService } from '../../shared/mail/mail.service'
 import { RoleService } from '../rbac/role/role.service'
 import {

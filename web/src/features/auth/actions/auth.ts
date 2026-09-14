@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 
 import { AUTH_COOKIE_NAME, REFRESH_COOKIE_NAME, SIGNIN_URL } from '@/lib/constants'
 
-import { authService } from '../services/auth-service'
+import { authService } from '../services/AuthService'
 
 export async function handleLogout() {
     const cookieStore = await cookies()

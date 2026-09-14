@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm'
 
 import { DRIZZLE } from '../../../database/drizzle.provider'
 import * as schema from '../../../database/schema'
-import { permissions } from '../../../database/schema/permissions.schema'
+import { permissions } from '../../../database/schema/rbac/permissions.schema'
 import { BadRequestException, NotFoundException } from '../../../common/exceptions/app-error'
 import type { CreatePermissionDto } from './dto/create-permission.dto'
 

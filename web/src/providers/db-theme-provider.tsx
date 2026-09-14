@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTheme } from 'next-themes'
 
-import type { IThemeConfig, IThemeVars } from '@/features/admin/types/admin-types'
+import type { IThemeConfig, IThemeVars } from '@/features/admin/themes/types/ThemeTypes'
 import { api } from '@/lib/api-factory'
 
 const VAR_MAP: Record<keyof IThemeVars, string> = {

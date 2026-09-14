@@ -10,7 +10,7 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
-import { adminThemeService } from '@/features/admin/services/admin-theme-service'
+import { adminThemeService } from '@/features/admin/themes/services/ThemeService'
 
 export function ThemePickerMenuItem() {
     const qc = useQueryClient()

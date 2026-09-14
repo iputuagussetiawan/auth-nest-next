@@ -1,7 +1,31 @@
-import { SiteSettingsPage } from '@/features/admin/site-settings/site-settings-page'
+import type { Metadata } from 'next'
+import { Suspense } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
+import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 
-export const metadata = { title: 'Site Settings' }
+import { SiteSettingsError } from '@/features/admin/site-settings/components/SiteSettingsError'
+import { SiteSettingsLoading } from '@/features/admin/site-settings/components/SiteSettingsLoading'
+import { adminSiteSettingsService } from '@/features/admin/site-settings/services/SiteSettingsService'
+import { SiteSettingsPage } from '@/features/admin/site-settings/SiteSettingsPage'
+import { getQueryClient } from '@/lib/get-query-client'
 
-export default function AdminSiteSettingsPage() {
-    return <SiteSettingsPage />
+export const metadata: Metadata = { title: 'Site Settings' }
+
+export default async function AdminSiteSettingsPage() {
+    const queryClient = getQueryClient()
+
+    await queryClient.prefetchQuery({
+        queryKey: ['site-settings'],
+        queryFn: () => adminSiteSettingsService.get(),
+    })
+
+    return (
+        <HydrationBoundary state={dehydrate(queryClient)}>
+            <Suspense fallback={<SiteSettingsLoading />}>
+                <ErrorBoundary FallbackComponent={SiteSettingsError}>
+                    <SiteSettingsPage />
+                </ErrorBoundary>
+            </Suspense>
+        </HydrationBoundary>
+    )
 }

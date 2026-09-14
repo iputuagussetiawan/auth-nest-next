@@ -1,13 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
-import { eq, inArray } from 'drizzle-orm'
+import { eq, inArray, sql } from 'drizzle-orm'
 
 import { DRIZZLE } from '../../../database/drizzle.provider'
 import * as schema from '../../../database/schema'
-import { roles, type Role } from '../../../database/schema/roles.schema'
-import { rolePermissions } from '../../../database/schema/role-permissions.schema'
-import { userRoles } from '../../../database/schema/user-roles.schema'
-import { permissions } from '../../../database/schema/permissions.schema'
+import { roles, type Role } from '../../../database/schema/rbac/roles.schema'
+import { rolePermissions } from '../../../database/schema/rbac/role-permissions.schema'
+import { userRoles } from '../../../database/schema/rbac/user-roles.schema'
+import { permissions } from '../../../database/schema/rbac/permissions.schema'
 import { BadRequestException, NotFoundException } from '../../../common/exceptions/app-error'
 import type { CreateRoleDto } from './dto/create-role.dto'
 
@@ -34,7 +34,7 @@ export class RoleService {
         const existing = await this.findByName(dto.name)
         if (existing) throw new BadRequestException('Role already exists')
 
-        const [role] = await this.db.insert(roles).values({ name: dto.name, description: dto.description }).returning()
+        const [role] = await this.db.insert(roles).values({ name: dto.name, label: dto.label, description: dto.description }).returning()
         return role
     }
 
@@ -77,12 +77,22 @@ export class RoleService {
 
     async findAllWithPermissions() {
         const allRoles = await this.findAll()
+        const userCounts = await this.getUserCountsByRole()
         return Promise.all(
             allRoles.map(async (role) => ({
                 ...role,
                 permissions: await this.getRolePermissions(role.id),
+                userCount: userCounts.get(role.id) ?? 0,
             })),
         )
+    }
+
+    async getUserCountsByRole(): Promise<Map<string, number>> {
+        const rows = await this.db
+            .select({ roleId: userRoles.roleId, count: sql<number>`cast(count(*) as int)` })
+            .from(userRoles)
+            .groupBy(userRoles.roleId)
+        return new Map(rows.map((r) => [r.roleId, r.count]))
     }
 
     async getRolePermissions(roleId: string) {

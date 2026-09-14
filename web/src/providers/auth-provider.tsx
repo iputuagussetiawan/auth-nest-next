@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext } from 'react'
 
-import type { IUserProfile } from '@/features/user/types/user-type'
+import type { IUserProfile } from '@/features/admin/account/types/AccountTypes'
 import useAuth from '@/hooks/use-auth'
 
 type AuthContextType = {

@@ -5,7 +5,7 @@ import { UAParser } from 'ua-parser-js'
 
 import { DRIZZLE } from '../../database/drizzle.provider'
 import * as schema from '../../database/schema'
-import { sessions } from '../../database/schema/sessions.schema'
+import { sessions } from '../../database/schema/auth/sessions.schema'
 import { NotFoundException, ForbiddenException } from '../../common/exceptions/app-error'
 
 @Injectable()

@@ -4,26 +4,26 @@ import { eq } from 'drizzle-orm'
 
 import { DRIZZLE } from '../../database/drizzle.provider'
 import * as schema from '../../database/schema'
-import { themes } from '../../database/schema/themes.schema'
-import { users } from '../../database/schema/users.schema'
+import { themes } from '../../database/schema/theme/themes.schema'
+import { users } from '../../database/schema/auth/users.schema'
 import { NotFoundException } from '../../common/exceptions/app-error'
 import { CreateThemeDto } from './dto/create-theme.dto'
 import { UpdateThemeDto } from './dto/update-theme.dto'
 
 const DEFAULT_LIGHT = {
-    background: '#ffffff', foreground: '#0a0a0a',
+    background: '#fafafa', foreground: '#0a0a0a',
     card: '#ffffff', cardForeground: '#0a0a0a',
     popover: '#ffffff', popoverForeground: '#0a0a0a',
-    primary: '#171717', primaryForeground: '#fafafa',
-    secondary: '#f5f5f5', secondaryForeground: '#171717',
+    primary: '#0564ff', primaryForeground: '#ffffff',
+    secondary: '#eff6ff', secondaryForeground: '#1d4ed8',
     muted: '#f5f5f5', mutedForeground: '#737373',
-    accent: '#f5f5f5', accentForeground: '#171717',
+    accent: '#dbeafe', accentForeground: '#1d4ed8',
     destructive: '#ef4444',
-    border: '#e5e5e5', input: '#e5e5e5', ring: '#a3a3a3',
-    chart1: '#e76e50', chart2: '#2a9d8f', chart3: '#264653', chart4: '#e9c46a', chart5: '#f4a261',
-    sidebar: '#fafafa', sidebarForeground: '#3f3f46',
-    sidebarPrimary: '#18181b', sidebarPrimaryForeground: '#fafafa',
-    sidebarAccent: '#f4f4f5', sidebarAccentForeground: '#18181b',
+    border: '#e5e5e5', input: '#e5e5e5', ring: '#3b82f6',
+    chart1: '#2563eb', chart2: '#0ea5e9', chart3: '#1d4ed8', chart4: '#38bdf8', chart5: '#60a5fa',
+    sidebar: '#ffffff', sidebarForeground: '#3f3f46',
+    sidebarPrimary: '#0564ff', sidebarPrimaryForeground: '#ffffff',
+    sidebarAccent: '#eff6ff', sidebarAccentForeground: '#1d4ed8',
     sidebarBorder: '#e4e4e7', sidebarRing: '#3b82f6',
 }
 
@@ -31,17 +31,17 @@ const DEFAULT_DARK = {
     background: '#0a0a0a', foreground: '#fafafa',
     card: '#171717', cardForeground: '#fafafa',
     popover: '#171717', popoverForeground: '#fafafa',
-    primary: '#fafafa', primaryForeground: '#171717',
-    secondary: '#262626', secondaryForeground: '#fafafa',
+    primary: '#0564ff', primaryForeground: '#ffffff',
+    secondary: '#1e3a8a', secondaryForeground: '#dbeafe',
     muted: '#262626', mutedForeground: '#a3a3a3',
-    accent: '#404040', accentForeground: '#fafafa',
+    accent: '#1d4ed8', accentForeground: '#eff6ff',
     destructive: '#7f1d1d',
-    border: '#262626', input: '#262626', ring: '#d4d4d4',
-    chart1: '#e76e50', chart2: '#2a9d8f', chart3: '#264653', chart4: '#e9c46a', chart5: '#f4a261',
+    border: '#262626', input: '#262626', ring: '#60a5fa',
+    chart1: '#60a5fa', chart2: '#38bdf8', chart3: '#2563eb', chart4: '#93c5fd', chart5: '#1d4ed8',
     sidebar: '#18181b', sidebarForeground: '#a1a1aa',
-    sidebarPrimary: '#3b82f6', sidebarPrimaryForeground: '#ffffff',
+    sidebarPrimary: '#0564ff', sidebarPrimaryForeground: '#ffffff',
     sidebarAccent: '#27272a', sidebarAccentForeground: '#fafafa',
-    sidebarBorder: '#27272a', sidebarRing: '#3b82f6',
+    sidebarBorder: '#27272a', sidebarRing: '#60a5fa',
 }
 
 const DEFAULT_THEME = {
@@ -62,13 +62,55 @@ const DEFAULT_THEME = {
 export class ThemeService {
     constructor(@Inject(DRIZZLE) private db: NodePgDatabase<typeof schema>) {}
 
+    private async ensureDefaultTheme() {
+        const existingThemes = await this.db.select().from(themes).orderBy(themes.createdAt)
+        const defaultTheme = existingThemes.find((theme) => theme.slug === DEFAULT_THEME.slug)
+        const activeCount = existingThemes.filter((theme) => theme.isActive).length
+        const shouldActivateDefault = activeCount === 0
+
+        if (!defaultTheme) {
+            await this.db.update(themes).set({ isActive: false, updatedAt: new Date() })
+            const [created] = await this.db.insert(themes).values({
+                ...DEFAULT_THEME,
+                isActive: true,
+            }).returning()
+            return created
+        }
+
+        const needsUpdate =
+            defaultTheme.name !== DEFAULT_THEME.name ||
+            JSON.stringify(defaultTheme.config) !== JSON.stringify(DEFAULT_THEME.config) ||
+            (shouldActivateDefault && !defaultTheme.isActive)
+
+        if (!needsUpdate) return defaultTheme
+
+        if (shouldActivateDefault) {
+            await this.db.update(themes).set({ isActive: false, updatedAt: new Date() })
+        }
+
+        const [updated] = await this.db
+            .update(themes)
+            .set({
+                name: DEFAULT_THEME.name,
+                config: DEFAULT_THEME.config,
+                isActive: shouldActivateDefault ? true : defaultTheme.isActive,
+                updatedAt: new Date(),
+            })
+            .where(eq(themes.id, defaultTheme.id))
+            .returning()
+
+        return updated
+    }
+
     async getAll() {
+        await this.ensureDefaultTheme()
         return this.db.select().from(themes).orderBy(themes.createdAt)
     }
 
     async getActive() {
+        const defaultTheme = await this.ensureDefaultTheme()
         const [active] = await this.db.select().from(themes).where(eq(themes.isActive, true)).limit(1)
-        return active ?? { ...DEFAULT_THEME, id: 'default', createdAt: new Date(), updatedAt: new Date() }
+        return active ?? defaultTheme ?? { ...DEFAULT_THEME, id: 'default', createdAt: new Date(), updatedAt: new Date() }
     }
 
     async create(dto: CreateThemeDto) {
@@ -122,6 +164,7 @@ export class ThemeService {
     }
 
     async getAllPublic() {
+        await this.ensureDefaultTheme()
         return this.db.select().from(themes).orderBy(themes.createdAt)
     }
 

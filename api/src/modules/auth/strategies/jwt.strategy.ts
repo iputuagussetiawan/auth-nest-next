@@ -7,7 +7,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
 import { DRIZZLE } from '../../../database/drizzle.provider'
 import * as schema from '../../../database/schema'
-import { users } from '../../../database/schema/users.schema'
+import { users } from '../../../database/schema/auth/users.schema'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
