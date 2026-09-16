@@ -3,7 +3,7 @@
 import { useTransition } from 'react'
 import { LogOut } from 'lucide-react'
 
-import { handleLogout } from '@/features/auth/actions/Auth'
+import { handleLogout } from '@/features/auth/actions/auth'
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 
 export function LogoutMenuItem() {
