@@ -32,9 +32,9 @@ const VAR_MAP: Record<string, string> = {
     sidebarBorder: '--sidebar-border', sidebarRing: '--sidebar-ring',
 }
 
-function cssBlock(selector: string, vars: Record<string, string>, radius: string) {
+function cssBlock(selector: string, vars: IThemeConfig['light'], radius: string) {
     const declarations = Object.entries(VAR_MAP)
-        .map(([key, cssVar]) => vars[key] ? `${cssVar}:${vars[key]}` : '')
+        .map(([key, cssVar]) => vars[key as keyof IThemeConfig['light']] ? `${cssVar}:${vars[key as keyof IThemeConfig['light']]}` : '')
         .filter(Boolean)
     declarations.push(`--radius:${radius}rem`)
     return `${selector}{${declarations.join(';')}}`

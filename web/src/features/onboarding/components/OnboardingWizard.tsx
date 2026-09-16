@@ -53,8 +53,8 @@ export function OnboardingWizard() {
             try {
                 if (firstName.trim() || lastName.trim()) {
                     await accountService.updateProfile({
-                        firstName: firstName.trim() || me.firstName || '',
-                        lastName: lastName.trim() || me.lastName || '',
+                        firstName: firstName.trim() || me?.firstName || '',
+                        lastName: lastName.trim() || me?.lastName || '',
                     })
                 }
                 if (selectedThemeId) await adminThemeService.setPreference(selectedThemeId)

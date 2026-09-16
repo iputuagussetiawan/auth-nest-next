@@ -14,9 +14,10 @@ interface UiFormFieldProps extends React.ComponentProps<typeof UiInput> {
     label?: string
     hint?: string
     error?: string | FieldError
+    isSubmitting?: boolean
 }
 
-function UiFormInput({ label, hint, error, className, id, ...props }: UiFormFieldProps) {
+function UiFormInput({ label, hint, error, isSubmitting, className, id, disabled, ...props }: UiFormFieldProps) {
     const fieldId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined)
     return (
         <div className="space-y-1.5">
@@ -25,7 +26,7 @@ function UiFormInput({ label, hint, error, className, id, ...props }: UiFormFiel
                     {label}
                 </Label>
             )}
-            <UiInput id={fieldId} className={cn(error && 'border-destructive focus-visible:border-destructive', className)} {...props} />
+            <UiInput id={fieldId} disabled={disabled || isSubmitting} className={cn(error && 'border-destructive focus-visible:border-destructive', className)} {...props} />
             {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
             {error && (
                 <p className="text-destructive text-xs">
