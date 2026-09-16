@@ -9,12 +9,12 @@ import {
     Sun,
 } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiInput } from '@/components/ui-custom/UiInput'
+import { UiSwitch } from '@/components/ui-custom/UiCheckbox'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
-import { Switch } from '@/components/ui/switch'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -188,7 +188,7 @@ function ColorSwatch({
                 className={`shrink-0 cursor-pointer rounded border border-border bg-transparent p-0.5
                     ${compact ? 'h-6 w-6' : 'h-7 w-7'}`}
             />
-            <Input
+            <UiInput
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 className={`font-mono ${compact ? 'h-6 text-[10px]' : 'h-7 text-xs'}`}
@@ -391,15 +391,15 @@ function ThemePreview() {
                 <PreviewSection title="Buttons" vars={['--primary', '--secondary', '--accent', '--destructive', '--muted']}>
                     <div className="space-y-2">
                         <div className="flex flex-wrap gap-2">
-                            <Button size="sm">Primary</Button>
-                            <Button size="sm" variant="secondary">Secondary</Button>
-                            <Button size="sm" variant="outline">Outline</Button>
-                            <Button size="sm" variant="ghost">Ghost</Button>
-                            <Button size="sm" variant="destructive">Destructive</Button>
+                            <UiButton size="sm">Primary</UiButton>
+                            <UiButton size="sm" variant="secondary">Secondary</UiButton>
+                            <UiButton size="sm" variant="outline">Outline</UiButton>
+                            <UiButton size="sm" variant="ghost">Ghost</UiButton>
+                            <UiButton size="sm" variant="destructive">Destructive</UiButton>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                            <Button size="sm" disabled>Disabled</Button>
-                            <Button size="sm" variant="link">Link</Button>
+                            <UiButton size="sm" disabled>Disabled</UiButton>
+                            <UiButton size="sm" variant="link">Link</UiButton>
                         </div>
                     </div>
                 </PreviewSection>
@@ -417,7 +417,7 @@ function ThemePreview() {
                                 <span className="inline-flex items-center rounded-md bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">Secondary</span>
                             </div>
                             <div className="mt-3">
-                                <Button size="sm" className="w-full">Action</Button>
+                                <UiButton size="sm" className="w-full">Action</UiButton>
                             </div>
                         </div>
                         <div className="rounded-lg border border-border bg-popover p-4 text-popover-foreground shadow-md">
@@ -425,8 +425,8 @@ function ThemePreview() {
                             <p className="text-sm font-medium">Popover Content</p>
                             <p className="mt-1 text-xs text-muted-foreground">Uses --popover and --popover-foreground.</p>
                             <div className="mt-3 flex gap-2">
-                                <Button size="sm" variant="outline" className="flex-1 h-7 text-xs">Cancel</Button>
-                                <Button size="sm" className="flex-1 h-7 text-xs">Confirm</Button>
+                                <UiButton size="sm" variant="outline" className="flex-1 h-7 text-xs">Cancel</UiButton>
+                                <UiButton size="sm" className="flex-1 h-7 text-xs">Confirm</UiButton>
                             </div>
                         </div>
                     </div>
@@ -453,7 +453,7 @@ function ThemePreview() {
                     <div className="space-y-3">
                         <div className="space-y-1">
                             <label className="text-xs font-medium">Text Input</label>
-                            <Input placeholder="Enter value…" className="max-w-sm" />
+                            <UiInput placeholder="Enter value…" className="max-w-sm" />
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-medium">Select</label>
@@ -476,7 +476,7 @@ function ThemePreview() {
                                 Unchecked
                             </label>
                             <label className="flex items-center gap-2 text-xs font-medium">
-                                <Switch defaultChecked /> Toggle
+                                <UiSwitch defaultChecked /> Toggle
                             </label>
                         </div>
                     </div>
@@ -688,14 +688,14 @@ export function ThemeEditor({ open, onOpenChange, theme, onSubmit, isPending }: 
                         )}
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={togglePreviewDark} className="gap-1.5">
+                        <UiButton variant="outline" size="sm" onClick={togglePreviewDark} className="gap-1.5">
                             {previewDark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
                             {previewDark ? 'Light' : 'Dark'}
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleOpenChange(false)}>Cancel</Button>
-                        <Button size="sm" onClick={() => onSubmit({ name, slug, isActive, config })} disabled={isPending}>
+                        </UiButton>
+                        <UiButton variant="outline" size="sm" onClick={() => handleOpenChange(false)}>Cancel</UiButton>
+                        <UiButton size="sm" onClick={() => onSubmit({ name, slug, isActive, config })} disabled={isPending}>
                             {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
-                        </Button>
+                        </UiButton>
                     </div>
                 </DrawerHeader>
 
@@ -713,15 +713,15 @@ export function ThemeEditor({ open, onOpenChange, theme, onSubmit, isPending }: 
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="space-y-1">
                                             <Label className="text-xs">Theme Name</Label>
-                                            <Input value={name} onChange={(e) => handleNameChange(e.target.value)} placeholder="Ocean Blue" />
+                                            <UiInput value={name} onChange={(e) => handleNameChange(e.target.value)} placeholder="Ocean Blue" />
                                         </div>
                                         <div className="space-y-1">
                                             <Label className="text-xs">Slug</Label>
-                                            <Input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="ocean-blue" className="font-mono" />
+                                            <UiInput value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="ocean-blue" className="font-mono" />
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <Switch id="isActive" checked={isActive} onCheckedChange={setIsActive} />
+                                        <UiSwitch id="isActive" checked={isActive} onCheckedChange={setIsActive} />
                                         <Label htmlFor="isActive" className="cursor-pointer text-xs">Set as active theme on save</Label>
                                     </div>
                                 </div>
@@ -734,7 +734,7 @@ export function ThemeEditor({ open, onOpenChange, theme, onSubmit, isPending }: 
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="space-y-1">
                                             <Label className="text-xs">Font Family</Label>
-                                            <Input
+                                            <UiInput
                                                 value={config.fontFamily}
                                                 onChange={(e) => setConfig(p => ({ ...p, fontFamily: e.target.value }))}
                                                 placeholder="Inter"

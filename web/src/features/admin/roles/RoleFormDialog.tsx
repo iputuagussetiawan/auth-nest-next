@@ -55,6 +55,7 @@ export function RoleFormDialog({
     const fileRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
+        if (!open) return
         reset({
             name: role?.name ?? '',
             label: role?.label ?? '',
@@ -63,7 +64,7 @@ export function RoleFormDialog({
         })
         setImageFile(null)
         setImagePreview(role?.icon ?? null)
-    }, [role, selectedPermissions, reset])
+    }, [open, role, selectedPermissions, reset])
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
@@ -78,6 +79,7 @@ export function RoleFormDialog({
         if (fileRef.current) fileRef.current.value = ''
     }
 
+    const isImagePreview = imagePreview?.startsWith('http') || imagePreview?.startsWith('blob:') || imagePreview?.startsWith('/')
     const checked = watch('permissionIds')
     const toggle = (id: string) => {
         const next = checked.includes(id) ? checked.filter((x) => x !== id) : [...checked, id]
@@ -115,9 +117,11 @@ export function RoleFormDialog({
                         <Label>Role Image</Label>
                         <div className="flex items-center gap-3">
                             <div className="bg-muted relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border">
-                                {imagePreview
+                                {imagePreview && isImagePreview
                                     ? <UiImage src={imagePreview} alt="role" fill className="h-full w-full object-cover" />
-                                    : <ImagePlus className="text-muted-foreground h-6 w-6" />
+                                    : imagePreview
+                                        ? <span className="text-primary px-1 text-center text-[10px] font-semibold break-all">{imagePreview}</span>
+                                        : <ImagePlus className="text-muted-foreground h-6 w-6" />
                                 }
                             </div>
                             <div className="space-y-1.5">

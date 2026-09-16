@@ -26,7 +26,7 @@ const editSchema = z.object({
 })
 
 const createSchema = editSchema.extend({
-    email: z.string().email('Valid email required'),
+    email: z.email('Valid email required'),
     password: z.string().min(8, 'Min 8 characters'),
 })
 

@@ -14,6 +14,7 @@
         "db:push": "drizzle-kit push --force",
         "db:seed": "ts-node -r tsconfig-paths/register src/database/seeds/index.ts",
         "db:seed:users": "ts-node -r tsconfig-paths/register src/database/seeds/seed-users.ts",
+        "db:verify-themes": "ts-node -r tsconfig-paths/register src/database/seeds/verify-themes.ts",
         "db:studio": "drizzle-kit studio"
     },
     "dependencies": {

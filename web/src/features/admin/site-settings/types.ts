@@ -6,7 +6,7 @@ export const schema = z.object({
     description: z.string().optional().or(z.literal('')),
     logoUrl: z.string().max(500).optional().or(z.literal('')),
     faviconUrl: z.string().max(500).optional().or(z.literal('')),
-    contactEmail: z.string().email().optional().or(z.literal('')),
+    contactEmail: z.email().optional().or(z.literal('')),
     contactPhone: z.string().max(50).optional().or(z.literal('')),
     contactAddress: z.string().optional().or(z.literal('')),
     socialTwitter: z.string().max(500).optional().or(z.literal('')),

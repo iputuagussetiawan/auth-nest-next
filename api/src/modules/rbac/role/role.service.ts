@@ -40,6 +40,10 @@ export class RoleService {
 
     async update(id: string, dto: Partial<CreateRoleDto>) {
         await this.findById(id)
+        if (dto.name) {
+            const existing = await this.findByName(dto.name)
+            if (existing && existing.id !== id) throw new BadRequestException('Role already exists')
+        }
         const [updated] = await this.db
             .update(roles)
             .set({ ...dto, updatedAt: new Date() })

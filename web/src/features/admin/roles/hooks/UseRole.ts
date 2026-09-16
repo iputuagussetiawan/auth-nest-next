@@ -48,7 +48,10 @@ export function useRole() {
     const roles = (rolesData?.data ?? []) as IRoleWithPermissions[]
     const allPermissions = permsData?.data ?? []
 
-    const invalidate = () => qc.invalidateQueries({ queryKey: ['admin-roles-with-permissions'] })
+    const invalidate = () => {
+        qc.invalidateQueries({ queryKey: ['admin-roles-with-permissions'] })
+        qc.invalidateQueries({ queryKey: ['admin-roles'] })
+    }
 
     const openEdit = (role: IRoleWithPermissions) => {
         setEditRole(role)
@@ -136,6 +139,6 @@ export function useRole() {
         openCreate,
         handleSubmit,
         deleteMutation,
-        isPending: createMutation.isPending || updateMutation.isPending || uploadImageMutation.isPending,
+        isPending: createMutation.isPending || updateMutation.isPending || assignMutation.isPending || uploadImageMutation.isPending,
     }
 }

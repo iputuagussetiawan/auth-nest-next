@@ -79,6 +79,13 @@ export class ThemeService {
                 .where(eq(themes.id, legacyTheme.id))
                 .returning()
             defaultTheme = migrated
+        } else if (defaultTheme && legacyTheme && defaultTheme.id !== legacyTheme.id) {
+            // Point users at the canonical row before removing the legacy duplicate.
+            await this.db
+                .update(users)
+                .set({ preferredThemeId: defaultTheme.id, updatedAt: new Date() })
+                .where(eq(users.preferredThemeId, legacyTheme.id))
+            await this.db.delete(themes).where(eq(themes.id, legacyTheme.id))
         }
 
         if (!defaultTheme) {
