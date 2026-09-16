@@ -7,9 +7,9 @@ import { useMutation } from '@tanstack/react-query'
 import { AlertCircle } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 
-import { Button } from '@/components/ui/button'
 import { FieldGroup } from '@/components/ui/field'
-import { UiFormInput } from '@/components/ui/UiFormInput'
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiFormInput } from '@/components/ui-custom/UiFormInput'
 import { SIGNIN_URL } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
@@ -52,9 +52,9 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
                     </p>
                 </div>
                 <div className="flex flex-col gap-3">
-                    <Button asChild className="w-full">
+                    <UiButton asChild className="w-full">
                         <Link href={SIGNIN_URL}>Return to Sign In</Link>
-                    </Button>
+                    </UiButton>
                     <button
                         onClick={() => reset()} // React Query's reset() clears the isSuccess state
                         className="text-muted-foreground text-xs hover:underline"
@@ -97,7 +97,7 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
                     {...register('email')}
                 />
 
-                <Button type="submit" disabled={isPending} className="mt-2 w-full">
+                <UiButton type="submit" disabled={isPending} className="mt-2 w-full">
                     {isPending ? (
                         <span className="flex items-center gap-2">
                             <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -106,7 +106,7 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
                     ) : (
                         'Send Reset Link'
                     )}
-                </Button>
+                </UiButton>
 
                 <p className="text-muted-foreground mt-2 text-center text-sm">
                     Remember your password?{' '}

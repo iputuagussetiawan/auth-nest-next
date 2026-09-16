@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
+import { UiButton } from '@/components/ui-custom/UiButton'
 
 import { GoogleIcon } from './icon/social-icons'
 
@@ -18,7 +18,7 @@ export const GoogleSignInButton = () => {
     }
 
     return (
-        <Button
+        <UiButton
             variant="outline"
             type="button"
             className="flex w-full items-center justify-center gap-2"
@@ -27,6 +27,6 @@ export const GoogleSignInButton = () => {
         >
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon size={20} />}
             {isLoading ? 'Connecting to Google...' : 'Continue with Google'}
-        </Button>
+        </UiButton>
     )
 }

@@ -7,9 +7,9 @@ import { useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 
 import { GoogleSignInButton } from '@/components/google-sign-in'
-import { Button } from '@/components/ui/button'
 import { FieldGroup, FieldLabel, FieldSeparator } from '@/components/ui/field'
-import { UiFormInput } from '@/components/ui/UiFormInput'
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiFormInput, UiFormPassword } from '@/components/ui-custom/UiFormInput'
 import { DASHBOARD_URL, SIGNUP_URL } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
@@ -86,17 +86,16 @@ export function SignInForm({ className, ...props }: React.ComponentProps<'form'>
                             Forgot your password?
                         </Link>
                     </div>
-                    <UiFormInput
+                    <UiFormPassword
                         id="password"
-                        type="password"
                         placeholder="your password"
                         isSubmitting={isPending}
-                        error={errors.email}
+                        error={errors.password}
                         {...register('password')}
                     />
                 </div>
 
-                <Button type="submit" disabled={isPending} className="mt-2 w-full">
+                <UiButton type="submit" disabled={isPending} className="mt-2 w-full">
                     {isPending ? (
                         <span className="flex items-center gap-2">
                             <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -105,7 +104,7 @@ export function SignInForm({ className, ...props }: React.ComponentProps<'form'>
                     ) : (
                         'Sign In'
                     )}
-                </Button>
+                </UiButton>
 
                 <FieldSeparator>Or login with</FieldSeparator>
 

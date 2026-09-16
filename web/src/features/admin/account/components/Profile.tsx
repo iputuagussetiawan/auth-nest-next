@@ -3,68 +3,67 @@
 import { useAuthContext } from '@/providers/auth-provider'
 import { Settings, Share2, User } from 'lucide-react'
 
-import SessionSetting from '@/features/admin/session/components/SessionsSetting'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import DashboardPageCard from '@/components/layouts/backend/DashboardPageCard'
+import DashboardPageHeader from '@/components/layouts/backend/DashboardPageHeader'
+import DashboardPageMain from '@/components/layouts/backend/DashboardPageMain'
+import SessionSetting from '@/features/admin/session/components/SessionsSetting'
 
 import PreferencesSettings from './ProfilePreferences'
 import ProfileSettings from './ProfileSetting'
 
 const Profile = () => {
     const { user } = useAuthContext()
+    const profileLabel = `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim() || 'User Profile'
+
+    const tabs = [
+        { value: 'profile', label: profileLabel, icon: User },
+        { value: 'preferences', label: 'Preferences', icon: Settings },
+        { value: 'connections', label: 'Session / Connections', icon: Share2 },
+    ] as const
+
     return (
-        <div className="flex flex-col space-y-6 pb-16 md:block">
-            <Tabs
-                defaultValue="profile"
-                orientation="vertical"
-                className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12"
-            >
-                <aside className="m-0 lg:w-1/5">
-                    <TabsList className="flex w-full flex-row space-x-2 bg-transparent lg:flex-col lg:space-y-1 lg:space-x-0">
-                        <TabsTrigger
-                            value="profile"
-                            className="data-[state=active]:bg-secondary data-[state=active]:text-primary hover:bg-muted/50 relative flex w-full items-center justify-start gap-3 bg-transparent px-4 py-2.5 text-sm font-medium transition-all data-[state=active]:shadow-none"
-                        >
-                            <User className="h-4 w-4 shrink-0 opacity-70" />
-                            <span className="truncate">
-                                {`${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim() ||
-                                    'User Profile'}
-                            </span>
-                            <div className="bg-primary absolute inset-y-1 left-0 w-1 rounded-full opacity-0 transition-opacity data-[state=active]:group-hover:opacity-100" />
-                        </TabsTrigger>
+        <DashboardPageMain>
+            <DashboardPageHeader title="Account" />
 
-                        <TabsTrigger
-                            value="preferences"
-                            className="data-[state=active]:bg-secondary relative flex justify-start gap-2 bg-transparent px-4 py-2 text-sm font-normal data-[state=active]:shadow-none"
-                        >
-                            <Settings className="h-4 w-4" />
-                            Preferences
-                        </TabsTrigger>
-
-                        <TabsTrigger
-                            value="connections"
-                            className="data-[state=active]:bg-secondary relative flex justify-start gap-2 bg-transparent px-4 py-2 text-sm font-normal data-[state=active]:shadow-none"
-                        >
-                            <Share2 className="h-4 w-4" />
-                            Session / Connections
-                        </TabsTrigger>
+            <DashboardPageCard className="overflow-visible">
+                <Tabs
+                    defaultValue="profile"
+                    orientation="vertical"
+                    className="min-w-0 gap-6 lg:flex-row lg:gap-8"
+                >
+                    <TabsList
+                        aria-label="Account sections"
+                        className="!flex-row flex-wrap items-center justify-start gap-1 rounded-xl border bg-muted/30 p-1 lg:!flex-col lg:flex-nowrap lg:items-stretch lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0"
+                    >
+                        {tabs.map(({ value, label, icon: Icon }) => (
+                            <TabsTrigger
+                                key={value}
+                                value={value}
+                                className="!w-auto min-w-0 justify-center gap-2 rounded-lg border border-transparent px-3 py-2.5 text-xs font-medium transition-colors hover:bg-background/80 data-[state=active]:border-primary/20 data-[state=active]:bg-primary/10 data-[state=active]:text-primary sm:px-4 sm:text-sm lg:!w-full lg:justify-start lg:rounded-r-lg lg:rounded-l-none lg:border-l-2 lg:border-y-0 lg:border-r-0 lg:px-4 lg:py-3 lg:data-[state=active]:border-primary lg:data-[state=active]:bg-primary/10"
+                            >
+                                <Icon className="h-4 w-4 shrink-0" />
+                                <span className="truncate">{label}</span>
+                            </TabsTrigger>
+                        ))}
                     </TabsList>
-                </aside>
 
-                <div className="flex-1 lg:max-w-4xl">
-                    <TabsContent value="profile" className="mt-0 border-none p-0">
-                        {user && <ProfileSettings user={user} />}
-                    </TabsContent>
+                    <div className="min-w-0 flex-1">
+                        <TabsContent value="profile" className="mt-0 border-none p-0 focus-visible:outline-none">
+                            {user && <ProfileSettings user={user} />}
+                        </TabsContent>
 
-                    <TabsContent value="preferences">
-                        <PreferencesSettings />
-                    </TabsContent>
+                        <TabsContent value="preferences" className="mt-0 border-none p-0 focus-visible:outline-none">
+                            <PreferencesSettings />
+                        </TabsContent>
 
-                    <TabsContent value="connections">
-                        <SessionSetting />
-                    </TabsContent>
-                </div>
-            </Tabs>
-        </div>
+                        <TabsContent value="connections" className="mt-0 border-none p-0 focus-visible:outline-none">
+                            <SessionSetting />
+                        </TabsContent>
+                    </div>
+                </Tabs>
+            </DashboardPageCard>
+        </DashboardPageMain>
     )
 }
 

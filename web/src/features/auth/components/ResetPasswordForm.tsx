@@ -8,9 +8,9 @@ import { useMutation } from '@tanstack/react-query'
 import { AlertCircle, CheckCircle2, Loader2, Timer } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 
-import { Button } from '@/components/ui/button'
 import { FieldGroup } from '@/components/ui/field'
-import { UiFormInput } from '@/components/ui/UiFormInput'
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiFormPassword } from '@/components/ui-custom/UiFormInput'
 import { SIGNIN_URL } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
@@ -90,9 +90,9 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
                 <p className="text-muted-foreground text-sm">
                     This reset link is no longer valid or has expired.
                 </p>
-                <Button variant="outline" asChild>
+                <UiButton variant="outline" asChild>
                     <Link href="/forgot-password">Request New Link</Link>
-                </Button>
+                </UiButton>
             </div>
         )
     }
@@ -114,9 +114,9 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
                         Your password has been reset successfully. Redirecting to login...
                     </p>
                 </div>
-                <Button asChild className="w-full">
+                <UiButton asChild className="w-full">
                     <Link href={SIGNIN_URL}>Go to Login Now</Link>
-                </Button>
+                </UiButton>
             </div>
         )
     }
@@ -153,17 +153,16 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
                     </div>
                 )}
 
-                <UiFormInput
+                <UiFormPassword
                     label="New Password"
                     id="password"
-                    type="password"
                     placeholder="••••••••"
                     isSubmitting={isPending}
                     error={errors.password}
                     {...register('password')}
                 />
 
-                <Button type="submit" disabled={isPending} className="mt-2 w-full">
+                <UiButton type="submit" disabled={isPending} className="mt-2 w-full">
                     {isPending ? (
                         <span className="flex items-center gap-2">
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -172,7 +171,7 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentProps<
                     ) : (
                         'Reset Password'
                     )}
-                </Button>
+                </UiButton>
             </FieldGroup>
         </form>
     )

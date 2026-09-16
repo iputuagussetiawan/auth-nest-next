@@ -7,8 +7,8 @@ import { useMutation } from '@tanstack/react-query'
 import { AlertCircle, CheckCircle2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 
-import { Button } from '@/components/ui/button'
 import { FieldGroup } from '@/components/ui/field'
+import { UiButton } from '@/components/ui-custom/UiButton'
 import { SIGNIN_URL } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
@@ -52,9 +52,9 @@ export function ConfirmAccountForm({ className, ...props }: React.ComponentProps
                         login page...
                     </p>
                 </div>
-                <Button asChild className="w-full">
+                <UiButton asChild className="w-full">
                     <Link href={SIGNIN_URL}>Go to Login Now</Link>
-                </Button>
+                </UiButton>
             </div>
         )
     }
@@ -81,9 +81,9 @@ export function ConfirmAccountForm({ className, ...props }: React.ComponentProps
                     </div>
                 )}
 
-                <Button type="submit" disabled={isPending} className="mt-2 w-full">
+                <UiButton type="submit" disabled={isPending} className="mt-2 w-full">
                     {isPending ? 'Verifying...' : 'Verify My Account'}
-                </Button>
+                </UiButton>
             </FieldGroup>
         </form>
     )

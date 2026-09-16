@@ -9,9 +9,9 @@ import { ArrowRight, CheckCircle2, Mail } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 
 import { GoogleSignInButton } from '@/components/google-sign-in'
-import { Button } from '@/components/ui/button'
 import { FieldGroup, FieldSeparator } from '@/components/ui/field'
-import { UiFormInput } from '@/components/ui/UiFormInput'
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiFormInput, UiFormPassword } from '@/components/ui-custom/UiFormInput'
 import { SIGNIN_URL } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
@@ -86,11 +86,11 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
                     </p>
                 </div>
 
-                <Button asChild variant="outline" className="w-full">
+                <UiButton asChild variant="outline" className="w-full">
                     <Link href={SIGNIN_URL} className="flex items-center justify-center gap-2">
                         Return to Sign In <ArrowRight className="h-4 w-4" />
                     </Link>
-                </Button>
+                </UiButton>
             </div>
         )
     }
@@ -138,17 +138,16 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
                     {...register('email')}
                 />
 
-                <UiFormInput
+                <UiFormPassword
                     label="Password"
                     id="password"
-                    type="password"
                     placeholder="••••••••"
                     isSubmitting={isPending}
                     error={errors.password}
                     {...register('password')}
                 />
 
-                <Button type="submit" disabled={isPending} className="mt-2 w-full">
+                <UiButton type="submit" disabled={isPending} className="mt-2 w-full">
                     {isPending ? (
                         <span className="flex items-center gap-2">
                             <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -157,7 +156,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
                     ) : (
                         'Create Account'
                     )}
-                </Button>
+                </UiButton>
 
                 <FieldSeparator>Or continue with</FieldSeparator>
 

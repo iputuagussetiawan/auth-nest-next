@@ -41,10 +41,10 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>
 
 const DEFAULT_CONFIG: FormValues['config'] = {
-    primaryColor: '#0564ff',
-    accentColor: '#0564ff',
-    backgroundColor: '#fafafa',
-    foregroundColor: '#0f172a',
+    primaryColor: '#065f46',
+    accentColor: '#10b981',
+    backgroundColor: '#f0fdf4',
+    foregroundColor: '#052e16',
     cardColor: '#ffffff',
     borderRadius: '0.5',
     fontFamily: 'Inter',

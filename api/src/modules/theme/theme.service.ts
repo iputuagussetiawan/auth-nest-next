@@ -11,42 +11,42 @@ import { CreateThemeDto } from './dto/create-theme.dto'
 import { UpdateThemeDto } from './dto/update-theme.dto'
 
 const DEFAULT_LIGHT = {
-    background: '#fafafa', foreground: '#0a0a0a',
-    card: '#ffffff', cardForeground: '#0a0a0a',
-    popover: '#ffffff', popoverForeground: '#0a0a0a',
-    primary: '#0564ff', primaryForeground: '#ffffff',
-    secondary: '#eff6ff', secondaryForeground: '#1d4ed8',
-    muted: '#f5f5f5', mutedForeground: '#737373',
-    accent: '#dbeafe', accentForeground: '#1d4ed8',
-    destructive: '#ef4444',
-    border: '#e5e5e5', input: '#e5e5e5', ring: '#3b82f6',
-    chart1: '#2563eb', chart2: '#0ea5e9', chart3: '#1d4ed8', chart4: '#38bdf8', chart5: '#60a5fa',
-    sidebar: '#ffffff', sidebarForeground: '#3f3f46',
-    sidebarPrimary: '#0564ff', sidebarPrimaryForeground: '#ffffff',
-    sidebarAccent: '#eff6ff', sidebarAccentForeground: '#1d4ed8',
-    sidebarBorder: '#e4e4e7', sidebarRing: '#3b82f6',
+    background: '#f0fdf4', foreground: '#052e16',
+    card: '#ffffff', cardForeground: '#052e16',
+    popover: '#ffffff', popoverForeground: '#052e16',
+    primary: '#065f46', primaryForeground: '#ffffff',
+    secondary: '#ecfdf5', secondaryForeground: '#065f46',
+    muted: '#d1fae5', mutedForeground: '#166534',
+    accent: '#10b981', accentForeground: '#ffffff',
+    destructive: '#dc2626',
+    border: '#a7f3d0', input: '#a7f3d0', ring: '#10b981',
+    chart1: '#065f46', chart2: '#10b981', chart3: '#34d399', chart4: '#059669', chart5: '#047857',
+    sidebar: '#ecfdf5', sidebarForeground: '#052e16',
+    sidebarPrimary: '#065f46', sidebarPrimaryForeground: '#ffffff',
+    sidebarAccent: '#d1fae5', sidebarAccentForeground: '#065f46',
+    sidebarBorder: '#a7f3d0', sidebarRing: '#10b981',
 }
 
 const DEFAULT_DARK = {
-    background: '#0a0a0a', foreground: '#fafafa',
-    card: '#171717', cardForeground: '#fafafa',
-    popover: '#171717', popoverForeground: '#fafafa',
-    primary: '#0564ff', primaryForeground: '#ffffff',
-    secondary: '#1e3a8a', secondaryForeground: '#dbeafe',
-    muted: '#262626', mutedForeground: '#a3a3a3',
-    accent: '#1d4ed8', accentForeground: '#eff6ff',
+    background: '#020c06', foreground: '#d1fae5',
+    card: '#052e16', cardForeground: '#d1fae5',
+    popover: '#052e16', popoverForeground: '#d1fae5',
+    primary: '#34d399', primaryForeground: '#020c06',
+    secondary: '#064e3b', secondaryForeground: '#d1fae5',
+    muted: '#064e3b', mutedForeground: '#6ee7b7',
+    accent: '#10b981', accentForeground: '#020c06',
     destructive: '#7f1d1d',
-    border: '#262626', input: '#262626', ring: '#60a5fa',
-    chart1: '#60a5fa', chart2: '#38bdf8', chart3: '#2563eb', chart4: '#93c5fd', chart5: '#1d4ed8',
-    sidebar: '#18181b', sidebarForeground: '#a1a1aa',
-    sidebarPrimary: '#0564ff', sidebarPrimaryForeground: '#ffffff',
-    sidebarAccent: '#27272a', sidebarAccentForeground: '#fafafa',
-    sidebarBorder: '#27272a', sidebarRing: '#60a5fa',
+    border: '#065f46', input: '#065f46', ring: '#34d399',
+    chart1: '#34d399', chart2: '#6ee7b7', chart3: '#a7f3d0', chart4: '#10b981', chart5: '#d1fae5',
+    sidebar: '#010802', sidebarForeground: '#6ee7b7',
+    sidebarPrimary: '#34d399', sidebarPrimaryForeground: '#020c06',
+    sidebarAccent: '#064e3b', sidebarAccentForeground: '#d1fae5',
+    sidebarBorder: '#065f46', sidebarRing: '#34d399',
 }
 
 const DEFAULT_THEME = {
-    name: 'Default',
-    slug: 'default',
+    name: 'Emerald Forest',
+    slug: 'emerald-forest',
     isActive: true,
     config: {
         light: DEFAULT_LIGHT,
@@ -64,9 +64,22 @@ export class ThemeService {
 
     private async ensureDefaultTheme() {
         const existingThemes = await this.db.select().from(themes).orderBy(themes.createdAt)
-        const defaultTheme = existingThemes.find((theme) => theme.slug === DEFAULT_THEME.slug)
-        const activeCount = existingThemes.filter((theme) => theme.isActive).length
-        const shouldActivateDefault = activeCount === 0
+        const legacyTheme = existingThemes.find((theme) => theme.slug === 'default')
+        let defaultTheme = existingThemes.find((theme) => theme.slug === DEFAULT_THEME.slug)
+
+        // Migrate the old default row instead of creating a second active theme.
+        if (!defaultTheme && legacyTheme) {
+            const [migrated] = await this.db
+                .update(themes)
+                .set({
+                    ...DEFAULT_THEME,
+                    isActive: legacyTheme.isActive,
+                    updatedAt: new Date(),
+                })
+                .where(eq(themes.id, legacyTheme.id))
+                .returning()
+            defaultTheme = migrated
+        }
 
         if (!defaultTheme) {
             await this.db.update(themes).set({ isActive: false, updatedAt: new Date() })
@@ -77,6 +90,8 @@ export class ThemeService {
             return created
         }
 
+        const activeCount = existingThemes.filter((theme) => theme.isActive && theme.id !== legacyTheme?.id).length
+        const shouldActivateDefault = activeCount === 0
         const needsUpdate =
             defaultTheme.name !== DEFAULT_THEME.name ||
             JSON.stringify(defaultTheme.config) !== JSON.stringify(DEFAULT_THEME.config) ||
@@ -92,6 +107,7 @@ export class ThemeService {
             .update(themes)
             .set({
                 name: DEFAULT_THEME.name,
+                slug: DEFAULT_THEME.slug,
                 config: DEFAULT_THEME.config,
                 isActive: shouldActivateDefault ? true : defaultTheme.isActive,
                 updatedAt: new Date(),
