@@ -24,7 +24,11 @@ describe('RoleController', () => {
         const data = [{ id: 'role-id' }]
         service.findAll.mockResolvedValue(data)
 
-        await expect(controller.findAll()).resolves.toEqual({ status: 'success', message: 'Roles fetched', data })
+        await expect(controller.findAll()).resolves.toEqual({
+            status: 'success',
+            message: 'Roles fetched',
+            data,
+        })
         expect(service.findAll).toHaveBeenCalledTimes(1)
     })
 
@@ -60,7 +64,11 @@ describe('RoleController', () => {
             message: 'Role updated',
             data: { id: 'role-id', name: 'editor' },
         })
-        await expect(controller.remove('role-id')).resolves.toEqual({ status: 'success', message: 'Role deleted', data: null })
+        await expect(controller.remove('role-id')).resolves.toEqual({
+            status: 'success',
+            message: 'Role deleted',
+            data: null,
+        })
         expect(service.update).toHaveBeenCalledWith('role-id', dto)
         expect(service.remove).toHaveBeenCalledWith('role-id')
     })
@@ -68,7 +76,10 @@ describe('RoleController', () => {
     it('uploads an image and updates the role', async () => {
         const file = { buffer: Buffer.from('image') }
         cloudinary.upload.mockResolvedValue({ secure_url: 'https://image.test/role.png' })
-        service.updateRoleImage.mockResolvedValue({ id: 'role-id', icon: 'https://image.test/role.png' })
+        service.updateRoleImage.mockResolvedValue({
+            id: 'role-id',
+            icon: 'https://image.test/role.png',
+        })
 
         await expect(controller.uploadImage('role-id', file as never)).resolves.toEqual({
             status: 'success',
@@ -76,7 +87,10 @@ describe('RoleController', () => {
             data: { id: 'role-id', icon: 'https://image.test/role.png' },
         })
         expect(cloudinary.upload).toHaveBeenCalledWith(file, 'role-images')
-        expect(service.updateRoleImage).toHaveBeenCalledWith('role-id', 'https://image.test/role.png')
+        expect(service.updateRoleImage).toHaveBeenCalledWith(
+            'role-id',
+            'https://image.test/role.png',
+        )
     })
 
     it('forwards permission and user-role operations', async () => {
@@ -85,13 +99,19 @@ describe('RoleController', () => {
         service.removeRoleFromUser.mockResolvedValue({ message: 'Role removed from user' })
         service.getUserRoles.mockResolvedValue([{ id: 'role-id' }])
 
-        await expect(controller.assignPermissions('role-id', { permissionIds: ['permission-id'] })).resolves.toEqual({
+        await expect(
+            controller.assignPermissions('role-id', { permissionIds: ['permission-id'] }),
+        ).resolves.toEqual({
             message: 'Permissions assigned',
         })
-        await expect(controller.assignRoleToUser('user-id', { roleId: 'role-id' })).resolves.toEqual({
+        await expect(
+            controller.assignRoleToUser('user-id', { roleId: 'role-id' }),
+        ).resolves.toEqual({
             message: 'Role assigned to user',
         })
-        await expect(controller.removeRoleFromUser('user-id')).resolves.toEqual({ message: 'Role removed from user' })
+        await expect(controller.removeRoleFromUser('user-id')).resolves.toEqual({
+            message: 'Role removed from user',
+        })
         await expect(controller.getUserRoles('user-id')).resolves.toEqual([{ id: 'role-id' }])
 
         expect(service.assignPermissions).toHaveBeenCalledWith('role-id', ['permission-id'])

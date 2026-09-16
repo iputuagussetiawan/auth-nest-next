@@ -1,8 +1,8 @@
 'use client'
 
 import * as React from 'react'
-import { Select as SelectPrimitive } from 'radix-ui'
 import { Check, ChevronDownIcon, ChevronsUpDown, X } from 'lucide-react'
+import { Select as SelectPrimitive } from 'radix-ui'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,9 +14,9 @@ import {
     CommandItem,
     CommandList,
 } from '@/components/ui/command'
+import { NativeSelectOptGroup, NativeSelectOption } from '@/components/ui/native-select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { NativeSelectOption, NativeSelectOptGroup } from '@/components/ui/native-select'
-import { SelectScrollUpButton, SelectScrollDownButton } from '@/components/ui/select'
+import { SelectScrollDownButton, SelectScrollUpButton } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 
 // ─────────────────────────────────────────────
@@ -158,7 +158,7 @@ function UiSelect<T extends UiSelectItem>({
                         variant="outline"
                         role="combobox"
                         aria-expanded={open}
-                        className="focus-visible:border-primary focus-visible:ring-0 border-transparent bg-muted/30 dark:bg-white/5 dark:hover:bg-white/10 hover:bg-muted/30 h-9 w-full justify-between rounded-full bg-clip-padding px-2.5 py-1 text-sm font-normal disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-black/5 disabled:opacity-50 dark:disabled:bg-white/10"
+                        className="focus-visible:border-primary bg-muted/30 hover:bg-muted/30 h-9 w-full justify-between rounded-full border-transparent bg-clip-padding px-2.5 py-1 text-sm font-normal focus-visible:ring-0 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-black/5 disabled:opacity-50 dark:bg-white/5 dark:hover:bg-white/10 dark:disabled:bg-white/10"
                     >
                         <span className="truncate">{buttonLabel}</span>
                         <ChevronsUpDown className="text-muted-foreground ml-2 h-4 w-4 shrink-0" />
@@ -283,7 +283,7 @@ function UiSelectTrigger({
             data-slot="select-trigger"
             data-size={size}
             className={cn(
-                "data-placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-0 border-transparent bg-muted/30 dark:bg-white/5 dark:hover:bg-white/10 flex w-fit appearance-none items-center justify-between gap-1.5 rounded-full border bg-clip-padding py-2 pr-2 pl-2.5 text-sm whitespace-nowrap outline-none transition-colors select-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-black/5 disabled:opacity-50 dark:disabled:bg-white/10 data-[size=default]:h-9 data-[size=sm]:h-8 data-[size=sm]:rounded-full *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+                "data-placeholder:text-muted-foreground focus-visible:border-primary bg-muted/30 flex w-fit appearance-none items-center justify-between gap-1.5 rounded-full border border-transparent bg-clip-padding py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:ring-0 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-black/5 disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 data-[size=sm]:rounded-full *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 dark:bg-white/5 dark:hover:bg-white/10 dark:disabled:bg-white/10 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
                 className,
             )}
             {...props}
@@ -296,13 +296,14 @@ function UiSelectTrigger({
     )
 }
 
-function UiNativeSelect({ className, size = 'default', ...props }: Omit<React.ComponentProps<'select'>, 'size'> & { size?: 'sm' | 'default' }) {
+function UiNativeSelect({
+    className,
+    size = 'default',
+    ...props
+}: Omit<React.ComponentProps<'select'>, 'size'> & { size?: 'sm' | 'default' }) {
     return (
         <div
-            className={cn(
-                'group/native-select relative w-full',
-                className,
-            )}
+            className={cn('group/native-select relative w-full', className)}
             data-slot="native-select-wrapper"
             data-size={size}
         >
@@ -310,12 +311,12 @@ function UiNativeSelect({ className, size = 'default', ...props }: Omit<React.Co
                 data-slot="native-select"
                 data-size={size}
                 className={cn(
-                    'selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-0 border-transparent bg-muted/30 dark:bg-white/5 dark:hover:bg-white/10 h-9 w-full min-w-0 appearance-none rounded-full border bg-clip-padding py-1 pr-8 pl-2.5 text-sm outline-none transition-colors select-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-black/5 disabled:opacity-50 dark:disabled:bg-white/10 data-[size=sm]:h-8 data-[size=sm]:rounded-full data-[size=sm]:py-0.5',
+                    'selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground focus-visible:border-primary bg-muted/30 h-9 w-full min-w-0 appearance-none rounded-full border border-transparent bg-clip-padding py-1 pr-8 pl-2.5 text-sm transition-colors outline-none select-none focus-visible:ring-0 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-black/5 disabled:opacity-50 data-[size=sm]:h-8 data-[size=sm]:rounded-full data-[size=sm]:py-0.5 dark:bg-white/5 dark:hover:bg-white/10 dark:disabled:bg-white/10',
                 )}
                 {...props}
             />
             <ChevronDownIcon
-                className="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-muted-foreground select-none"
+                className="text-muted-foreground pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 select-none"
                 aria-hidden="true"
                 data-slot="native-select-icon"
             />
@@ -323,4 +324,11 @@ function UiNativeSelect({ className, size = 'default', ...props }: Omit<React.Co
     )
 }
 
-export { UiSelect, UiSelectTrigger, UiSelectContent, UiNativeSelect, NativeSelectOption, NativeSelectOptGroup }
+export {
+    UiSelect,
+    UiSelectTrigger,
+    UiSelectContent,
+    UiNativeSelect,
+    NativeSelectOption,
+    NativeSelectOptGroup,
+}

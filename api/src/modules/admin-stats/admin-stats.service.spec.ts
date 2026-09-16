@@ -29,9 +29,7 @@ describe('AdminStatsService', () => {
                 { month: 'Jan 2026', sort: new Date('2026-01-01'), users: 3 },
                 { month: 'Feb 2026', sort: new Date('2026-02-01'), users: 2 },
             ]),
-            createQuery([
-                { month: 'Jan 2026', sessions: 7 },
-            ]),
+            createQuery([{ month: 'Jan 2026', sessions: 7 }]),
         ]
         const db = { select: jest.fn().mockImplementation(() => queries.shift()) }
         const service = new AdminStatsService(db as never)

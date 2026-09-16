@@ -17,9 +17,12 @@ export function SiteSettingsLoading() {
 
             <DashboardPageCard className="overflow-visible">
                 <div className="gap-6 lg:flex lg:flex-row lg:gap-8">
-                    <div className="flex flex-wrap items-center gap-1 rounded-xl border bg-muted/30 p-1 lg:w-44 lg:shrink-0 lg:flex-col lg:flex-nowrap lg:items-stretch lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0">
+                    <div className="bg-muted/30 flex flex-wrap items-center gap-1 rounded-xl border p-1 lg:w-44 lg:shrink-0 lg:flex-col lg:flex-nowrap lg:items-stretch lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0">
                         {Array.from({ length: 6 }).map((_, index) => (
-                            <div key={index} className="flex items-center gap-2 rounded-lg px-3 py-2.5 lg:w-full lg:px-4 lg:py-3">
+                            <div
+                                key={index}
+                                className="flex items-center gap-2 rounded-lg px-3 py-2.5 lg:w-full lg:px-4 lg:py-3"
+                            >
                                 <Skeleton className="h-4 w-4 shrink-0 rounded" />
                                 <Skeleton className="h-4 w-16" />
                             </div>

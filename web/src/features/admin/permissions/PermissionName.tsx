@@ -15,7 +15,10 @@ export function PermissionName({ name, className }: PermissionNameProps) {
     return (
         <span className={`inline-flex items-center gap-1.5 ${className ?? ''}`}>
             <span className="font-mono text-sm font-medium">{resource}</span>
-            <Badge variant="secondary" className="rounded px-1.5 py-0 font-mono text-xs font-normal">
+            <Badge
+                variant="secondary"
+                className="rounded px-1.5 py-0 font-mono text-xs font-normal"
+            >
                 {action}
             </Badge>
         </span>

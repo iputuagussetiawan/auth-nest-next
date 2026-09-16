@@ -1,14 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { eq, inArray, sql } from 'drizzle-orm'
+import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
+import { BadRequestException, NotFoundException } from '../../../common/exceptions/app-error'
 import { DRIZZLE } from '../../../database/drizzle.provider'
 import * as schema from '../../../database/schema'
-import { roles, type Role } from '../../../database/schema/rbac/roles.schema'
-import { rolePermissions } from '../../../database/schema/rbac/role-permissions.schema'
-import { userRoles } from '../../../database/schema/rbac/user-roles.schema'
 import { permissions } from '../../../database/schema/rbac/permissions.schema'
-import { BadRequestException, NotFoundException } from '../../../common/exceptions/app-error'
+import { rolePermissions } from '../../../database/schema/rbac/role-permissions.schema'
+import { roles, type Role } from '../../../database/schema/rbac/roles.schema'
+import { userRoles } from '../../../database/schema/rbac/user-roles.schema'
 import type { CreateRoleDto } from './dto/create-role.dto'
 
 @Injectable()
@@ -34,7 +34,10 @@ export class RoleService {
         const existing = await this.findByName(dto.name)
         if (existing) throw new BadRequestException('Role already exists')
 
-        const [role] = await this.db.insert(roles).values({ name: dto.name, label: dto.label, description: dto.description }).returning()
+        const [role] = await this.db
+            .insert(roles)
+            .values({ name: dto.name, label: dto.label, description: dto.description })
+            .returning()
         return role
     }
 
@@ -72,9 +75,9 @@ export class RoleService {
         await this.findById(roleId)
         await this.db.delete(rolePermissions).where(eq(rolePermissions.roleId, roleId))
         if (permissionIds.length) {
-            await this.db.insert(rolePermissions).values(
-                permissionIds.map((permissionId) => ({ roleId, permissionId })),
-            )
+            await this.db
+                .insert(rolePermissions)
+                .values(permissionIds.map((permissionId) => ({ roleId, permissionId })))
         }
         return { message: 'Permissions assigned' }
     }
@@ -117,10 +120,7 @@ export class RoleService {
             .limit(1)
 
         if (existing.length) {
-            await this.db
-                .update(userRoles)
-                .set({ roleId })
-                .where(eq(userRoles.userId, userId))
+            await this.db.update(userRoles).set({ roleId }).where(eq(userRoles.userId, userId))
         } else {
             await this.db.insert(userRoles).values({ userId, roleId })
         }

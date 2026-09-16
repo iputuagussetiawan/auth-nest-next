@@ -37,7 +37,9 @@ export function UserDashboard({ user }: UserDashboardProps) {
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-2xl font-bold tracking-tight">Welcome back, {user.firstName}!</h2>
+                <h2 className="text-2xl font-bold tracking-tight">
+                    Welcome back, {user.firstName}!
+                </h2>
                 <p className="text-muted-foreground text-sm">Here is a summary of your account</p>
             </div>
 
@@ -64,7 +66,9 @@ export function UserDashboard({ user }: UserDashboardProps) {
                                 <Mail className="text-muted-foreground h-4 w-4" />
                                 <span>{user.email}</span>
                                 {user.isEmailVerified && (
-                                    <Badge variant="secondary" className="text-xs">Verified</Badge>
+                                    <Badge variant="secondary" className="text-xs">
+                                        Verified
+                                    </Badge>
                                 )}
                             </div>
                             <div className="flex items-center gap-2 text-sm">
@@ -93,7 +97,9 @@ export function UserDashboard({ user }: UserDashboardProps) {
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-muted-foreground text-sm">No permissions assigned.</p>
+                            <p className="text-muted-foreground text-sm">
+                                No permissions assigned.
+                            </p>
                         )}
                     </CardContent>
                 </Card>
@@ -111,7 +117,11 @@ export function UserDashboard({ user }: UserDashboardProps) {
                             <XAxis dataKey="day" tickLine={false} axisLine={false} />
                             <YAxis tickLine={false} axisLine={false} allowDecimals={false} />
                             <ChartTooltip content={<ChartTooltipContent />} />
-                            <Bar dataKey="logins" fill="var(--color-logins)" radius={[4, 4, 0, 0]} />
+                            <Bar
+                                dataKey="logins"
+                                fill="var(--color-logins)"
+                                radius={[4, 4, 0, 0]}
+                            />
                         </BarChart>
                     </ChartContainer>
                 </CardContent>

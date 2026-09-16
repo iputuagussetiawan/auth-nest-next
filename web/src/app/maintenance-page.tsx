@@ -1,4 +1,4 @@
-import { GalleryVerticalEnd, Clock, Wrench } from 'lucide-react'
+import { Clock, GalleryVerticalEnd, Wrench } from 'lucide-react'
 
 interface MaintenancePageProps {
     siteName?: string
@@ -7,13 +7,18 @@ interface MaintenancePageProps {
     themeCss?: string
 }
 
-export function MaintenancePage({ siteName = 'Acme Inc.', message, logoUrl, themeCss }: MaintenancePageProps) {
+export function MaintenancePage({
+    siteName = 'Acme Inc.',
+    message,
+    logoUrl,
+    themeCss,
+}: MaintenancePageProps) {
     const displayMessage =
         message?.trim() ||
         "We're currently performing scheduled maintenance. We'll be back shortly!"
 
     return (
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="bg-background text-foreground min-h-screen">
             {themeCss && <style dangerouslySetInnerHTML={{ __html: themeCss }} />}
 
             <div className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
@@ -23,7 +28,11 @@ export function MaintenancePage({ siteName = 'Acme Inc.', message, logoUrl, them
                 {/* Logo / brand */}
                 <div className="mb-10 flex flex-col items-center gap-3">
                     {logoUrl ? (
-                        <img src={logoUrl} alt={siteName} className="max-h-12 max-w-[160px] object-contain" />
+                        <img
+                            src={logoUrl}
+                            alt={siteName}
+                            className="max-h-12 max-w-[160px] object-contain"
+                        />
                     ) : (
                         <div className="bg-primary text-primary-foreground flex size-12 items-center justify-center rounded-xl">
                             <GalleryVerticalEnd className="size-6" />
@@ -51,7 +60,9 @@ export function MaintenancePage({ siteName = 'Acme Inc.', message, logoUrl, them
                 <div className="border-border bg-card flex items-center gap-2.5 rounded-full border px-5 py-2.5 text-sm shadow-sm">
                     <span className="bg-primary/80 inline-block size-2 animate-pulse rounded-full" />
                     <Clock className="text-muted-foreground size-4" />
-                    <span className="text-muted-foreground">Working on it — we'll be back soon</span>
+                    <span className="text-muted-foreground">
+                        Working on it — we'll be back soon
+                    </span>
                 </div>
             </div>
         </div>

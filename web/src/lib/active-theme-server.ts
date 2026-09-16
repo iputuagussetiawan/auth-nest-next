@@ -17,24 +17,46 @@ export async function getActiveThemeConfig(): Promise<IThemeConfig | null> {
 }
 
 const VAR_MAP: Record<string, string> = {
-    background: '--background', foreground: '--foreground',
-    card: '--card', cardForeground: '--card-foreground',
-    popover: '--popover', popoverForeground: '--popover-foreground',
-    primary: '--primary', primaryForeground: '--primary-foreground',
-    secondary: '--secondary', secondaryForeground: '--secondary-foreground',
-    muted: '--muted', mutedForeground: '--muted-foreground',
-    accent: '--accent', accentForeground: '--accent-foreground',
-    destructive: '--destructive', border: '--border', input: '--input', ring: '--ring',
-    chart1: '--chart-1', chart2: '--chart-2', chart3: '--chart-3', chart4: '--chart-4', chart5: '--chart-5',
-    sidebar: '--sidebar', sidebarForeground: '--sidebar-foreground',
-    sidebarPrimary: '--sidebar-primary', sidebarPrimaryForeground: '--sidebar-primary-foreground',
-    sidebarAccent: '--sidebar-accent', sidebarAccentForeground: '--sidebar-accent-foreground',
-    sidebarBorder: '--sidebar-border', sidebarRing: '--sidebar-ring',
+    background: '--background',
+    foreground: '--foreground',
+    card: '--card',
+    cardForeground: '--card-foreground',
+    popover: '--popover',
+    popoverForeground: '--popover-foreground',
+    primary: '--primary',
+    primaryForeground: '--primary-foreground',
+    secondary: '--secondary',
+    secondaryForeground: '--secondary-foreground',
+    muted: '--muted',
+    mutedForeground: '--muted-foreground',
+    accent: '--accent',
+    accentForeground: '--accent-foreground',
+    destructive: '--destructive',
+    border: '--border',
+    input: '--input',
+    ring: '--ring',
+    chart1: '--chart-1',
+    chart2: '--chart-2',
+    chart3: '--chart-3',
+    chart4: '--chart-4',
+    chart5: '--chart-5',
+    sidebar: '--sidebar',
+    sidebarForeground: '--sidebar-foreground',
+    sidebarPrimary: '--sidebar-primary',
+    sidebarPrimaryForeground: '--sidebar-primary-foreground',
+    sidebarAccent: '--sidebar-accent',
+    sidebarAccentForeground: '--sidebar-accent-foreground',
+    sidebarBorder: '--sidebar-border',
+    sidebarRing: '--sidebar-ring',
 }
 
 function cssBlock(selector: string, vars: IThemeConfig['light'], radius: string) {
     const declarations = Object.entries(VAR_MAP)
-        .map(([key, cssVar]) => vars[key as keyof IThemeConfig['light']] ? `${cssVar}:${vars[key as keyof IThemeConfig['light']]}` : '')
+        .map(([key, cssVar]) =>
+            vars[key as keyof IThemeConfig['light']]
+                ? `${cssVar}:${vars[key as keyof IThemeConfig['light']]}`
+                : '',
+        )
         .filter(Boolean)
     declarations.push(`--radius:${radius}rem`)
     return `${selector}{${declarations.join(';')}}`
@@ -42,5 +64,8 @@ function cssBlock(selector: string, vars: IThemeConfig['light'], radius: string)
 
 export function getActiveThemeStyle(config: IThemeConfig | null) {
     if (!config?.light || !config.dark) return ''
-    return cssBlock(':root', config.light, config.radius) + cssBlock('.dark', config.dark, config.radius)
+    return (
+        cssBlock(':root', config.light, config.radius) +
+        cssBlock('.dark', config.dark, config.radius)
+    )
 }

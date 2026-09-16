@@ -34,7 +34,12 @@ function createDeleteQuery() {
 describe('RoleService', () => {
     it('lists roles and finds a role by ID', async () => {
         const role = { id: 'role-id', name: 'admin' }
-        const db = { select: jest.fn().mockReturnValueOnce(createQuery([role])).mockReturnValueOnce(createQuery([role])) }
+        const db = {
+            select: jest
+                .fn()
+                .mockReturnValueOnce(createQuery([role]))
+                .mockReturnValueOnce(createQuery([role])),
+        }
         const service = new RoleService(db as never)
 
         await expect(service.findAll()).resolves.toEqual([role])
@@ -58,38 +63,52 @@ describe('RoleService', () => {
         const service = new RoleService(db as never)
 
         await expect(service.create({ name: 'editor', label: 'Editor' })).resolves.toEqual(created)
-        expect(insert.values).toHaveBeenCalledWith({ name: 'editor', label: 'Editor', description: undefined })
+        expect(insert.values).toHaveBeenCalledWith({
+            name: 'editor',
+            label: 'Editor',
+            description: undefined,
+        })
 
-        const duplicateDb = { select: jest.fn().mockReturnValue(createQuery([{ id: 'existing-id' }])) }
-        await expect(new RoleService(duplicateDb as never).create({ name: 'editor' })).rejects.toBeInstanceOf(BadRequestException)
+        const duplicateDb = {
+            select: jest.fn().mockReturnValue(createQuery([{ id: 'existing-id' }])),
+        }
+        await expect(
+            new RoleService(duplicateDb as never).create({ name: 'editor' }),
+        ).rejects.toBeInstanceOf(BadRequestException)
     })
 
     it('updates a role and rejects a conflicting name', async () => {
         const current = { id: 'role-id', name: 'editor' }
         const update = createUpdateQuery([{ ...current, label: 'Updated' }])
         const db = {
-            select: jest.fn()
+            select: jest
+                .fn()
                 .mockReturnValueOnce(createQuery([current]))
                 .mockReturnValueOnce(createQuery([])),
             update: jest.fn().mockReturnValue(update),
         }
         const service = new RoleService(db as never)
 
-        await expect(service.update('role-id', { name: 'editor', label: 'Updated' })).resolves.toEqual({
+        await expect(
+            service.update('role-id', { name: 'editor', label: 'Updated' }),
+        ).resolves.toEqual({
             id: 'role-id',
             name: 'editor',
             label: 'Updated',
         })
-        expect(update.set).toHaveBeenCalledWith(expect.objectContaining({ label: 'Updated', updatedAt: expect.any(Date) }))
+        expect(update.set).toHaveBeenCalledWith(
+            expect.objectContaining({ label: 'Updated', updatedAt: expect.any(Date) }),
+        )
 
         const duplicateDb = {
-            select: jest.fn()
+            select: jest
+                .fn()
                 .mockReturnValueOnce(createQuery([current]))
                 .mockReturnValueOnce(createQuery([{ id: 'other-role', name: 'admin' }])),
         }
-        await expect(new RoleService(duplicateDb as never).update('role-id', { name: 'admin' })).rejects.toBeInstanceOf(
-            BadRequestException,
-        )
+        await expect(
+            new RoleService(duplicateDb as never).update('role-id', { name: 'admin' }),
+        ).rejects.toBeInstanceOf(BadRequestException)
     })
 
     it('deletes a role and updates its image', async () => {
@@ -103,7 +122,10 @@ describe('RoleService', () => {
         }
         const service = new RoleService(db as never)
 
-        await expect(service.updateRoleImage('role-id', 'image-url')).resolves.toEqual({ ...role, icon: 'image-url' })
+        await expect(service.updateRoleImage('role-id', 'image-url')).resolves.toEqual({
+            ...role,
+            icon: 'image-url',
+        })
         await expect(service.remove('role-id')).resolves.toEqual({ message: 'Role deleted' })
         expect(del.where).toHaveBeenCalled()
     })
@@ -118,7 +140,9 @@ describe('RoleService', () => {
         }
         const service = new RoleService(db as never)
 
-        await expect(service.assignPermissions('role-id', ['permission-a', 'permission-b'])).resolves.toEqual({
+        await expect(
+            service.assignPermissions('role-id', ['permission-a', 'permission-b']),
+        ).resolves.toEqual({
             message: 'Permissions assigned',
         })
         expect(insert.values).toHaveBeenCalledWith([
@@ -126,23 +150,35 @@ describe('RoleService', () => {
             { roleId: 'role-id', permissionId: 'permission-b' },
         ])
 
-        await expect(service.assignPermissions('role-id', [])).resolves.toEqual({ message: 'Permissions assigned' })
+        await expect(service.assignPermissions('role-id', [])).resolves.toEqual({
+            message: 'Permissions assigned',
+        })
         expect(db.insert).toHaveBeenCalledTimes(1)
     })
 
     it('returns roles with permissions and user counts', async () => {
-        const roles = [{ id: 'role-a', name: 'admin' }, { id: 'role-b', name: 'user' }]
+        const roles = [
+            { id: 'role-a', name: 'admin' },
+            { id: 'role-b', name: 'user' },
+        ]
         const db = {
-            select: jest.fn()
+            select: jest
+                .fn()
                 .mockReturnValueOnce(createQuery(roles))
                 .mockReturnValueOnce(createQuery([{ roleId: 'role-a', count: 2 }]))
-                .mockReturnValueOnce(createQuery([{ permission: { id: 'permission-a', name: 'users:read' } }]))
+                .mockReturnValueOnce(
+                    createQuery([{ permission: { id: 'permission-a', name: 'users:read' } }]),
+                )
                 .mockReturnValueOnce(createQuery([])),
         }
         const service = new RoleService(db as never)
 
         await expect(service.findAllWithPermissions()).resolves.toEqual([
-            { ...roles[0], permissions: [{ id: 'permission-a', name: 'users:read' }], userCount: 2 },
+            {
+                ...roles[0],
+                permissions: [{ id: 'permission-a', name: 'users:read' }],
+                userCount: 2,
+            },
             { ...roles[1], permissions: [], userCount: 0 },
         ])
     })
@@ -152,7 +188,8 @@ describe('RoleService', () => {
         const insert = createInsertQuery([])
         const del = createDeleteQuery()
         const db = {
-            select: jest.fn()
+            select: jest
+                .fn()
                 .mockReturnValueOnce(createQuery([{ id: 'role-id' }]))
                 .mockReturnValueOnce(createQuery([{ userId: 'user-id', roleId: 'old-role' }]))
                 .mockReturnValueOnce(createQuery([{ id: 'role-id' }]))
@@ -163,27 +200,45 @@ describe('RoleService', () => {
         }
         const service = new RoleService(db as never)
 
-        await expect(service.assignRoleToUser('user-id', 'role-id')).resolves.toEqual({ message: 'Role assigned to user' })
+        await expect(service.assignRoleToUser('user-id', 'role-id')).resolves.toEqual({
+            message: 'Role assigned to user',
+        })
         expect(update.set).toHaveBeenCalledWith({ roleId: 'role-id' })
 
-        await expect(service.assignRoleToUser('user-id', 'role-id')).resolves.toEqual({ message: 'Role assigned to user' })
+        await expect(service.assignRoleToUser('user-id', 'role-id')).resolves.toEqual({
+            message: 'Role assigned to user',
+        })
         expect(insert.values).toHaveBeenCalledWith({ userId: 'user-id', roleId: 'role-id' })
 
-        await expect(service.removeRoleFromUser('user-id')).resolves.toEqual({ message: 'Role removed from user' })
+        await expect(service.removeRoleFromUser('user-id')).resolves.toEqual({
+            message: 'Role removed from user',
+        })
         expect(del.where).toHaveBeenCalled()
     })
 
     it('returns user roles and distinct user permissions', async () => {
         const db = {
-            select: jest.fn()
+            select: jest
+                .fn()
                 .mockReturnValueOnce(createQuery([{ role: { id: 'role-id', name: 'admin' } }]))
                 .mockReturnValueOnce(createQuery([{ roleId: 'role-id' }, { roleId: 'other-role' }]))
-                .mockReturnValueOnce(createQuery([{ name: 'users:read' }, { name: 'users:read' }, { name: 'users:write' }])),
+                .mockReturnValueOnce(
+                    createQuery([
+                        { name: 'users:read' },
+                        { name: 'users:read' },
+                        { name: 'users:write' },
+                    ]),
+                ),
         }
         const service = new RoleService(db as never)
 
-        await expect(service.getUserRoles('user-id')).resolves.toEqual([{ id: 'role-id', name: 'admin' }])
-        await expect(service.getUserPermissions('user-id')).resolves.toEqual(['users:read', 'users:write'])
+        await expect(service.getUserRoles('user-id')).resolves.toEqual([
+            { id: 'role-id', name: 'admin' },
+        ])
+        await expect(service.getUserPermissions('user-id')).resolves.toEqual([
+            'users:read',
+            'users:write',
+        ])
     })
 
     it('returns no user permissions when the user has no roles', async () => {

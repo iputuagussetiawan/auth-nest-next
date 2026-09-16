@@ -1,11 +1,12 @@
 'use client'
 
+import { useAuthContext } from '@/providers/auth-provider'
 import { Bell } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { useAuthContext } from '@/providers/auth-provider'
 import { cn } from '@/lib/utils'
+
 import { useNotifications } from '../hooks/UseNotifications'
 
 function timeAgo(date: string) {
@@ -60,9 +61,13 @@ export function NotificationBell() {
                 </div>
                 <div className="max-h-80 overflow-y-auto">
                     {list.isLoading ? (
-                        <p className="text-muted-foreground px-3 py-6 text-center text-sm">Loading…</p>
+                        <p className="text-muted-foreground px-3 py-6 text-center text-sm">
+                            Loading…
+                        </p>
                     ) : items.length === 0 ? (
-                        <p className="text-muted-foreground px-3 py-6 text-center text-sm">No notifications yet</p>
+                        <p className="text-muted-foreground px-3 py-6 text-center text-sm">
+                            No notifications yet
+                        </p>
                     ) : (
                         items.map((item) => (
                             <button
@@ -75,15 +80,24 @@ export function NotificationBell() {
                                 )}
                             >
                                 <div className="flex items-center gap-2">
-                                    {!item.isRead && <span className="bg-primary h-1.5 w-1.5 shrink-0 rounded-full" />}
-                                    <p className={cn('truncate text-sm', item.isRead ? 'font-normal' : 'font-medium')}>
+                                    {!item.isRead && (
+                                        <span className="bg-primary h-1.5 w-1.5 shrink-0 rounded-full" />
+                                    )}
+                                    <p
+                                        className={cn(
+                                            'truncate text-sm',
+                                            item.isRead ? 'font-normal' : 'font-medium',
+                                        )}
+                                    >
                                         {item.title}
                                     </p>
                                     <span className="text-muted-foreground ml-auto shrink-0 text-[11px]">
                                         {timeAgo(item.createdAt)}
                                     </span>
                                 </div>
-                                <p className="text-muted-foreground truncate text-xs">{item.message}</p>
+                                <p className="text-muted-foreground truncate text-xs">
+                                    {item.message}
+                                </p>
                             </button>
                         ))
                     )}

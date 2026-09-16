@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
 
 import { users } from './users.schema'
 
@@ -9,7 +9,9 @@ export const VerificationTypeEnum = {
 
 export const verificationCodes = pgTable('verification_codes', {
     id: uuid('id').defaultRandom().primaryKey(),
-    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+        .notNull()
+        .references(() => users.id, { onDelete: 'cascade' }),
     code: varchar('code', { length: 100 }).notNull().unique(),
     type: varchar('type', { length: 50 }).notNull(),
     expiresAt: timestamp('expires_at').notNull(),

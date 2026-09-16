@@ -1,43 +1,70 @@
 import {
-    Controller,
-    Post,
-    Get,
     Body,
+    Controller,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Post,
     Req,
     Res,
     UseGuards,
-    HttpCode,
-    HttpStatus,
 } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
+import {
+    ApiBearerAuth,
+    ApiBody,
+    ApiCookieAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger'
 import { Throttle } from '@nestjs/throttler'
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiCookieAuth, ApiBody } from '@nestjs/swagger'
 import { Request, Response } from 'express'
 
 import { successResponse } from '../../common/helpers/response.helper'
 import { AuthService } from './auth.service'
+import { ForgotPasswordDto } from './dto/forgot-password.dto'
+import { RegisterDto } from './dto/register.dto'
+import { ResetPasswordDto } from './dto/reset-password.dto'
+import { VerifyEmailDto } from './dto/verify-email.dto'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { LocalAuthGuard } from './guards/local-auth.guard'
-import { RegisterDto } from './dto/register.dto'
-import { VerifyEmailDto } from './dto/verify-email.dto'
-import { ForgotPasswordDto } from './dto/forgot-password.dto'
-import { ResetPasswordDto } from './dto/reset-password.dto'
 
-const ACCESS_MAX_AGE = 24 * 60 * 60 * 1000       // 1 day
-const REFRESH_MAX_AGE = 30 * 24 * 60 * 60 * 1000  // 30 days
+const ACCESS_MAX_AGE = 24 * 60 * 60 * 1000 // 1 day
+const REFRESH_MAX_AGE = 30 * 24 * 60 * 60 * 1000 // 30 days
 const IS_PROD = process.env.NODE_ENV === 'production'
 const FRONTEND_ORIGIN = (process.env.FRONTEND_ORIGIN || 'http://localhost:3000')
     .split(',')[0]
     .trim()
 
 function setAuthCookies(res: Response, accessToken: string, refreshToken: string) {
-    res.cookie('accessToken', accessToken, { httpOnly: true, secure: IS_PROD, sameSite: 'strict', maxAge: ACCESS_MAX_AGE })
-    res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: IS_PROD, sameSite: 'strict', maxAge: REFRESH_MAX_AGE })
+    res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: IS_PROD,
+        sameSite: 'strict',
+        maxAge: ACCESS_MAX_AGE,
+    })
+    res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: IS_PROD,
+        sameSite: 'strict',
+        maxAge: REFRESH_MAX_AGE,
+    })
 }
 
 function clearAuthCookies(res: Response) {
-    res.clearCookie('accessToken', { httpOnly: true, secure: IS_PROD, sameSite: 'strict', path: '/' })
-    res.clearCookie('refreshToken', { httpOnly: true, secure: IS_PROD, sameSite: 'strict', path: '/' })
+    res.clearCookie('accessToken', {
+        httpOnly: true,
+        secure: IS_PROD,
+        sameSite: 'strict',
+        path: '/',
+    })
+    res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: IS_PROD,
+        sameSite: 'strict',
+        path: '/',
+    })
 }
 
 @ApiTags('auth')
@@ -71,14 +98,22 @@ export class AuthController {
     @UseGuards(LocalAuthGuard)
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Login with email and password' })
-    @ApiBody({ schema: { properties: { email: { type: 'string' }, password: { type: 'string' } }, required: ['email', 'password'] } })
+    @ApiBody({
+        schema: {
+            properties: { email: { type: 'string' }, password: { type: 'string' } },
+            required: ['email', 'password'],
+        },
+    })
     @ApiResponse({ status: 200, description: 'Logged in, sets httpOnly cookies' })
     @ApiResponse({ status: 401, description: 'Invalid credentials' })
     async login(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
         const user = req.user as any
         const ip = req.ip ?? req.socket.remoteAddress
         const session = await this.authService.upsertSession(user.id, req.headers['user-agent'], ip)
-        const accessToken = this.authService.signAccessToken({ userId: user.id, sessionId: session.id })
+        const accessToken = this.authService.signAccessToken({
+            userId: user.id,
+            sessionId: session.id,
+        })
         const refreshToken = this.authService.signRefreshToken({ sessionId: session.id })
 
         setAuthCookies(res, accessToken, refreshToken)
@@ -110,8 +145,18 @@ export class AuthController {
             return
         }
         const { access_token, refresh_token } = await this.authService.refreshToken(token)
-        res.cookie('accessToken', access_token, { httpOnly: true, secure: IS_PROD, sameSite: 'strict', maxAge: ACCESS_MAX_AGE })
-        res.cookie('refreshToken', refresh_token, { httpOnly: true, secure: IS_PROD, sameSite: 'strict', maxAge: REFRESH_MAX_AGE })
+        res.cookie('accessToken', access_token, {
+            httpOnly: true,
+            secure: IS_PROD,
+            sameSite: 'strict',
+            maxAge: ACCESS_MAX_AGE,
+        })
+        res.cookie('refreshToken', refresh_token, {
+            httpOnly: true,
+            secure: IS_PROD,
+            sameSite: 'strict',
+            maxAge: REFRESH_MAX_AGE,
+        })
         return successResponse('Token refreshed successfully', { access_token })
     }
 
@@ -146,7 +191,12 @@ export class AuthController {
     @ApiResponse({ status: 400, description: 'Invalid or expired token' })
     async resetPassword(@Body() dto: ResetPasswordDto, @Res({ passthrough: true }) res: Response) {
         await this.authService.resetPassword(dto)
-        res.clearCookie('accessToken', { httpOnly: true, secure: IS_PROD, sameSite: 'strict', path: '/' })
+        res.clearCookie('accessToken', {
+            httpOnly: true,
+            secure: IS_PROD,
+            sameSite: 'strict',
+            path: '/',
+        })
         return successResponse('Password reset successfully')
     }
 
@@ -164,8 +214,15 @@ export class AuthController {
         try {
             const user = req.user as any
             const ip = req.ip ?? req.socket.remoteAddress
-            const session = await this.authService.upsertSession(user.id, req.headers['user-agent'], ip)
-            const accessToken = this.authService.signAccessToken({ userId: user.id, sessionId: session.id })
+            const session = await this.authService.upsertSession(
+                user.id,
+                req.headers['user-agent'],
+                ip,
+            )
+            const accessToken = this.authService.signAccessToken({
+                userId: user.id,
+                sessionId: session.id,
+            })
             const refreshToken = this.authService.signRefreshToken({ sessionId: session.id })
 
             setAuthCookies(res, accessToken, refreshToken)

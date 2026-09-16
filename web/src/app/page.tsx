@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import Link from 'next/link'
 import {
     ArrowRight,
@@ -20,12 +18,15 @@ import {
     Zap,
 } from 'lucide-react'
 
-import { MaintenancePage } from './maintenance-page'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { SIGNIN_URL, SIGNUP_URL } from '@/lib/constants'
 import { buildThemeCss } from '@/lib/theme-utils'
+
+import { MaintenancePage } from './maintenance-page'
+
+export const dynamic = 'force-dynamic'
 
 function Navbar({ siteName }: { siteName: string }) {
     return (
@@ -38,9 +39,24 @@ function Navbar({ siteName }: { siteName: string }) {
                     <span className="text-lg">{siteName}</span>
                 </Link>
                 <nav className="hidden items-center gap-6 text-sm md:flex">
-                    <Link href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Modules</Link>
-                    <Link href="#workflow" className="text-muted-foreground hover:text-foreground transition-colors">Workflow</Link>
-                    <Link href="#results" className="text-muted-foreground hover:text-foreground transition-colors">Results</Link>
+                    <Link
+                        href="#features"
+                        className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        Modules
+                    </Link>
+                    <Link
+                        href="#workflow"
+                        className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        Workflow
+                    </Link>
+                    <Link
+                        href="#results"
+                        className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        Results
+                    </Link>
                 </nav>
                 <div className="flex items-center gap-3">
                     <ThemeToggle />
@@ -48,7 +64,9 @@ function Navbar({ siteName }: { siteName: string }) {
                         <Link href={SIGNIN_URL}>Sign in</Link>
                     </Button>
                     <Button size="sm" asChild>
-                        <Link href={SIGNUP_URL}>Request demo <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
+                        <Link href={SIGNUP_URL}>
+                            Request demo <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                        </Link>
                     </Button>
                 </div>
             </div>
@@ -69,7 +87,7 @@ function Hero({ siteName }: { siteName: string }) {
 
             <h1 className="max-w-5xl text-5xl leading-tight font-extrabold tracking-tight sm:text-6xl lg:text-7xl">
                 Run hiring, people ops, and performance in{' '}
-                <span className="from-primary to-violet-500 bg-gradient-to-r bg-clip-text text-transparent">
+                <span className="from-primary bg-gradient-to-r to-violet-500 bg-clip-text text-transparent">
                     one HR system
                 </span>
             </h1>
@@ -92,7 +110,12 @@ function Hero({ siteName }: { siteName: string }) {
             </div>
 
             <div className="text-muted-foreground mt-8 flex flex-wrap items-center justify-center gap-6 text-sm">
-                {['Employee records', 'Leave & attendance', 'Recruitment pipeline', 'Role-based access'].map((t) => (
+                {[
+                    'Employee records',
+                    'Leave & attendance',
+                    'Recruitment pipeline',
+                    'Role-based access',
+                ].map((t) => (
                     <span key={t} className="flex items-center gap-1.5">
                         <CheckCircle2 className="text-primary h-4 w-4" />
                         {t}
@@ -186,16 +209,26 @@ function Features() {
     return (
         <section id="features" className="mx-auto max-w-6xl px-6 py-24">
             <div className="mb-16 text-center">
-                <Badge variant="secondary" className="mb-4">Core modules</Badge>
-                <h2 className="text-4xl font-bold tracking-tight">Everything HR needs in one place</h2>
+                <Badge variant="secondary" className="mb-4">
+                    Core modules
+                </Badge>
+                <h2 className="text-4xl font-bold tracking-tight">
+                    Everything HR needs in one place
+                </h2>
                 <p className="text-muted-foreground mx-auto mt-4 max-w-2xl">
-                    Replace scattered spreadsheets and disconnected tools with one platform for people operations.
+                    Replace scattered spreadsheets and disconnected tools with one platform for
+                    people operations.
                 </p>
             </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {features.map((f) => (
-                    <div key={f.title} className="bg-card border-border group rounded-2xl border p-6 transition-shadow hover:shadow-lg">
-                        <div className={`mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl ${f.color}`}>
+                    <div
+                        key={f.title}
+                        className="bg-card border-border group rounded-2xl border p-6 transition-shadow hover:shadow-lg"
+                    >
+                        <div
+                            className={`mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl ${f.color}`}
+                        >
                             <f.icon className="h-5 w-5" />
                         </div>
                         <h3 className="mb-2 font-semibold">{f.title}</h3>
@@ -235,8 +268,12 @@ function HowItWorks() {
         <section id="workflow" className="bg-muted/40 py-24">
             <div className="mx-auto max-w-6xl px-6">
                 <div className="mb-16 text-center">
-                    <Badge variant="secondary" className="mb-4">Workflow</Badge>
-                    <h2 className="text-4xl font-bold tracking-tight">Launch a stronger HR operation in 4 steps</h2>
+                    <Badge variant="secondary" className="mb-4">
+                        Workflow
+                    </Badge>
+                    <h2 className="text-4xl font-bold tracking-tight">
+                        Launch a stronger HR operation in 4 steps
+                    </h2>
                 </div>
                 <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
                     {steps.map((s, i) => (
@@ -248,7 +285,9 @@ function HowItWorks() {
                                 {s.step}
                             </div>
                             <h3 className="mb-2 font-semibold">{s.title}</h3>
-                            <p className="text-muted-foreground text-sm leading-relaxed">{s.desc}</p>
+                            <p className="text-muted-foreground text-sm leading-relaxed">
+                                {s.desc}
+                            </p>
                         </div>
                     ))}
                 </div>
@@ -267,10 +306,10 @@ const stats = [
 function Stats() {
     return (
         <section id="results" className="mx-auto max-w-6xl px-6 py-24">
-            <div className="from-primary/5 to-violet-500/5 grid gap-8 rounded-3xl bg-gradient-to-br p-12 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="from-primary/5 grid gap-8 rounded-3xl bg-gradient-to-br to-violet-500/5 p-12 sm:grid-cols-2 lg:grid-cols-4">
                 {stats.map((s) => (
                     <div key={s.label} className="text-center">
-                        <p className="from-primary to-violet-500 bg-gradient-to-r bg-clip-text text-5xl font-extrabold text-transparent">
+                        <p className="from-primary bg-gradient-to-r to-violet-500 bg-clip-text text-5xl font-extrabold text-transparent">
                             {s.value}
                         </p>
                         <p className="text-muted-foreground mt-2 text-sm">{s.label}</p>
@@ -304,18 +343,27 @@ function Testimonials() {
         <section className="bg-muted/40 py-24">
             <div className="mx-auto max-w-6xl px-6">
                 <div className="mb-16 text-center">
-                    <Badge variant="secondary" className="mb-4">Customer stories</Badge>
-                    <h2 className="text-4xl font-bold tracking-tight">Trusted by growing HR teams</h2>
+                    <Badge variant="secondary" className="mb-4">
+                        Customer stories
+                    </Badge>
+                    <h2 className="text-4xl font-bold tracking-tight">
+                        Trusted by growing HR teams
+                    </h2>
                 </div>
                 <div className="grid gap-6 sm:grid-cols-3">
                     {testimonials.map((t) => (
                         <div key={t.name} className="bg-card border-border rounded-2xl border p-6">
                             <div className="mb-4 flex gap-1">
                                 {Array.from({ length: 5 }).map((_, i) => (
-                                    <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                    <Star
+                                        key={i}
+                                        className="h-4 w-4 fill-yellow-400 text-yellow-400"
+                                    />
                                 ))}
                             </div>
-                            <p className="text-muted-foreground mb-4 text-sm leading-relaxed">"{t.text}"</p>
+                            <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
+                                "{t.text}"
+                            </p>
                             <div>
                                 <p className="text-sm font-semibold">{t.name}</p>
                                 <p className="text-muted-foreground text-xs">{t.role}</p>
@@ -331,7 +379,7 @@ function Testimonials() {
 function CTA() {
     return (
         <section className="mx-auto max-w-6xl px-6 py-24">
-            <div className="from-primary to-violet-600 relative overflow-hidden rounded-3xl bg-gradient-to-br p-12 text-center text-white">
+            <div className="from-primary relative overflow-hidden rounded-3xl bg-gradient-to-br to-violet-600 p-12 text-center text-white">
                 <div
                     className="absolute inset-0 -z-10 opacity-20"
                     style={{
@@ -341,15 +389,30 @@ function CTA() {
                     }}
                 />
                 <Zap className="mx-auto mb-4 h-10 w-10 opacity-90" />
-                <h2 className="mb-4 text-4xl font-extrabold tracking-tight">Ready to modernize your HR system?</h2>
+                <h2 className="mb-4 text-4xl font-extrabold tracking-tight">
+                    Ready to modernize your HR system?
+                </h2>
                 <p className="mx-auto mb-8 max-w-2xl text-lg opacity-90">
-                    Bring hiring, employee management, leave, payroll readiness, and reporting into one streamlined platform.
+                    Bring hiring, employee management, leave, payroll readiness, and reporting into
+                    one streamlined platform.
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-4">
-                    <Button size="lg" variant="secondary" className="h-12 px-8 text-base font-semibold" asChild>
-                        <Link href={SIGNUP_URL}>Get started <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                    <Button
+                        size="lg"
+                        variant="secondary"
+                        className="h-12 px-8 text-base font-semibold"
+                        asChild
+                    >
+                        <Link href={SIGNUP_URL}>
+                            Get started <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
                     </Button>
-                    <Button size="lg" variant="outline" className="h-12 border-white/40 px-8 text-base text-white hover:bg-white/10 hover:text-white" asChild>
+                    <Button
+                        size="lg"
+                        variant="outline"
+                        className="h-12 border-white/40 px-8 text-base text-white hover:bg-white/10 hover:text-white"
+                        asChild
+                    >
                         <Link href={SIGNIN_URL}>Sign in</Link>
                     </Button>
                 </div>
@@ -368,10 +431,22 @@ function Footer({ siteName }: { siteName: string }) {
                     </div>
                     {siteName}
                 </Link>
-                <p className="text-muted-foreground text-sm">© {new Date().getFullYear()} {siteName}. All rights reserved.</p>
+                <p className="text-muted-foreground text-sm">
+                    © {new Date().getFullYear()} {siteName}. All rights reserved.
+                </p>
                 <div className="flex gap-4 text-sm">
-                    <Link href={SIGNIN_URL} className="text-muted-foreground hover:text-foreground transition-colors">Sign in</Link>
-                    <Link href={SIGNUP_URL} className="text-muted-foreground hover:text-foreground transition-colors">Register</Link>
+                    <Link
+                        href={SIGNIN_URL}
+                        className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        Sign in
+                    </Link>
+                    <Link
+                        href={SIGNUP_URL}
+                        className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        Register
+                    </Link>
                 </div>
             </div>
         </footer>

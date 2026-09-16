@@ -45,7 +45,11 @@ describe('PermissionController', () => {
             message: 'Permission updated',
             data: { id: 'permission-id', ...dto },
         })
-        await expect(controller.remove('permission-id')).resolves.toEqual({ status: 'success', message: 'Permission deleted', data: null })
+        await expect(controller.remove('permission-id')).resolves.toEqual({
+            status: 'success',
+            message: 'Permission deleted',
+            data: null,
+        })
 
         expect(service.update).toHaveBeenCalledWith('permission-id', dto)
         expect(service.remove).toHaveBeenCalledWith('permission-id')

@@ -1,8 +1,7 @@
 import { Transform } from 'class-transformer'
 import { IsBoolean, IsEmail, IsOptional, IsString, MaxLength } from 'class-validator'
 
-const emptyToUndefined = () =>
-    Transform(({ value }) => (value === '' ? undefined : value))
+const emptyToUndefined = () => Transform(({ value }) => (value === '' ? undefined : value))
 
 export class UpdateSiteSettingsDto {
     @IsOptional() @IsString() @MaxLength(200) siteName?: string

@@ -11,7 +11,7 @@ import {
     type ColumnDef,
     type SortingState,
 } from '@tanstack/react-table'
-import { ChevronDown, ChevronUp, ChevronsUpDown, Search } from 'lucide-react'
+import { ChevronDown, ChevronsUpDown, ChevronUp, Search } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -92,12 +92,16 @@ export function DataTable<TData>({
                                                 className="flex items-center gap-1 font-medium"
                                                 onClick={header.column.getToggleSortingHandler()}
                                             >
-                                                {flexRender(header.column.columnDef.header, header.getContext())}
+                                                {flexRender(
+                                                    header.column.columnDef.header,
+                                                    header.getContext(),
+                                                )}
                                                 {header.column.getCanSort() && (
                                                     <span className="text-muted-foreground">
                                                         {header.column.getIsSorted() === 'asc' ? (
                                                             <ChevronUp className="h-3 w-3" />
-                                                        ) : header.column.getIsSorted() === 'desc' ? (
+                                                        ) : header.column.getIsSorted() ===
+                                                          'desc' ? (
                                                             <ChevronDown className="h-3 w-3" />
                                                         ) : (
                                                             <ChevronsUpDown className="h-3 w-3" />
@@ -114,7 +118,10 @@ export function DataTable<TData>({
                     <TableBody>
                         {table.getRowModel().rows.length ? (
                             table.getRowModel().rows.map((row) => (
-                                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                                <TableRow
+                                    key={row.id}
+                                    data-state={row.getIsSelected() && 'selected'}
+                                >
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell
                                             key={cell.id}
@@ -123,7 +130,10 @@ export function DataTable<TData>({
                                                 cell.column.columnDef.meta?.className,
                                             )}
                                         >
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            {flexRender(
+                                                cell.column.columnDef.cell,
+                                                cell.getContext(),
+                                            )}
                                         </TableCell>
                                     ))}
                                 </TableRow>
@@ -132,7 +142,7 @@ export function DataTable<TData>({
                             <TableRow>
                                 <TableCell
                                     colSpan={columns.length}
-                                    className="h-24 text-center text-muted-foreground"
+                                    className="text-muted-foreground h-24 text-center"
                                 >
                                     No results found.
                                 </TableCell>

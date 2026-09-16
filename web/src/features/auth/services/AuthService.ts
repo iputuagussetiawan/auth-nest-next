@@ -1,12 +1,11 @@
-import { api } from '@/lib/api-factory'
-
 import type { IUserProfile } from '@/features/admin/account/types/AccountTypes'
+import { api } from '@/lib/api-factory'
 
 import type {
     ForgotPasswordInputType,
+    ILoginResponse,
     IVerifyInputType,
     ResetPasswordInputType,
-    ILoginResponse,
     SigninInputType,
     SignupInputType,
 } from '../types/AuthType'

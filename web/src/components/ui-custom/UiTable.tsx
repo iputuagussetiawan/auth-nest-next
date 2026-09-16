@@ -15,17 +15,10 @@ import {
 } from '@tanstack/react-table'
 import { ChevronDown, ChevronRight, ChevronsUpDown, ChevronUp, Search } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
 import { UiInput } from '@/components/ui-custom/UiInput'
-import {
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
-
 
 interface UiServerPagination {
     /** 1-based current page */
@@ -110,11 +103,17 @@ function UiDataTable<TData>({
     const pageCount = manual ? Math.max(pagination!.totalPages, 1) : table.getPageCount() || 1
     const canPrevious = manual ? pagination!.page > 1 : table.getCanPreviousPage()
     const canNext = manual ? pagination!.page < pagination!.totalPages : table.getCanNextPage()
-    const goToPage = (page: number) => (manual ? pagination!.onPageChange(page + 1) : table.setPageIndex(page))
+    const goToPage = (page: number) =>
+        manual ? pagination!.onPageChange(page + 1) : table.setPageIndex(page)
     const rowCount = manual ? pagination!.total : table.getFilteredRowModel().rows.length
-    const pageStart = manual && pagination!.total ? (pagination!.page - 1) * pagination!.pageSize + 1 : 0
-    const pageEnd = manual ? Math.min(pagination!.page * pagination!.pageSize, pagination!.total) : rowCount
-    const displayCount = manual ? `${pageStart}-${pageEnd} of ${rowCount}` : `${rowCount} of ${totalCount ?? data.length}`
+    const pageStart =
+        manual && pagination!.total ? (pagination!.page - 1) * pagination!.pageSize + 1 : 0
+    const pageEnd = manual
+        ? Math.min(pagination!.page * pagination!.pageSize, pagination!.total)
+        : rowCount
+    const displayCount = manual
+        ? `${pageStart}-${pageEnd} of ${rowCount}`
+        : `${rowCount} of ${totalCount ?? data.length}`
 
     return (
         <div className="space-y-4">
@@ -132,27 +131,29 @@ function UiDataTable<TData>({
                         </div>
                     )}
                     {renderFilters && (
-                        <div className="flex min-w-0 flex-wrap items-center gap-2 sm:justify-end">{renderFilters}</div>
+                        <div className="flex min-w-0 flex-wrap items-center gap-2 sm:justify-end">
+                            {renderFilters}
+                        </div>
                     )}
                 </div>
             )}
 
-            <div className="overflow-x-auto rounded-2xl border border-border/60 bg-card shadow-sm">
+            <div className="border-border/60 bg-card overflow-x-auto rounded-2xl border shadow-sm">
                 <table className="w-full caption-bottom text-sm">
-                    <TableHeader className="bg-muted/60 [&_th+th]:border-l [&_th+th]:border-border/50">
+                    <TableHeader className="bg-muted/60 [&_th+th]:border-border/50 [&_th+th]:border-l">
                         {table.getHeaderGroups().map((hg) => (
                             <TableRow key={hg.id} className="hover:bg-transparent">
                                 {hg.headers.map((header) => (
                                     <TableHead
                                         key={header.id}
                                         className={cn(
-                                            'h-14 px-4 py-3 text-xs font-semibold uppercase tracking-wide',
+                                            'h-14 px-4 py-3 text-xs font-semibold tracking-wide uppercase',
                                             header.column.columnDef.meta?.className,
                                         )}
                                     >
                                         {header.isPlaceholder ? null : (
                                             <button
-                                                className="flex items-center gap-1 font-semibold outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring"
+                                                className="focus-visible:ring-ring flex items-center gap-1 font-semibold outline-none focus-visible:rounded-sm focus-visible:ring-2"
                                                 onClick={header.column.getToggleSortingHandler()}
                                             >
                                                 {flexRender(
@@ -163,7 +164,8 @@ function UiDataTable<TData>({
                                                     <span className="text-muted-foreground">
                                                         {header.column.getIsSorted() === 'asc' ? (
                                                             <ChevronUp className="h-3 w-3" />
-                                                        ) : header.column.getIsSorted() === 'desc' ? (
+                                                        ) : header.column.getIsSorted() ===
+                                                          'desc' ? (
                                                             <ChevronDown className="h-3 w-3" />
                                                         ) : (
                                                             <ChevronsUpDown className="h-3 w-3" />
@@ -181,16 +183,25 @@ function UiDataTable<TData>({
                         {table.getRowModel().rows.length ? (
                             table.getRowModel().rows.map((row) => (
                                 <React.Fragment key={row.id}>
-                                    <TableRow data-state={row.getIsSelected() && 'selected'} className={cn(getRowClassName?.(row), 'hover:bg-transparent')}>
+                                    <TableRow
+                                        data-state={row.getIsSelected() && 'selected'}
+                                        className={cn(
+                                            getRowClassName?.(row),
+                                            'hover:bg-transparent',
+                                        )}
+                                    >
                                         {row.getVisibleCells().map((cell) => (
                                             <TableCell
                                                 key={cell.id}
                                                 className={cn(
-                                                    'px-4 py-3 whitespace-nowrap [&+td]:border-l [&+td]:border-border/40',
+                                                    '[&+td]:border-border/40 px-4 py-3 whitespace-nowrap [&+td]:border-l',
                                                     cell.column.columnDef.meta?.className,
                                                 )}
                                             >
-                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                                {flexRender(
+                                                    cell.column.columnDef.cell,
+                                                    cell.getContext(),
+                                                )}
                                             </TableCell>
                                         ))}
                                     </TableRow>
@@ -208,7 +219,10 @@ function UiDataTable<TData>({
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={tableColumns.length} className="text-muted-foreground h-24 text-center">
+                                <TableCell
+                                    colSpan={tableColumns.length}
+                                    className="text-muted-foreground h-24 text-center"
+                                >
                                     No results found.
                                 </TableCell>
                             </TableRow>
@@ -218,14 +232,16 @@ function UiDataTable<TData>({
             </div>
 
             <div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
-                <p className="text-muted-foreground text-sm">
-                    {displayCount} row(s)
-                </p>
+                <p className="text-muted-foreground text-sm">{displayCount} row(s)</p>
                 <div className="flex items-center gap-2">
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => manual ? pagination!.onPageChange(pagination!.page - 1) : table.previousPage()}
+                        onClick={() =>
+                            manual
+                                ? pagination!.onPageChange(pagination!.page - 1)
+                                : table.previousPage()
+                        }
                         disabled={!canPrevious}
                     >
                         Previous
@@ -234,13 +250,23 @@ function UiDataTable<TData>({
                         {(() => {
                             const current = pageIndex
                             const pages = Array.from({ length: pageCount }, (_, i) => i).filter(
-                                (page) => page === 0 || page === pageCount - 1 || Math.abs(page - current) <= 1,
+                                (page) =>
+                                    page === 0 ||
+                                    page === pageCount - 1 ||
+                                    Math.abs(page - current) <= 1,
                             )
                             let previous = -1
                             return pages.flatMap((page) => {
                                 const items: React.ReactNode[] = []
                                 if (page - previous > 1) {
-                                    items.push(<span key={`ellipsis-${page}`} className="px-1 text-sm text-muted-foreground">…</span>)
+                                    items.push(
+                                        <span
+                                            key={`ellipsis-${page}`}
+                                            className="text-muted-foreground px-1 text-sm"
+                                        >
+                                            …
+                                        </span>,
+                                    )
                                 }
                                 items.push(
                                     <Button
@@ -262,7 +288,11 @@ function UiDataTable<TData>({
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => manual ? pagination!.onPageChange(pagination!.page + 1) : table.nextPage()}
+                        onClick={() =>
+                            manual
+                                ? pagination!.onPageChange(pagination!.page + 1)
+                                : table.nextPage()
+                        }
                         disabled={!canNext}
                     >
                         Next

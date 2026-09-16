@@ -1,15 +1,26 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Req, UseGuards } from '@nestjs/common'
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    ParseUUIDPipe,
+    Patch,
+    Post,
+    Req,
+    UseGuards,
+} from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 
+import { Roles } from '../../common/decorators/roles.decorator'
+import { RolesGuard } from '../../common/guards/roles.guard'
 import { successResponse } from '../../common/helpers/response.helper'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard'
-import { RolesGuard } from '../../common/guards/roles.guard'
-import { Roles } from '../../common/decorators/roles.decorator'
-import { ThemeService } from './theme.service'
 import { CreateThemeDto } from './dto/create-theme.dto'
-import { UpdateThemeDto } from './dto/update-theme.dto'
 import { SetThemePreferenceDto } from './dto/set-theme-preference.dto'
+import { UpdateThemeDto } from './dto/update-theme.dto'
+import { ThemeService } from './theme.service'
 
 @ApiTags('themes')
 @Controller('themes')

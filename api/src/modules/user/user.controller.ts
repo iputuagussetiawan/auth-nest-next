@@ -16,20 +16,28 @@ import {
     UseInterceptors,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody, ApiQuery } from '@nestjs/swagger'
-import { memoryStorage } from 'multer'
+import {
+    ApiBearerAuth,
+    ApiBody,
+    ApiConsumes,
+    ApiOperation,
+    ApiQuery,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger'
 import { Request } from 'express'
+import { memoryStorage } from 'multer'
 
+import { Roles } from '../../common/decorators/roles.decorator'
+import { RolesGuard } from '../../common/guards/roles.guard'
 import { successResponse } from '../../common/helpers/response.helper'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
-import { RolesGuard } from '../../common/guards/roles.guard'
-import { Roles } from '../../common/decorators/roles.decorator'
-import { UserService } from './user.service'
-import { UpdateProfileDto } from './dto/update-profile.dto'
-import { UpdatePasswordDto } from './dto/update-password.dto'
-import { AdminUpdateUserDto } from './dto/admin-update-user.dto'
 import { AdminAssignRoleDto } from './dto/admin-assign-role.dto'
 import { AdminCreateUserDto } from './dto/admin-create-user.dto'
+import { AdminUpdateUserDto } from './dto/admin-update-user.dto'
+import { UpdatePasswordDto } from './dto/update-password.dto'
+import { UpdateProfileDto } from './dto/update-profile.dto'
+import { UserService } from './user.service'
 
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const MAX_SIZE = 5 * 1024 * 1024 // 5 MB
@@ -110,10 +118,7 @@ export class UserController {
     @UseGuards(RolesGuard)
     @Roles('admin')
     @ApiOperation({ summary: 'Update user (admin)' })
-    async adminUpdateUser(
-        @Param('id', ParseUUIDPipe) id: string,
-        @Body() dto: AdminUpdateUserDto,
-    ) {
+    async adminUpdateUser(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AdminUpdateUserDto) {
         const user = await this.userService.adminUpdateUser(id, dto)
         return successResponse('User updated', user)
     }
@@ -131,10 +136,7 @@ export class UserController {
     @UseGuards(RolesGuard)
     @Roles('admin')
     @ApiOperation({ summary: 'Assign role to user (admin)' })
-    async adminAssignRole(
-        @Param('id', ParseUUIDPipe) id: string,
-        @Body() dto: AdminAssignRoleDto,
-    ) {
+    async adminAssignRole(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AdminAssignRoleDto) {
         const result = await this.userService.adminAssignRole(id, dto.roleId)
         return successResponse(result.message)
     }
@@ -144,7 +146,13 @@ export class UserController {
     @Patch('avatar')
     @ApiOperation({ summary: 'Upload profile picture to Cloudinary' })
     @ApiConsumes('multipart/form-data')
-    @ApiBody({ schema: { type: 'object', properties: { profilePicture: { type: 'string', format: 'binary' } }, required: ['profilePicture'] } })
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: { profilePicture: { type: 'string', format: 'binary' } },
+            required: ['profilePicture'],
+        },
+    })
     @ApiResponse({ status: 200, description: 'Avatar updated' })
     @ApiResponse({ status: 400, description: 'No file or invalid type' })
     @UseInterceptors(

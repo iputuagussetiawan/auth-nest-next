@@ -1,5 +1,4 @@
-import type { LucideIcon } from 'lucide-react'
-import { TrendingDown, TrendingUp } from 'lucide-react'
+import { TrendingDown, TrendingUp, type LucideIcon } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -16,7 +15,7 @@ export function StatCard({ title, value, icon: Icon, description, trend }: StatC
     const isPositive = trend && trend.value >= 0
 
     return (
-        <Card className="rounded-3xl border-border/60 shadow-sm">
+        <Card className="border-border/60 rounded-3xl shadow-sm">
             <CardHeader className="pb-2">
                 <div className="flex items-center justify-between gap-3">
                     <CardTitle className="text-muted-foreground text-sm font-medium">

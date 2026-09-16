@@ -31,7 +31,9 @@ interface UiEmployeeSelectProps<T extends EmployeeLike> {
 }
 
 function employeeName(e: EmployeeLike) {
-    return e.user?.firstName ? `${e.user.firstName} ${e.user.lastName ?? ''}`.trim() : e.employeeCode
+    return e.user?.firstName
+        ? `${e.user.firstName} ${e.user.lastName ?? ''}`.trim()
+        : e.employeeCode
 }
 
 /**
@@ -68,11 +70,19 @@ export function UiEmployeeSelect<T extends EmployeeLike>({
                 unselectedLabel={placeholder}
                 searchPlaceholder="Search employees..."
                 emptyMessage={disabled ? disabledMessage : (emptyMessage ?? 'No employees found')}
-                className={disabled ? `pointer-events-none opacity-60 ${className ?? ''}` : className}
+                className={
+                    disabled ? `pointer-events-none opacity-60 ${className ?? ''}` : className
+                }
                 renderItem={(e) => (
                     <div className="flex min-w-0 items-center gap-2">
                         {e.user?.profilePicture ? (
-                            <UiImage src={e.user.profilePicture} alt="" width={28} height={28} className="h-7 w-7 shrink-0 rounded-full object-cover" />
+                            <UiImage
+                                src={e.user.profilePicture}
+                                alt=""
+                                width={28}
+                                height={28}
+                                className="h-7 w-7 shrink-0 rounded-full object-cover"
+                            />
                         ) : (
                             <span className="bg-muted flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-medium">
                                 {e.label.charAt(0).toUpperCase()}
@@ -80,7 +90,9 @@ export function UiEmployeeSelect<T extends EmployeeLike>({
                         )}
                         <div className="min-w-0">
                             <p className="truncate text-sm">{e.label}</p>
-                            <p className="text-muted-foreground truncate text-xs">{e.employeeCode}</p>
+                            <p className="text-muted-foreground truncate text-xs">
+                                {e.employeeCode}
+                            </p>
                         </div>
                     </div>
                 )}
@@ -89,7 +101,15 @@ export function UiEmployeeSelect<T extends EmployeeLike>({
                     if (!e) return placeholder
                     return (
                         <span className="flex min-w-0 items-center gap-2">
-                            {e.user?.profilePicture ? <UiImage src={e.user.profilePicture} alt="" width={20} height={20} className="h-5 w-5 rounded-full object-cover" /> : null}
+                            {e.user?.profilePicture ? (
+                                <UiImage
+                                    src={e.user.profilePicture}
+                                    alt=""
+                                    width={20}
+                                    height={20}
+                                    className="h-5 w-5 rounded-full object-cover"
+                                />
+                            ) : null}
                             <span className="truncate">{e.label}</span>
                         </span>
                     )
@@ -98,7 +118,11 @@ export function UiEmployeeSelect<T extends EmployeeLike>({
             {!disabled && addHref && employees.length === 0 && (
                 <p className="text-muted-foreground flex items-center gap-1 text-xs">
                     No employees in this tenant yet.
-                    <Link href={addHref} target="_blank" className="text-primary inline-flex items-center gap-1 font-medium hover:underline">
+                    <Link
+                        href={addHref}
+                        target="_blank"
+                        className="text-primary inline-flex items-center gap-1 font-medium hover:underline"
+                    >
                         <UserPlus className="h-3 w-3" /> {addLabel}
                     </Link>
                 </p>

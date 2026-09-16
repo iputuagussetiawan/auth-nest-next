@@ -1,9 +1,18 @@
-import { Controller, Get, Delete, Param, Req, UseGuards, HttpCode, HttpStatus } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
+import {
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Param,
+    Req,
+    UseGuards,
+} from '@nestjs/common'
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { Request } from 'express'
 
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { successResponse } from '../../common/helpers/response.helper'
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { SessionService } from './session.service'
 
 @ApiTags('sessions')

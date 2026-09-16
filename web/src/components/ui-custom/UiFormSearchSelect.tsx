@@ -32,18 +32,19 @@ interface BaseProps {
     className?: string
 }
 
-type UiFormSearchSelectProps = BaseProps & (
-    | {
-          multiple: true
-          value?: string[]
-          onChange?: (value: string[]) => void
-      }
-    | {
-          multiple?: false
-          value?: string
-          onChange?: (value: string) => void
-      }
-)
+type UiFormSearchSelectProps = BaseProps &
+    (
+        | {
+              multiple: true
+              value?: string[]
+              onChange?: (value: string[]) => void
+          }
+        | {
+              multiple?: false
+              value?: string
+              onChange?: (value: string) => void
+          }
+    )
 
 export const UiFormSearchSelect = (props: UiFormSearchSelectProps) => {
     const {
@@ -62,11 +63,15 @@ export const UiFormSearchSelect = (props: UiFormSearchSelectProps) => {
     const isControlled = props.value !== undefined && props.onChange !== undefined
     const multiple = props.multiple === true
 
-    const renderSelect = (selectedValue: string | string[] | undefined, select: (nextValue: string) => void) => {
+    const renderSelect = (
+        selectedValue: string | string[] | undefined,
+        select: (nextValue: string) => void,
+    ) => {
         const selectedValues = Array.isArray(selectedValue) ? selectedValue : []
-        const selectedOption = !multiple && typeof selectedValue === 'string'
-            ? options.find((option) => option.value === selectedValue)
-            : undefined
+        const selectedOption =
+            !multiple && typeof selectedValue === 'string'
+                ? options.find((option) => option.value === selectedValue)
+                : undefined
         const selectedLabels = options
             .filter((option) => selectedValues.includes(option.value))
             .map((option) => option.label)
@@ -83,7 +88,8 @@ export const UiFormSearchSelect = (props: UiFormSearchSelectProps) => {
                         className={cn(
                             'w-full justify-between font-normal',
                             error && 'border-destructive focus-visible:ring-destructive',
-                            (!selectedValue || (multiple && selectedValues.length === 0)) && 'text-muted-foreground',
+                            (!selectedValue || (multiple && selectedValues.length === 0)) &&
+                                'text-muted-foreground',
                             className,
                         )}
                     >
@@ -94,7 +100,7 @@ export const UiFormSearchSelect = (props: UiFormSearchSelectProps) => {
                                     : selectedLabels.length === 1
                                       ? selectedLabels[0]
                                       : `${selectedLabels.length} selected`
-                                : selectedOption?.label ?? placeholder}
+                                : (selectedOption?.label ?? placeholder)}
                         </span>
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </UiButton>
@@ -108,7 +114,8 @@ export const UiFormSearchSelect = (props: UiFormSearchSelectProps) => {
                                 {options.map((option) => {
                                     const checked = multiple
                                         ? selectedValues.includes(option.value)
-                                        : typeof selectedValue === 'string' && option.value === selectedValue
+                                        : typeof selectedValue === 'string' &&
+                                          option.value === selectedValue
 
                                     return (
                                         <CommandItem
@@ -128,7 +135,12 @@ export const UiFormSearchSelect = (props: UiFormSearchSelectProps) => {
                                                         : 'border-muted-foreground/40 bg-transparent',
                                                 )}
                                             >
-                                                <Check className={cn('h-3 w-3', checked ? 'opacity-100' : 'opacity-0')} />
+                                                <Check
+                                                    className={cn(
+                                                        'h-3 w-3',
+                                                        checked ? 'opacity-100' : 'opacity-0',
+                                                    )}
+                                                />
                                             </span>
                                             {option.label}
                                         </CommandItem>
@@ -155,7 +167,9 @@ export const UiFormSearchSelect = (props: UiFormSearchSelectProps) => {
                         const change = props.onChange as ((value: string[]) => void) | undefined
                         change?.(nextValues)
                     })}
-                    {error && <span className="text-destructive mt-1 text-xs">{error.message}</span>}
+                    {error && (
+                        <span className="text-destructive mt-1 text-xs">{error.message}</span>
+                    )}
                 </div>
             )
         }
@@ -190,7 +204,9 @@ export const UiFormSearchSelect = (props: UiFormSearchSelectProps) => {
                             form.setValue(name, nextValue, { shouldValidate: true })
                         }
                     })}
-                    {error && <span className="text-destructive mt-1 text-xs">{error.message}</span>}
+                    {error && (
+                        <span className="text-destructive mt-1 text-xs">{error.message}</span>
+                    )}
                 </Field>
             )}
         />

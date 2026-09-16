@@ -1,11 +1,12 @@
 import 'dotenv/config'
-import { Pool } from 'pg'
+
 import { drizzle } from 'drizzle-orm/node-postgres'
+import { Pool } from 'pg'
 
 import * as schema from '../schema'
 import { runRoleSeed } from './role.seed'
-import { runUserSeed } from './user.seed'
 import { runThemeSeed } from './theme.seed'
+import { runUserSeed } from './user.seed'
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 const db = drizzle(pool, { schema })
@@ -18,5 +19,8 @@ async function main() {
 }
 
 main()
-    .catch((e) => { console.error(e); process.exit(1) })
+    .catch((e) => {
+        console.error(e)
+        process.exit(1)
+    })
     .finally(() => pool.end())

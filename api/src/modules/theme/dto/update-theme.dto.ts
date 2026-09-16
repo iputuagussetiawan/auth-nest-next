@@ -1,5 +1,15 @@
 import { Type } from 'class-transformer'
-import { IsBoolean, IsIn, IsObject, IsOptional, IsString, Matches, MaxLength, ValidateNested } from 'class-validator'
+import {
+    IsBoolean,
+    IsIn,
+    IsObject,
+    IsOptional,
+    IsString,
+    Matches,
+    MaxLength,
+    ValidateNested,
+} from 'class-validator'
+
 import { ThemeConfigDto } from './create-theme.dto'
 
 export class UpdateThemeDto {

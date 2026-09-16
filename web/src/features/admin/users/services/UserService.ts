@@ -3,7 +3,14 @@ import { api } from '@/lib/api-factory'
 import type { IAdminUsersResponse } from '../types/UserTypes'
 
 export const adminUserService = {
-    create: (data: { email: string; password: string; firstName?: string; lastName?: string; roleId?: string; isActive?: boolean }) =>
+    create: (data: {
+        email: string
+        password: string
+        firstName?: string
+        lastName?: string
+        roleId?: string
+        isActive?: boolean
+    }) =>
         api.API<any>('/api/user/admin/users', {
             method: 'POST',
             body: JSON.stringify(data),

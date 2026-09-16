@@ -1,4 +1,5 @@
 import { api } from '@/lib/api-factory'
+
 import type { IDashboardStatsResponse } from '../types/DashboardTypes'
 
 export const adminDashboardService = {

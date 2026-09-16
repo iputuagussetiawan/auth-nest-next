@@ -1,89 +1,145 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import {
-    ChevronDown,
-    ChevronRight,
-    Loader2,
-    Moon,
-    Sun,
-} from 'lucide-react'
+import { ChevronDown, ChevronRight, Loader2, Moon, Sun } from 'lucide-react'
 
 import { UiButton } from '@/components/ui-custom/UiButton'
-import { UiInput } from '@/components/ui-custom/UiInput'
 import { UiSwitch } from '@/components/ui-custom/UiCheckbox'
-import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
+import { UiInput } from '@/components/ui-custom/UiInput'
 import { Badge } from '@/components/ui/badge'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+
 import type { ITheme, IThemeConfig, IThemeVars } from './types/ThemeTypes'
 
 // ── Defaults ──────────────────────────────────────────────────────────────────
 
 export const DEFAULT_LIGHT: IThemeVars = {
-    background: '#f0fdf4', foreground: '#052e16',
-    card: '#ffffff', cardForeground: '#052e16',
-    popover: '#ffffff', popoverForeground: '#052e16',
-    primary: '#065f46', primaryForeground: '#ffffff',
-    secondary: '#ecfdf5', secondaryForeground: '#065f46',
-    muted: '#d1fae5', mutedForeground: '#166534',
-    accent: '#10b981', accentForeground: '#ffffff',
+    background: '#f0fdf4',
+    foreground: '#052e16',
+    card: '#ffffff',
+    cardForeground: '#052e16',
+    popover: '#ffffff',
+    popoverForeground: '#052e16',
+    primary: '#065f46',
+    primaryForeground: '#ffffff',
+    secondary: '#ecfdf5',
+    secondaryForeground: '#065f46',
+    muted: '#d1fae5',
+    mutedForeground: '#166534',
+    accent: '#10b981',
+    accentForeground: '#ffffff',
     destructive: '#dc2626',
-    border: '#a7f3d0', input: '#a7f3d0', ring: '#10b981',
-    chart1: '#065f46', chart2: '#10b981', chart3: '#34d399', chart4: '#059669', chart5: '#047857',
-    sidebar: '#ecfdf5', sidebarForeground: '#052e16',
-    sidebarPrimary: '#065f46', sidebarPrimaryForeground: '#ffffff',
-    sidebarAccent: '#d1fae5', sidebarAccentForeground: '#065f46',
-    sidebarBorder: '#a7f3d0', sidebarRing: '#10b981',
+    border: '#a7f3d0',
+    input: '#a7f3d0',
+    ring: '#10b981',
+    chart1: '#065f46',
+    chart2: '#10b981',
+    chart3: '#34d399',
+    chart4: '#059669',
+    chart5: '#047857',
+    sidebar: '#ecfdf5',
+    sidebarForeground: '#052e16',
+    sidebarPrimary: '#065f46',
+    sidebarPrimaryForeground: '#ffffff',
+    sidebarAccent: '#d1fae5',
+    sidebarAccentForeground: '#065f46',
+    sidebarBorder: '#a7f3d0',
+    sidebarRing: '#10b981',
 }
 
 export const DEFAULT_DARK: IThemeVars = {
-    background: '#020c06', foreground: '#d1fae5',
-    card: '#052e16', cardForeground: '#d1fae5',
-    popover: '#052e16', popoverForeground: '#d1fae5',
-    primary: '#34d399', primaryForeground: '#020c06',
-    secondary: '#064e3b', secondaryForeground: '#d1fae5',
-    muted: '#064e3b', mutedForeground: '#6ee7b7',
-    accent: '#10b981', accentForeground: '#020c06',
+    background: '#020c06',
+    foreground: '#d1fae5',
+    card: '#052e16',
+    cardForeground: '#d1fae5',
+    popover: '#052e16',
+    popoverForeground: '#d1fae5',
+    primary: '#34d399',
+    primaryForeground: '#020c06',
+    secondary: '#064e3b',
+    secondaryForeground: '#d1fae5',
+    muted: '#064e3b',
+    mutedForeground: '#6ee7b7',
+    accent: '#10b981',
+    accentForeground: '#020c06',
     destructive: '#7f1d1d',
-    border: '#065f46', input: '#065f46', ring: '#34d399',
-    chart1: '#34d399', chart2: '#6ee7b7', chart3: '#a7f3d0', chart4: '#10b981', chart5: '#d1fae5',
-    sidebar: '#010802', sidebarForeground: '#6ee7b7',
-    sidebarPrimary: '#34d399', sidebarPrimaryForeground: '#020c06',
-    sidebarAccent: '#064e3b', sidebarAccentForeground: '#d1fae5',
-    sidebarBorder: '#065f46', sidebarRing: '#34d399',
+    border: '#065f46',
+    input: '#065f46',
+    ring: '#34d399',
+    chart1: '#34d399',
+    chart2: '#6ee7b7',
+    chart3: '#a7f3d0',
+    chart4: '#10b981',
+    chart5: '#d1fae5',
+    sidebar: '#010802',
+    sidebarForeground: '#6ee7b7',
+    sidebarPrimary: '#34d399',
+    sidebarPrimaryForeground: '#020c06',
+    sidebarAccent: '#064e3b',
+    sidebarAccentForeground: '#d1fae5',
+    sidebarBorder: '#065f46',
+    sidebarRing: '#34d399',
 }
 
 export const DEFAULT_CONFIG: IThemeConfig = {
-    light: DEFAULT_LIGHT, dark: DEFAULT_DARK,
-    radius: '0.625', fontFamily: 'Inter',
-    heroVariant: 'centered', heroBackground: 'gradient',
+    light: DEFAULT_LIGHT,
+    dark: DEFAULT_DARK,
+    radius: '0.625',
+    fontFamily: 'Inter',
+    heroVariant: 'centered',
+    heroBackground: 'gradient',
 }
 
 // ── CSS var helpers ────────────────────────────────────────────────────────────
 
 const VAR_MAP: Record<keyof IThemeVars, string> = {
-    background: '--background', foreground: '--foreground',
-    card: '--card', cardForeground: '--card-foreground',
-    popover: '--popover', popoverForeground: '--popover-foreground',
-    primary: '--primary', primaryForeground: '--primary-foreground',
-    secondary: '--secondary', secondaryForeground: '--secondary-foreground',
-    muted: '--muted', mutedForeground: '--muted-foreground',
-    accent: '--accent', accentForeground: '--accent-foreground',
+    background: '--background',
+    foreground: '--foreground',
+    card: '--card',
+    cardForeground: '--card-foreground',
+    popover: '--popover',
+    popoverForeground: '--popover-foreground',
+    primary: '--primary',
+    primaryForeground: '--primary-foreground',
+    secondary: '--secondary',
+    secondaryForeground: '--secondary-foreground',
+    muted: '--muted',
+    mutedForeground: '--muted-foreground',
+    accent: '--accent',
+    accentForeground: '--accent-foreground',
     destructive: '--destructive',
-    border: '--border', input: '--input', ring: '--ring',
-    chart1: '--chart-1', chart2: '--chart-2', chart3: '--chart-3', chart4: '--chart-4', chart5: '--chart-5',
-    sidebar: '--sidebar', sidebarForeground: '--sidebar-foreground',
-    sidebarPrimary: '--sidebar-primary', sidebarPrimaryForeground: '--sidebar-primary-foreground',
-    sidebarAccent: '--sidebar-accent', sidebarAccentForeground: '--sidebar-accent-foreground',
-    sidebarBorder: '--sidebar-border', sidebarRing: '--sidebar-ring',
+    border: '--border',
+    input: '--input',
+    ring: '--ring',
+    chart1: '--chart-1',
+    chart2: '--chart-2',
+    chart3: '--chart-3',
+    chart4: '--chart-4',
+    chart5: '--chart-5',
+    sidebar: '--sidebar',
+    sidebarForeground: '--sidebar-foreground',
+    sidebarPrimary: '--sidebar-primary',
+    sidebarPrimaryForeground: '--sidebar-primary-foreground',
+    sidebarAccent: '--sidebar-accent',
+    sidebarAccentForeground: '--sidebar-accent-foreground',
+    sidebarBorder: '--sidebar-border',
+    sidebarRing: '--sidebar-ring',
 }
 
 function applyVars(vars: IThemeVars, radius: string) {
     const root = document.documentElement
-    for (const [key, cssVar] of Object.entries(VAR_MAP)) root.style.setProperty(cssVar, (vars as any)[key])
+    for (const [key, cssVar] of Object.entries(VAR_MAP))
+        root.style.setProperty(cssVar, (vars as any)[key])
     root.style.setProperty('--radius', `${radius}rem`)
 }
 
@@ -105,21 +161,34 @@ function restoreVars(snap: Record<string, string>) {
 
 // ── Color group definitions ───────────────────────────────────────────────────
 
-interface PairDef { bg: keyof IThemeVars; fg: keyof IThemeVars; bgLabel: string; fgLabel: string }
+interface PairDef {
+    bg: keyof IThemeVars
+    fg: keyof IThemeVars
+    bgLabel: string
+    fgLabel: string
+}
 interface GroupDef {
-    key: string; label: string; desc: string
+    key: string
+    label: string
+    desc: string
     pairs: PairDef[]
     singles: { field: keyof IThemeVars; label: string; cssVar: string }[]
 }
 
 const COLOR_GROUPS: GroupDef[] = [
     {
-        key: 'page', label: 'Page', desc: 'Page background & body text',
-        pairs: [{ bg: 'background', fg: 'foreground', bgLabel: 'Background', fgLabel: 'Foreground' }],
+        key: 'page',
+        label: 'Page',
+        desc: 'Page background & body text',
+        pairs: [
+            { bg: 'background', fg: 'foreground', bgLabel: 'Background', fgLabel: 'Foreground' },
+        ],
         singles: [],
     },
     {
-        key: 'surfaces', label: 'Surfaces', desc: 'Cards, dialogs, popovers',
+        key: 'surfaces',
+        label: 'Surfaces',
+        desc: 'Cards, dialogs, popovers',
         pairs: [
             { bg: 'card', fg: 'cardForeground', bgLabel: 'Card', fgLabel: 'Card Text' },
             { bg: 'popover', fg: 'popoverForeground', bgLabel: 'Popover', fgLabel: 'Popover Text' },
@@ -127,21 +196,32 @@ const COLOR_GROUPS: GroupDef[] = [
         singles: [],
     },
     {
-        key: 'brand', label: 'Brand', desc: 'Buttons, links, interactive elements',
+        key: 'brand',
+        label: 'Brand',
+        desc: 'Buttons, links, interactive elements',
         pairs: [
             { bg: 'primary', fg: 'primaryForeground', bgLabel: 'Primary', fgLabel: 'Primary Text' },
-            { bg: 'secondary', fg: 'secondaryForeground', bgLabel: 'Secondary', fgLabel: 'Secondary Text' },
+            {
+                bg: 'secondary',
+                fg: 'secondaryForeground',
+                bgLabel: 'Secondary',
+                fgLabel: 'Secondary Text',
+            },
             { bg: 'accent', fg: 'accentForeground', bgLabel: 'Accent', fgLabel: 'Accent Text' },
         ],
         singles: [],
     },
     {
-        key: 'muted', label: 'Muted & Feedback', desc: 'Subtle content, placeholders, error states',
+        key: 'muted',
+        label: 'Muted & Feedback',
+        desc: 'Subtle content, placeholders, error states',
         pairs: [{ bg: 'muted', fg: 'mutedForeground', bgLabel: 'Muted', fgLabel: 'Muted Text' }],
         singles: [{ field: 'destructive', label: 'Destructive', cssVar: '--destructive' }],
     },
     {
-        key: 'structure', label: 'Structure', desc: 'Borders, input outlines, focus rings',
+        key: 'structure',
+        label: 'Structure',
+        desc: 'Borders, input outlines, focus rings',
         pairs: [],
         singles: [
             { field: 'border', label: 'Border', cssVar: '--border' },
@@ -150,11 +230,28 @@ const COLOR_GROUPS: GroupDef[] = [
         ],
     },
     {
-        key: 'sidebar', label: 'Sidebar', desc: 'Navigation sidebar colors',
+        key: 'sidebar',
+        label: 'Sidebar',
+        desc: 'Navigation sidebar colors',
         pairs: [
-            { bg: 'sidebar', fg: 'sidebarForeground', bgLabel: 'Sidebar Bg', fgLabel: 'Sidebar Text' },
-            { bg: 'sidebarPrimary', fg: 'sidebarPrimaryForeground', bgLabel: 'Active Item', fgLabel: 'Active Text' },
-            { bg: 'sidebarAccent', fg: 'sidebarAccentForeground', bgLabel: 'Hover Item', fgLabel: 'Hover Text' },
+            {
+                bg: 'sidebar',
+                fg: 'sidebarForeground',
+                bgLabel: 'Sidebar Bg',
+                fgLabel: 'Sidebar Text',
+            },
+            {
+                bg: 'sidebarPrimary',
+                fg: 'sidebarPrimaryForeground',
+                bgLabel: 'Active Item',
+                fgLabel: 'Active Text',
+            },
+            {
+                bg: 'sidebarAccent',
+                fg: 'sidebarAccentForeground',
+                bgLabel: 'Hover Item',
+                fgLabel: 'Hover Text',
+            },
         ],
         singles: [
             { field: 'sidebarBorder', label: 'Sidebar Border', cssVar: '--sidebar-border' },
@@ -162,7 +259,9 @@ const COLOR_GROUPS: GroupDef[] = [
         ],
     },
     {
-        key: 'charts', label: 'Charts', desc: 'Data visualisation palette',
+        key: 'charts',
+        label: 'Charts',
+        desc: 'Data visualisation palette',
         pairs: [],
         singles: [
             { field: 'chart1', label: 'Chart 1', cssVar: '--chart-1' },
@@ -177,16 +276,21 @@ const COLOR_GROUPS: GroupDef[] = [
 // ── Input primitives ──────────────────────────────────────────────────────────
 
 function ColorSwatch({
-    value, onChange, compact = false,
-}: { value: string; onChange: (v: string) => void; compact?: boolean }) {
+    value,
+    onChange,
+    compact = false,
+}: {
+    value: string
+    onChange: (v: string) => void
+    compact?: boolean
+}) {
     return (
         <div className="flex items-center gap-1.5">
             <input
                 type="color"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className={`shrink-0 cursor-pointer rounded border border-border bg-transparent p-0.5
-                    ${compact ? 'h-6 w-6' : 'h-7 w-7'}`}
+                className={`border-border shrink-0 cursor-pointer rounded border bg-transparent p-0.5 ${compact ? 'h-6 w-6' : 'h-7 w-7'}`}
             />
             <UiInput
                 value={value}
@@ -198,7 +302,11 @@ function ColorSwatch({
     )
 }
 
-function ColorPairRow({ pair, vars, onChange }: {
+function ColorPairRow({
+    pair,
+    vars,
+    onChange,
+}: {
     pair: PairDef
     vars: IThemeVars
     onChange: (patch: Partial<IThemeVars>) => void
@@ -206,7 +314,7 @@ function ColorPairRow({ pair, vars, onChange }: {
     const bgVal = vars[pair.bg]
     const fgVal = vars[pair.fg]
     return (
-        <div className="overflow-hidden rounded-lg border border-border">
+        <div className="border-border overflow-hidden rounded-lg border">
             {/* Contrast preview strip */}
             <div
                 className="flex items-center justify-between px-3 py-2"
@@ -215,34 +323,53 @@ function ColorPairRow({ pair, vars, onChange }: {
                 <span className="text-sm font-semibold">Aa</span>
                 <span className="font-mono text-[10px] opacity-60">{bgVal}</span>
             </div>
-            <div className="grid grid-cols-2 divide-x divide-border bg-muted/10">
+            <div className="divide-border bg-muted/10 grid grid-cols-2 divide-x">
                 <div className="space-y-1 p-2">
-                    <p className="text-[10px] text-muted-foreground">{pair.bgLabel}</p>
-                    <ColorSwatch compact value={bgVal} onChange={(v) => onChange({ [pair.bg]: v })} />
+                    <p className="text-muted-foreground text-[10px]">{pair.bgLabel}</p>
+                    <ColorSwatch
+                        compact
+                        value={bgVal}
+                        onChange={(v) => onChange({ [pair.bg]: v })}
+                    />
                 </div>
                 <div className="space-y-1 p-2">
-                    <p className="text-[10px] text-muted-foreground">{pair.fgLabel}</p>
-                    <ColorSwatch compact value={fgVal} onChange={(v) => onChange({ [pair.fg]: v })} />
+                    <p className="text-muted-foreground text-[10px]">{pair.fgLabel}</p>
+                    <ColorSwatch
+                        compact
+                        value={fgVal}
+                        onChange={(v) => onChange({ [pair.fg]: v })}
+                    />
                 </div>
             </div>
         </div>
     )
 }
 
-function SingleColorRow({ field, label, cssVar, value, onChange }: {
-    field: keyof IThemeVars; label: string; cssVar: string
-    value: string; onChange: (v: string) => void
+function SingleColorRow({
+    field,
+    label,
+    cssVar,
+    value,
+    onChange,
+}: {
+    field: keyof IThemeVars
+    label: string
+    cssVar: string
+    value: string
+    onChange: (v: string) => void
 }) {
     return (
-        <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/10 px-3 py-2">
+        <div className="border-border bg-muted/10 flex items-center gap-3 rounded-lg border px-3 py-2">
             <div
-                className="h-8 w-8 shrink-0 rounded-md border border-border"
+                className="border-border h-8 w-8 shrink-0 rounded-md border"
                 style={{ background: value }}
             />
             <div className="min-w-0 flex-1 space-y-1">
                 <div className="flex items-center gap-2">
                     <p className="text-xs font-medium">{label}</p>
-                    <code className="rounded bg-muted px-1 py-0.5 text-[10px] text-muted-foreground">{cssVar}</code>
+                    <code className="bg-muted text-muted-foreground rounded px-1 py-0.5 text-[10px]">
+                        {cssVar}
+                    </code>
                 </div>
                 <ColorSwatch compact value={value} onChange={onChange} />
             </div>
@@ -252,7 +379,11 @@ function SingleColorRow({ field, label, cssVar, value, onChange }: {
 
 // ── Collapsible group ─────────────────────────────────────────────────────────
 
-function ColorGroup({ group, vars, onChange }: {
+function ColorGroup({
+    group,
+    vars,
+    onChange,
+}: {
     group: GroupDef
     vars: IThemeVars
     onChange: (patch: Partial<IThemeVars>) => void
@@ -261,45 +392,46 @@ function ColorGroup({ group, vars, onChange }: {
 
     // Color swatches preview for header
     const previewColors = [
-        ...group.pairs.map(p => vars[p.bg]),
-        ...group.singles.map(s => vars[s.field]),
+        ...group.pairs.map((p) => vars[p.bg]),
+        ...group.singles.map((s) => vars[s.field]),
     ].slice(0, 5)
 
     return (
-        <div className="overflow-hidden rounded-xl border border-border">
+        <div className="border-border overflow-hidden rounded-xl border">
             <button
                 type="button"
-                onClick={() => setOpen(o => !o)}
-                className="flex w-full items-center gap-3 bg-muted/30 px-4 py-3 text-left transition-colors hover:bg-muted/50"
+                onClick={() => setOpen((o) => !o)}
+                className="bg-muted/30 hover:bg-muted/50 flex w-full items-center gap-3 px-4 py-3 text-left transition-colors"
             >
                 {/* Color swatches row */}
                 <div className="flex gap-1">
                     {previewColors.map((c, i) => (
                         <span
                             key={i}
-                            className="h-4 w-4 rounded-full border border-border/50"
+                            className="border-border/50 h-4 w-4 rounded-full border"
                             style={{ background: c }}
                         />
                     ))}
                 </div>
                 <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold">{group.label}</p>
-                    <p className="text-xs text-muted-foreground">{group.desc}</p>
+                    <p className="text-muted-foreground text-xs">{group.desc}</p>
                 </div>
-                {open
-                    ? <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
-                    : <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-                }
+                {open ? (
+                    <ChevronDown className="text-muted-foreground h-4 w-4 shrink-0" />
+                ) : (
+                    <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" />
+                )}
             </button>
 
             {open && (
                 <div className="space-y-3 p-4">
-                    {group.pairs.map(pair => (
+                    {group.pairs.map((pair) => (
                         <ColorPairRow key={pair.bg} pair={pair} vars={vars} onChange={onChange} />
                     ))}
                     {group.singles.length > 0 && (
                         <div className="space-y-2">
-                            {group.singles.map(s => (
+                            {group.singles.map((s) => (
                                 <SingleColorRow
                                     key={s.field}
                                     field={s.field}
@@ -319,16 +451,29 @@ function ColorGroup({ group, vars, onChange }: {
 
 // ── Preview helpers ───────────────────────────────────────────────────────────
 
-function PreviewSection({ title, vars: cssVars, children }: {
-    title: string; vars: string[]; children: React.ReactNode
+function PreviewSection({
+    title,
+    vars: cssVars,
+    children,
+}: {
+    title: string
+    vars: string[]
+    children: React.ReactNode
 }) {
     return (
         <div className="space-y-3">
             <div className="flex items-center gap-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</p>
+                <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                    {title}
+                </p>
                 <div className="flex flex-wrap gap-1">
-                    {cssVars.map(v => (
-                        <code key={v} className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">{v}</code>
+                    {cssVars.map((v) => (
+                        <code
+                            key={v}
+                            className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-[10px]"
+                        >
+                            {v}
+                        </code>
                     ))}
                 </div>
             </div>
@@ -341,42 +486,49 @@ function PreviewSection({ title, vars: cssVars, children }: {
 
 function ThemePreview() {
     return (
-        <div className="h-full overflow-auto bg-background">
+        <div className="bg-background h-full overflow-auto">
             <div className="space-y-6 p-6">
-
                 {/* Mini app layout */}
-                <PreviewSection title="App Layout" vars={['--background', '--sidebar', '--sidebar-foreground', '--border']}>
-                    <div className="overflow-hidden rounded-xl border border-border bg-background shadow-sm">
+                <PreviewSection
+                    title="App Layout"
+                    vars={['--background', '--sidebar', '--sidebar-foreground', '--border']}
+                >
+                    <div className="border-border bg-background overflow-hidden rounded-xl border shadow-sm">
                         <div className="flex h-48">
                             {/* Sidebar */}
-                            <div className="flex w-36 flex-col bg-sidebar text-sidebar-foreground">
-                                <div className="border-b border-sidebar-border px-3 py-2.5">
-                                    <div className="h-2.5 w-16 rounded bg-sidebar-primary" />
+                            <div className="bg-sidebar text-sidebar-foreground flex w-36 flex-col">
+                                <div className="border-sidebar-border border-b px-3 py-2.5">
+                                    <div className="bg-sidebar-primary h-2.5 w-16 rounded" />
                                 </div>
                                 <nav className="flex-1 space-y-0.5 p-2">
-                                    {['Dashboard', 'Users', 'Settings', 'Reports'].map((item, i) => (
-                                        <div
-                                            key={item}
-                                            className={`rounded px-2 py-1.5 text-xs font-medium ${
-                                                i === 0
-                                                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                                                    : 'text-sidebar-foreground'
-                                            }`}
-                                        >
-                                            {item}
-                                        </div>
-                                    ))}
+                                    {['Dashboard', 'Users', 'Settings', 'Reports'].map(
+                                        (item, i) => (
+                                            <div
+                                                key={item}
+                                                className={`rounded px-2 py-1.5 text-xs font-medium ${
+                                                    i === 0
+                                                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                                                        : 'text-sidebar-foreground'
+                                                }`}
+                                            >
+                                                {item}
+                                            </div>
+                                        ),
+                                    )}
                                 </nav>
                             </div>
                             {/* Content */}
                             <div className="flex-1 space-y-2 p-3">
-                                <div className="h-2.5 w-24 rounded bg-foreground/20" />
-                                <div className="h-1.5 w-40 rounded bg-muted-foreground/30" />
+                                <div className="bg-foreground/20 h-2.5 w-24 rounded" />
+                                <div className="bg-muted-foreground/30 h-1.5 w-40 rounded" />
                                 <div className="mt-3 grid grid-cols-2 gap-2">
-                                    {[1,2,3,4].map(n => (
-                                        <div key={n} className="rounded-md border border-border bg-card p-2">
-                                            <div className="h-1.5 w-12 rounded bg-card-foreground/20 mb-1" />
-                                            <div className="h-4 w-8 rounded bg-primary/30" />
+                                    {[1, 2, 3, 4].map((n) => (
+                                        <div
+                                            key={n}
+                                            className="border-border bg-card rounded-md border p-2"
+                                        >
+                                            <div className="bg-card-foreground/20 mb-1 h-1.5 w-12 rounded" />
+                                            <div className="bg-primary/30 h-4 w-8 rounded" />
                                         </div>
                                     ))}
                                 </div>
@@ -388,18 +540,33 @@ function ThemePreview() {
                 <Separator />
 
                 {/* Buttons */}
-                <PreviewSection title="Buttons" vars={['--primary', '--secondary', '--accent', '--destructive', '--muted']}>
+                <PreviewSection
+                    title="Buttons"
+                    vars={['--primary', '--secondary', '--accent', '--destructive', '--muted']}
+                >
                     <div className="space-y-2">
                         <div className="flex flex-wrap gap-2">
                             <UiButton size="sm">Primary</UiButton>
-                            <UiButton size="sm" variant="secondary">Secondary</UiButton>
-                            <UiButton size="sm" variant="outline">Outline</UiButton>
-                            <UiButton size="sm" variant="ghost">Ghost</UiButton>
-                            <UiButton size="sm" variant="destructive">Destructive</UiButton>
+                            <UiButton size="sm" variant="secondary">
+                                Secondary
+                            </UiButton>
+                            <UiButton size="sm" variant="outline">
+                                Outline
+                            </UiButton>
+                            <UiButton size="sm" variant="ghost">
+                                Ghost
+                            </UiButton>
+                            <UiButton size="sm" variant="destructive">
+                                Destructive
+                            </UiButton>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                            <UiButton size="sm" disabled>Disabled</UiButton>
-                            <UiButton size="sm" variant="link">Link</UiButton>
+                            <UiButton size="sm" disabled>
+                                Disabled
+                            </UiButton>
+                            <UiButton size="sm" variant="link">
+                                Link
+                            </UiButton>
                         </div>
                     </div>
                 </PreviewSection>
@@ -407,26 +574,49 @@ function ThemePreview() {
                 <Separator />
 
                 {/* Cards & Surfaces */}
-                <PreviewSection title="Cards & Surfaces" vars={['--card', '--card-foreground', '--popover', '--border']}>
+                <PreviewSection
+                    title="Cards & Surfaces"
+                    vars={['--card', '--card-foreground', '--popover', '--border']}
+                >
                     <div className="grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
+                        <div className="border-border bg-card text-card-foreground rounded-lg border p-4 shadow-sm">
                             <p className="text-sm font-semibold">Card Title</p>
-                            <p className="mt-1 text-xs text-muted-foreground">Card description using muted-foreground.</p>
+                            <p className="text-muted-foreground mt-1 text-xs">
+                                Card description using muted-foreground.
+                            </p>
                             <div className="mt-3 flex gap-1.5">
-                                <span className="inline-flex items-center rounded-md bg-primary px-2 py-0.5 text-[11px] font-medium text-primary-foreground">Primary</span>
-                                <span className="inline-flex items-center rounded-md bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">Secondary</span>
+                                <span className="bg-primary text-primary-foreground inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium">
+                                    Primary
+                                </span>
+                                <span className="bg-secondary text-secondary-foreground inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-medium">
+                                    Secondary
+                                </span>
                             </div>
                             <div className="mt-3">
-                                <UiButton size="sm" className="w-full">Action</UiButton>
+                                <UiButton size="sm" className="w-full">
+                                    Action
+                                </UiButton>
                             </div>
                         </div>
-                        <div className="rounded-lg border border-border bg-popover p-4 text-popover-foreground shadow-md">
-                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Popover</p>
+                        <div className="border-border bg-popover text-popover-foreground rounded-lg border p-4 shadow-md">
+                            <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
+                                Popover
+                            </p>
                             <p className="text-sm font-medium">Popover Content</p>
-                            <p className="mt-1 text-xs text-muted-foreground">Uses --popover and --popover-foreground.</p>
+                            <p className="text-muted-foreground mt-1 text-xs">
+                                Uses --popover and --popover-foreground.
+                            </p>
                             <div className="mt-3 flex gap-2">
-                                <UiButton size="sm" variant="outline" className="flex-1 h-7 text-xs">Cancel</UiButton>
-                                <UiButton size="sm" className="flex-1 h-7 text-xs">Confirm</UiButton>
+                                <UiButton
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-7 flex-1 text-xs"
+                                >
+                                    Cancel
+                                </UiButton>
+                                <UiButton size="sm" className="h-7 flex-1 text-xs">
+                                    Confirm
+                                </UiButton>
                             </div>
                         </div>
                     </div>
@@ -435,21 +625,31 @@ function ThemePreview() {
                 <Separator />
 
                 {/* Badges */}
-                <PreviewSection title="Badges" vars={['--primary', '--secondary', '--muted', '--destructive']}>
+                <PreviewSection
+                    title="Badges"
+                    vars={['--primary', '--secondary', '--muted', '--destructive']}
+                >
                     <div className="flex flex-wrap gap-2">
                         <Badge>Default</Badge>
                         <Badge variant="secondary">Secondary</Badge>
                         <Badge variant="outline">Outline</Badge>
                         <Badge variant="destructive">Destructive</Badge>
-                        <span className="inline-flex items-center rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-accent-foreground">Accent</span>
-                        <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">Muted</span>
+                        <span className="bg-accent text-accent-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+                            Accent
+                        </span>
+                        <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+                            Muted
+                        </span>
                     </div>
                 </PreviewSection>
 
                 <Separator />
 
                 {/* Form elements */}
-                <PreviewSection title="Form Elements" vars={['--input', '--border', '--ring', '--background']}>
+                <PreviewSection
+                    title="Form Elements"
+                    vars={['--input', '--border', '--ring', '--background']}
+                >
                     <div className="space-y-3">
                         <div className="space-y-1">
                             <label className="text-xs font-medium">Text Input</label>
@@ -457,22 +657,32 @@ function ThemePreview() {
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-medium">Select</label>
-                            <div className="flex max-w-sm items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm">
-                                <span className="flex-1 text-muted-foreground">Choose option…</span>
-                                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            <div className="border-input bg-background flex max-w-sm items-center gap-2 rounded-md border px-3 py-2 text-sm shadow-sm">
+                                <span className="text-muted-foreground flex-1">Choose option…</span>
+                                <ChevronDown className="text-muted-foreground h-4 w-4" />
                             </div>
                         </div>
                         <div className="flex items-center gap-6">
                             <label className="flex items-center gap-2 text-xs font-medium">
-                                <div className="h-4 w-4 rounded border border-primary bg-primary flex items-center justify-center">
-                                    <svg className="h-2.5 w-2.5 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                <div className="border-primary bg-primary flex h-4 w-4 items-center justify-center rounded border">
+                                    <svg
+                                        className="text-primary-foreground h-2.5 w-2.5"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        strokeWidth={3}
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M5 13l4 4L19 7"
+                                        />
                                     </svg>
                                 </div>
                                 Checked
                             </label>
                             <label className="flex items-center gap-2 text-xs font-medium">
-                                <div className="h-4 w-4 rounded border border-input bg-background" />
+                                <div className="border-input bg-background h-4 w-4 rounded border" />
                                 Unchecked
                             </label>
                             <label className="flex items-center gap-2 text-xs font-medium">
@@ -485,15 +695,34 @@ function ThemePreview() {
                 <Separator />
 
                 {/* Typography */}
-                <PreviewSection title="Typography" vars={['--foreground', '--muted-foreground', '--destructive']}>
-                    <div className="space-y-1.5 rounded-lg border border-border bg-card p-4">
-                        <p className="text-xl font-bold text-foreground">Heading — foreground</p>
-                        <p className="text-sm text-foreground">Body text using <code className="rounded bg-muted px-1 text-xs">--foreground</code>.</p>
-                        <p className="text-sm text-muted-foreground">Secondary text using <code className="rounded bg-muted px-1 text-xs">--muted-foreground</code>.</p>
-                        <p className="text-sm text-destructive">Error text using <code className="rounded bg-muted px-1 text-xs">--destructive</code>.</p>
+                <PreviewSection
+                    title="Typography"
+                    vars={['--foreground', '--muted-foreground', '--destructive']}
+                >
+                    <div className="border-border bg-card space-y-1.5 rounded-lg border p-4">
+                        <p className="text-foreground text-xl font-bold">Heading — foreground</p>
+                        <p className="text-foreground text-sm">
+                            Body text using{' '}
+                            <code className="bg-muted rounded px-1 text-xs">--foreground</code>.
+                        </p>
+                        <p className="text-muted-foreground text-sm">
+                            Secondary text using{' '}
+                            <code className="bg-muted rounded px-1 text-xs">
+                                --muted-foreground
+                            </code>
+                            .
+                        </p>
+                        <p className="text-destructive text-sm">
+                            Error text using{' '}
+                            <code className="bg-muted rounded px-1 text-xs">--destructive</code>.
+                        </p>
                         <div className="mt-2 flex gap-2">
-                            <span className="rounded border border-border px-2 py-0.5 text-xs text-muted-foreground">border</span>
-                            <span className="rounded border-2 border-ring px-2 py-0.5 text-xs text-muted-foreground">ring</span>
+                            <span className="border-border text-muted-foreground rounded border px-2 py-0.5 text-xs">
+                                border
+                            </span>
+                            <span className="border-ring text-muted-foreground rounded border-2 px-2 py-0.5 text-xs">
+                                ring
+                            </span>
                         </div>
                     </div>
                 </PreviewSection>
@@ -501,24 +730,55 @@ function ThemePreview() {
                 <Separator />
 
                 {/* Alerts */}
-                <PreviewSection title="Alerts & Feedback" vars={['--destructive', '--muted', '--accent']}>
+                <PreviewSection
+                    title="Alerts & Feedback"
+                    vars={['--destructive', '--muted', '--accent']}
+                >
                     <div className="space-y-2">
-                        <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3">
-                            <svg className="mt-0.5 h-4 w-4 shrink-0 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                        <div className="border-destructive/30 bg-destructive/10 flex items-start gap-3 rounded-lg border px-4 py-3">
+                            <svg
+                                className="text-destructive mt-0.5 h-4 w-4 shrink-0"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+                                />
                             </svg>
                             <div>
-                                <p className="text-sm font-semibold text-destructive">Destructive Alert</p>
-                                <p className="mt-0.5 text-xs text-muted-foreground">Uses --destructive for border & text.</p>
+                                <p className="text-destructive text-sm font-semibold">
+                                    Destructive Alert
+                                </p>
+                                <p className="text-muted-foreground mt-0.5 text-xs">
+                                    Uses --destructive for border & text.
+                                </p>
                             </div>
                         </div>
-                        <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/50 px-4 py-3">
-                            <svg className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                        <div className="border-border bg-muted/50 flex items-start gap-3 rounded-lg border px-4 py-3">
+                            <svg
+                                className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+                                />
                             </svg>
                             <div>
-                                <p className="text-sm font-semibold text-foreground">Info / Muted Alert</p>
-                                <p className="mt-0.5 text-xs text-muted-foreground">Uses --muted background and --border.</p>
+                                <p className="text-foreground text-sm font-semibold">
+                                    Info / Muted Alert
+                                </p>
+                                <p className="text-muted-foreground mt-0.5 text-xs">
+                                    Uses --muted background and --border.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -527,36 +787,56 @@ function ThemePreview() {
                 <Separator />
 
                 {/* Charts */}
-                <PreviewSection title="Charts" vars={['--chart-1', '--chart-2', '--chart-3', '--chart-4', '--chart-5']}>
+                <PreviewSection
+                    title="Charts"
+                    vars={['--chart-1', '--chart-2', '--chart-3', '--chart-4', '--chart-5']}
+                >
                     <div className="space-y-3">
                         {/* Bar chart */}
-                        <div className="rounded-lg border border-border bg-card p-4">
-                            <p className="mb-3 text-xs font-medium text-muted-foreground">Bar Chart</p>
+                        <div className="border-border bg-card rounded-lg border p-4">
+                            <p className="text-muted-foreground mb-3 text-xs font-medium">
+                                Bar Chart
+                            </p>
                             <div className="flex h-24 items-end gap-2">
-                                {([
-                                    { n: 1, h: '65%' }, { n: 2, h: '85%' }, { n: 3, h: '45%' },
-                                    { n: 4, h: '90%' }, { n: 5, h: '60%' },
-                                ] as const).map(({ n, h }) => (
-                                    <div key={n} className="flex flex-1 flex-col items-center gap-1">
+                                {(
+                                    [
+                                        { n: 1, h: '65%' },
+                                        { n: 2, h: '85%' },
+                                        { n: 3, h: '45%' },
+                                        { n: 4, h: '90%' },
+                                        { n: 5, h: '60%' },
+                                    ] as const
+                                ).map(({ n, h }) => (
+                                    <div
+                                        key={n}
+                                        className="flex flex-1 flex-col items-center gap-1"
+                                    >
                                         <div
                                             className="w-full rounded-t-sm"
-                                            style={{ height: h, backgroundColor: `var(--chart-${n})` }}
+                                            style={{
+                                                height: h,
+                                                backgroundColor: `var(--chart-${n})`,
+                                            }}
                                         />
-                                        <span className="text-[10px] text-muted-foreground">{h}</span>
+                                        <span className="text-muted-foreground text-[10px]">
+                                            {h}
+                                        </span>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
                         {/* Palette strip */}
-                        <div className="overflow-hidden rounded-lg border border-border">
-                            {[1,2,3,4,5].map(n => (
+                        <div className="border-border overflow-hidden rounded-lg border">
+                            {[1, 2, 3, 4, 5].map((n) => (
                                 <div
                                     key={n}
                                     className="flex h-8 items-center px-3"
                                     style={{ backgroundColor: `var(--chart-${n})` }}
                                 >
-                                    <code className="text-[11px] font-medium text-white/80 drop-shadow">--chart-{n}</code>
+                                    <code className="text-[11px] font-medium text-white/80 drop-shadow">
+                                        --chart-{n}
+                                    </code>
                                 </div>
                             ))}
                         </div>
@@ -577,14 +857,13 @@ function ThemePreview() {
                         ].map(({ label, cls }) => (
                             <div
                                 key={label}
-                                className={`flex h-12 w-16 items-center justify-center border-2 border-primary bg-primary/10 text-xs font-medium text-primary ${cls}`}
+                                className={`border-primary bg-primary/10 text-primary flex h-12 w-16 items-center justify-center border-2 text-xs font-medium ${cls}`}
                             >
                                 {label}
                             </div>
                         ))}
                     </div>
                 </PreviewSection>
-
             </div>
         </div>
     )
@@ -596,7 +875,12 @@ interface ThemeEditorProps {
     open: boolean
     onOpenChange: (v: boolean) => void
     theme: ITheme | null
-    onSubmit: (values: { name: string; slug: string; isActive: boolean; config: IThemeConfig }) => void
+    onSubmit: (values: {
+        name: string
+        slug: string
+        isActive: boolean
+        config: IThemeConfig
+    }) => void
     isPending: boolean
 }
 
@@ -632,11 +916,14 @@ export function ThemeEditor({ open, onOpenChange, theme, onSubmit, isPending }: 
             setPreviewDark(isDarkPage.current)
             applyVars(isDarkPage.current ? cfg.dark : cfg.light, cfg.radius)
         } else {
-            setName(''); setSlug(''); setIsActive(false)
-            setConfig(DEFAULT_CONFIG); setPreviewDark(false)
+            setName('')
+            setSlug('')
+            setIsActive(false)
+            setConfig(DEFAULT_CONFIG)
+            setPreviewDark(false)
             applyVars(DEFAULT_LIGHT, DEFAULT_CONFIG.radius)
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open])
 
     const handleOpenChange = (v: boolean) => {
@@ -669,12 +956,18 @@ export function ThemeEditor({ open, onOpenChange, theme, onSubmit, isPending }: 
 
     const handleNameChange = (v: string) => {
         setName(v)
-        if (!theme) setSlug(v.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''))
+        if (!theme)
+            setSlug(
+                v
+                    .toLowerCase()
+                    .replace(/\s+/g, '-')
+                    .replace(/[^a-z0-9-]/g, ''),
+            )
     }
 
     return (
         <Drawer open={open} onOpenChange={handleOpenChange} direction="right" dismissible={false}>
-            <DrawerContent className="flex flex-col gap-0 p-0 !w-[50vw] sm:!max-w-[50vw] rounded-l-xl">
+            <DrawerContent className="flex !w-[50vw] flex-col gap-0 rounded-l-xl p-0 sm:!max-w-[50vw]">
                 {/* ── Header ── */}
                 <DrawerHeader className="flex-row items-center justify-between border-b px-5 py-3">
                     <div className="flex items-center gap-3">
@@ -688,12 +981,31 @@ export function ThemeEditor({ open, onOpenChange, theme, onSubmit, isPending }: 
                         )}
                     </div>
                     <div className="flex items-center gap-2">
-                        <UiButton variant="outline" size="sm" onClick={togglePreviewDark} className="gap-1.5">
-                            {previewDark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+                        <UiButton
+                            variant="outline"
+                            size="sm"
+                            onClick={togglePreviewDark}
+                            className="gap-1.5"
+                        >
+                            {previewDark ? (
+                                <Sun className="h-3.5 w-3.5" />
+                            ) : (
+                                <Moon className="h-3.5 w-3.5" />
+                            )}
                             {previewDark ? 'Light' : 'Dark'}
                         </UiButton>
-                        <UiButton variant="outline" size="sm" onClick={() => handleOpenChange(false)}>Cancel</UiButton>
-                        <UiButton size="sm" onClick={() => onSubmit({ name, slug, isActive, config })} disabled={isPending}>
+                        <UiButton
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenChange(false)}
+                        >
+                            Cancel
+                        </UiButton>
+                        <UiButton
+                            size="sm"
+                            onClick={() => onSubmit({ name, slug, isActive, config })}
+                            disabled={isPending}
+                        >
                             {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
                         </UiButton>
                     </div>
@@ -701,64 +1013,106 @@ export function ThemeEditor({ open, onOpenChange, theme, onSubmit, isPending }: 
 
                 {/* ── Body ── */}
                 <div className="flex min-h-0 flex-1 overflow-hidden">
-
                     {/* Left: controls */}
                     <div className="w-[460px] shrink-0 overflow-auto border-r">
                         <div className="space-y-4 p-5">
-
                             {/* Identity */}
                             <div className="space-y-1">
-                                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Identity</p>
-                                <div className="rounded-xl border border-border bg-muted/10 p-4 space-y-3">
+                                <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                                    Identity
+                                </p>
+                                <div className="border-border bg-muted/10 space-y-3 rounded-xl border p-4">
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="space-y-1">
                                             <Label className="text-xs">Theme Name</Label>
-                                            <UiInput value={name} onChange={(e) => handleNameChange(e.target.value)} placeholder="Ocean Blue" />
+                                            <UiInput
+                                                value={name}
+                                                onChange={(e) => handleNameChange(e.target.value)}
+                                                placeholder="Ocean Blue"
+                                            />
                                         </div>
                                         <div className="space-y-1">
                                             <Label className="text-xs">Slug</Label>
-                                            <UiInput value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="ocean-blue" className="font-mono" />
+                                            <UiInput
+                                                value={slug}
+                                                onChange={(e) => setSlug(e.target.value)}
+                                                placeholder="ocean-blue"
+                                                className="font-mono"
+                                            />
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <UiSwitch id="isActive" checked={isActive} onCheckedChange={setIsActive} />
-                                        <Label htmlFor="isActive" className="cursor-pointer text-xs">Set as active theme on save</Label>
+                                        <UiSwitch
+                                            id="isActive"
+                                            checked={isActive}
+                                            onCheckedChange={setIsActive}
+                                        />
+                                        <Label
+                                            htmlFor="isActive"
+                                            className="cursor-pointer text-xs"
+                                        >
+                                            Set as active theme on save
+                                        </Label>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Appearance */}
                             <div className="space-y-1">
-                                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Appearance</p>
-                                <div className="rounded-xl border border-border bg-muted/10 p-4 space-y-4">
+                                <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                                    Appearance
+                                </p>
+                                <div className="border-border bg-muted/10 space-y-4 rounded-xl border p-4">
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="space-y-1">
                                             <Label className="text-xs">Font Family</Label>
                                             <UiInput
                                                 value={config.fontFamily}
-                                                onChange={(e) => setConfig(p => ({ ...p, fontFamily: e.target.value }))}
+                                                onChange={(e) =>
+                                                    setConfig((p) => ({
+                                                        ...p,
+                                                        fontFamily: e.target.value,
+                                                    }))
+                                                }
                                                 placeholder="Inter"
                                             />
                                         </div>
                                         <div className="space-y-1">
                                             <Label className="text-xs">
                                                 Border Radius
-                                                <span className="ml-1 font-mono text-muted-foreground">{config.radius}rem</span>
+                                                <span className="text-muted-foreground ml-1 font-mono">
+                                                    {config.radius}rem
+                                                </span>
                                             </Label>
                                             <div className="flex items-center gap-2 pt-1">
-                                                <span className="text-xs text-muted-foreground">0</span>
+                                                <span className="text-muted-foreground text-xs">
+                                                    0
+                                                </span>
                                                 <input
-                                                    type="range" min={0} max={2} step={0.125}
+                                                    type="range"
+                                                    min={0}
+                                                    max={2}
+                                                    step={0.125}
                                                     value={parseFloat(config.radius) || 0.625}
                                                     onChange={(e) => patchRadius(e.target.value)}
-                                                    className="flex-1 accent-primary"
+                                                    className="accent-primary flex-1"
                                                 />
-                                                <span className="text-xs text-muted-foreground">2</span>
+                                                <span className="text-muted-foreground text-xs">
+                                                    2
+                                                </span>
                                             </div>
                                             {/* Radius preview */}
                                             <div className="mt-1 flex gap-1.5">
-                                                {['rounded-sm','rounded-md','rounded-lg','rounded-xl'].map(c => (
-                                                    <div key={c} className={`h-5 flex-1 border-2 border-primary bg-primary/15 ${c}`} />
+                                                {[
+                                                    'rounded-sm',
+                                                    'rounded-md',
+                                                    'rounded-lg',
+                                                    'rounded-xl',
+                                                ].map((c) => (
+                                                    <div
+                                                        key={c}
+                                                        className={`border-primary bg-primary/15 h-5 flex-1 border-2 ${c}`}
+                                                    />
                                                 ))}
                                             </div>
                                         </div>
@@ -766,20 +1120,46 @@ export function ThemeEditor({ open, onOpenChange, theme, onSubmit, isPending }: 
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="space-y-1">
                                             <Label className="text-xs">Hero Variant</Label>
-                                            <Select value={config.heroVariant} onValueChange={(v) => setConfig(p => ({ ...p, heroVariant: v as any }))}>
-                                                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                                            <Select
+                                                value={config.heroVariant}
+                                                onValueChange={(v) =>
+                                                    setConfig((p) => ({
+                                                        ...p,
+                                                        heroVariant: v as any,
+                                                    }))
+                                                }
+                                            >
+                                                <SelectTrigger className="h-9">
+                                                    <SelectValue />
+                                                </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="centered">Centered</SelectItem>
-                                                    <SelectItem value="fullwidth">Full Width</SelectItem>
+                                                    <SelectItem value="centered">
+                                                        Centered
+                                                    </SelectItem>
+                                                    <SelectItem value="fullwidth">
+                                                        Full Width
+                                                    </SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                         <div className="space-y-1">
                                             <Label className="text-xs">Hero Background</Label>
-                                            <Select value={config.heroBackground} onValueChange={(v) => setConfig(p => ({ ...p, heroBackground: v as any }))}>
-                                                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                                            <Select
+                                                value={config.heroBackground}
+                                                onValueChange={(v) =>
+                                                    setConfig((p) => ({
+                                                        ...p,
+                                                        heroBackground: v as any,
+                                                    }))
+                                                }
+                                            >
+                                                <SelectTrigger className="h-9">
+                                                    <SelectValue />
+                                                </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="gradient">Gradient</SelectItem>
+                                                    <SelectItem value="gradient">
+                                                        Gradient
+                                                    </SelectItem>
                                                     <SelectItem value="solid">Solid</SelectItem>
                                                     <SelectItem value="mesh">Mesh</SelectItem>
                                                 </SelectContent>
@@ -791,7 +1171,9 @@ export function ThemeEditor({ open, onOpenChange, theme, onSubmit, isPending }: 
 
                             {/* Colors */}
                             <div className="space-y-1">
-                                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Colors</p>
+                                <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                                    Colors
+                                </p>
                                 <Tabs defaultValue="light">
                                     <TabsList className="w-full">
                                         <TabsTrigger value="light" className="flex-1 gap-1.5">
@@ -801,9 +1183,13 @@ export function ThemeEditor({ open, onOpenChange, theme, onSubmit, isPending }: 
                                             <Moon className="h-3.5 w-3.5" /> Dark Mode
                                         </TabsTrigger>
                                     </TabsList>
-                                    {(['light', 'dark'] as const).map(mode => (
-                                        <TabsContent key={mode} value={mode} className="mt-3 space-y-2">
-                                            {COLOR_GROUPS.map(group => (
+                                    {(['light', 'dark'] as const).map((mode) => (
+                                        <TabsContent
+                                            key={mode}
+                                            value={mode}
+                                            className="mt-3 space-y-2"
+                                        >
+                                            {COLOR_GROUPS.map((group) => (
                                                 <ColorGroup
                                                     key={group.key}
                                                     group={group}
@@ -815,7 +1201,6 @@ export function ThemeEditor({ open, onOpenChange, theme, onSubmit, isPending }: 
                                     ))}
                                 </Tabs>
                             </div>
-
                         </div>
                     </div>
 
@@ -823,7 +1208,6 @@ export function ThemeEditor({ open, onOpenChange, theme, onSubmit, isPending }: 
                     <div className="min-w-0 flex-1 overflow-hidden">
                         <ThemePreview />
                     </div>
-
                 </div>
             </DrawerContent>
         </Drawer>

@@ -5,16 +5,16 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { UiButton } from '@/components/ui-custom/UiButton'
-import DashboardPageMain from '@/components/layouts/backend/DashboardPageMain'
-import DashboardPageHeader from '@/components/layouts/backend/DashboardPageHeader'
 import DashboardPageCard from '@/components/layouts/backend/DashboardPageCard'
+import DashboardPageHeader from '@/components/layouts/backend/DashboardPageHeader'
+import DashboardPageMain from '@/components/layouts/backend/DashboardPageMain'
+import { UiButton } from '@/components/ui-custom/UiButton'
 
-import { adminPermissionService } from './services/PermissionService'
-import type { IPermission } from './types/PermissionTypes'
 import { PermissionDeleteDialog } from './PermissionDeleteDialog'
 import { PermissionFormDialog } from './PermissionFormDialog'
 import { RolePermissionMatrix } from './RolePermissionMatrix'
+import { adminPermissionService } from './services/PermissionService'
+import type { IPermission } from './types/PermissionTypes'
 
 type PermissionInput = Parameters<typeof adminPermissionService.create>[0]
 
@@ -31,19 +31,32 @@ export function PermissionsPage() {
 
     const createMutation = useMutation({
         mutationFn: (data: PermissionInput) => adminPermissionService.create(data),
-        onSuccess: () => { toast.success('Permission created'); invalidate(); setFormOpen(false) },
+        onSuccess: () => {
+            toast.success('Permission created')
+            invalidate()
+            setFormOpen(false)
+        },
         onError: (e: unknown) => toast.error(e instanceof Error ? e.message : 'Request failed'),
     })
 
     const updateMutation = useMutation({
-        mutationFn: ({ id, data }: { id: string; data: PermissionInput }) => adminPermissionService.update(id, data),
-        onSuccess: () => { toast.success('Permission updated'); invalidate(); setFormOpen(false) },
+        mutationFn: ({ id, data }: { id: string; data: PermissionInput }) =>
+            adminPermissionService.update(id, data),
+        onSuccess: () => {
+            toast.success('Permission updated')
+            invalidate()
+            setFormOpen(false)
+        },
         onError: (e: unknown) => toast.error(e instanceof Error ? e.message : 'Request failed'),
     })
 
     const deleteMutation = useMutation({
         mutationFn: (id: string) => adminPermissionService.delete(id),
-        onSuccess: () => { toast.success('Permission deleted'); invalidate(); setDeletePerm(null) },
+        onSuccess: () => {
+            toast.success('Permission deleted')
+            invalidate()
+            setDeletePerm(null)
+        },
         onError: (e: unknown) => toast.error(e instanceof Error ? e.message : 'Request failed'),
     })
 
@@ -71,7 +84,10 @@ export function PermissionsPage() {
 
             <DashboardPageCard className="overflow-visible">
                 <RolePermissionMatrix
-                    onEdit={(perm) => { setEditPerm(perm); setFormOpen(true) }}
+                    onEdit={(perm) => {
+                        setEditPerm(perm)
+                        setFormOpen(true)
+                    }}
                     onDelete={setDeletePerm}
                 />
             </DashboardPageCard>

@@ -26,7 +26,11 @@ export const accountService = {
         })
     },
 
-    updatePassword: (data: { currentPassword: string; newPassword: string; confirmPassword: string }) =>
+    updatePassword: (data: {
+        currentPassword: string
+        newPassword: string
+        confirmPassword: string
+    }) =>
         api.API<any>('/api/user/password', {
             method: 'PATCH',
             body: JSON.stringify(data),

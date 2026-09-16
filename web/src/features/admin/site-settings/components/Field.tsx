@@ -14,8 +14,8 @@ export function Field({ label, hint, error, children }: FieldProps) {
         <div className="space-y-1.5">
             <Label className="text-sm font-medium">{label}</Label>
             {children}
-            {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
-            {error && <p className="text-xs text-destructive">{error}</p>}
+            {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
+            {error && <p className="text-destructive text-xs">{error}</p>}
         </div>
     )
 }

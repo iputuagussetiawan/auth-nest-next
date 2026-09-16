@@ -4,7 +4,10 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
 import { DRIZZLE } from '../../database/drizzle.provider'
 import * as schema from '../../database/schema'
-import { notificationReads, notifications } from '../../database/schema/notification/notifications.schema'
+import {
+    notificationReads,
+    notifications,
+} from '../../database/schema/notification/notifications.schema'
 
 @Injectable()
 export class NotificationService {

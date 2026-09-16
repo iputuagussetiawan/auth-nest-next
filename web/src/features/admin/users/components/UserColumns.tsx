@@ -10,6 +10,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { UserAvatar } from '@/components/user-avatar'
+
 import type { IAdminUser } from '../types/UserTypes'
 
 interface Actions {
@@ -50,7 +51,11 @@ export function getUserColumns(actions: Actions): ColumnDef<IAdminUser>[] {
                 const name = `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim() || undefined
                 return (
                     <div className="flex items-center gap-2.5">
-                        <UserAvatar name={name} image={u.profilePicture} className="h-8 w-8 shrink-0" />
+                        <UserAvatar
+                            name={name}
+                            image={u.profilePicture}
+                            className="h-8 w-8 shrink-0"
+                        />
                         <div className="min-w-0">
                             <p className="truncate font-medium">{name || '—'}</p>
                             <p className="text-muted-foreground truncate text-xs">{u.email}</p>
@@ -65,8 +70,11 @@ export function getUserColumns(actions: Actions): ColumnDef<IAdminUser>[] {
             meta: { className: 'hidden sm:table-cell' },
             cell: ({ getValue }) => {
                 const v = getValue<string | null>()
-                return v ? <Badge variant="secondary">{v}</Badge>
-                    : <span className="text-muted-foreground text-xs">—</span>
+                return v ? (
+                    <Badge variant="secondary">{v}</Badge>
+                ) : (
+                    <span className="text-muted-foreground text-xs">—</span>
+                )
             },
         },
         {
@@ -79,16 +87,22 @@ export function getUserColumns(actions: Actions): ColumnDef<IAdminUser>[] {
             accessorKey: 'isEmailVerified',
             header: 'Verified',
             meta: { className: 'hidden md:table-cell' },
-            cell: ({ getValue }) => getValue<boolean>()
-                ? <Badge variant="default">Yes</Badge>
-                : <Badge variant="outline">No</Badge>,
+            cell: ({ getValue }) =>
+                getValue<boolean>() ? (
+                    <Badge variant="default">Yes</Badge>
+                ) : (
+                    <Badge variant="outline">No</Badge>
+                ),
         },
         {
             accessorKey: 'isActive',
             header: 'Status',
-            cell: ({ getValue }) => getValue<boolean>()
-                ? <Badge className="bg-emerald-100 text-emerald-700">Active</Badge>
-                : <Badge variant="destructive">Inactive</Badge>,
+            cell: ({ getValue }) =>
+                getValue<boolean>() ? (
+                    <Badge className="bg-emerald-100 text-emerald-700">Active</Badge>
+                ) : (
+                    <Badge variant="destructive">Inactive</Badge>
+                ),
         },
         {
             accessorKey: 'createdAt',

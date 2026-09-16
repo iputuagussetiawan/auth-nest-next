@@ -39,7 +39,9 @@ describe('NotificationController', () => {
     it('marks one notification as read', async () => {
         service.markRead.mockResolvedValue({ message: 'Notification marked as read' })
 
-        await expect(controller.markRead({ user: { userId: 'admin-id' } }, 'notification-id')).resolves.toEqual({
+        await expect(
+            controller.markRead({ user: { userId: 'admin-id' } }, 'notification-id'),
+        ).resolves.toEqual({
             status: 'success',
             message: 'Notification marked as read',
             data: { message: 'Notification marked as read' },

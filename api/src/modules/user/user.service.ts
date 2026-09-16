@@ -1,21 +1,21 @@
 import { Inject, Injectable } from '@nestjs/common'
 import * as bcrypt from 'bcrypt'
-import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { eq, ilike, or, sql } from 'drizzle-orm'
+import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
+import { BadRequestException, NotFoundException } from '../../common/exceptions/app-error'
 import { DRIZZLE } from '../../database/drizzle.provider'
 import * as schema from '../../database/schema'
 import { users } from '../../database/schema/auth/users.schema'
-import { userRoles } from '../../database/schema/rbac/user-roles.schema'
 import { roles } from '../../database/schema/rbac/roles.schema'
-import { RoleService } from '../rbac/role/role.service'
+import { userRoles } from '../../database/schema/rbac/user-roles.schema'
 import { CloudinaryService } from '../../shared/cloudinary/cloudinary.service'
+import { RoleService } from '../rbac/role/role.service'
 import { SessionService } from '../session/session.service'
-import { BadRequestException, NotFoundException } from '../../common/exceptions/app-error'
-import { UpdateProfileDto } from './dto/update-profile.dto'
-import { UpdatePasswordDto } from './dto/update-password.dto'
-import { AdminUpdateUserDto } from './dto/admin-update-user.dto'
 import { AdminCreateUserDto } from './dto/admin-create-user.dto'
+import { AdminUpdateUserDto } from './dto/admin-update-user.dto'
+import { UpdatePasswordDto } from './dto/update-password.dto'
+import { UpdateProfileDto } from './dto/update-profile.dto'
 
 @Injectable()
 export class UserService {
@@ -189,7 +189,14 @@ export class UserService {
                 isEmailVerified: true,
                 provider: 'email',
             })
-            .returning({ id: users.id, email: users.email, firstName: users.firstName, lastName: users.lastName, isActive: users.isActive, createdAt: users.createdAt })
+            .returning({
+                id: users.id,
+                email: users.email,
+                firstName: users.firstName,
+                lastName: users.lastName,
+                isActive: users.isActive,
+                createdAt: users.createdAt,
+            })
 
         if (dto.roleId) {
             await this.roleService.assignRoleToUser(created.id, dto.roleId)
@@ -199,7 +206,11 @@ export class UserService {
     }
 
     async adminUpdateUser(id: string, dto: AdminUpdateUserDto) {
-        const [user] = await this.db.select({ id: users.id }).from(users).where(eq(users.id, id)).limit(1)
+        const [user] = await this.db
+            .select({ id: users.id })
+            .from(users)
+            .where(eq(users.id, id))
+            .limit(1)
         if (!user) throw new NotFoundException('User not found')
 
         const [updated] = await this.db
@@ -218,7 +229,11 @@ export class UserService {
     }
 
     async adminDeleteUser(id: string) {
-        const [user] = await this.db.select({ id: users.id }).from(users).where(eq(users.id, id)).limit(1)
+        const [user] = await this.db
+            .select({ id: users.id })
+            .from(users)
+            .where(eq(users.id, id))
+            .limit(1)
         if (!user) throw new NotFoundException('User not found')
         await this.db.delete(users).where(eq(users.id, id))
         return { message: 'User deleted' }

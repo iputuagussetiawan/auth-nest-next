@@ -76,7 +76,7 @@ export function TeamSwitcher({
                         <SidebarMenuButton
                             size="lg"
                             tooltip={activeItem.name}
-                            className="h-13 rounded-lg px-3 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-2xl group-data-[collapsible=icon]:px-0"
+                            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-13 rounded-lg px-3 group-data-[collapsible=icon]:size-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-2xl group-data-[collapsible=icon]:px-0"
                         >
                             <div className="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg">
                                 {activeItem.imageUrl ? (
@@ -84,7 +84,9 @@ export function TeamSwitcher({
                                         src={activeItem.imageUrl}
                                         alt={activeItem.name}
                                         className="size-full object-contain"
-                                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                                        onError={(e) => {
+                                            ;(e.target as HTMLImageElement).style.display = 'none'
+                                        }}
                                     />
                                 ) : ActiveIcon ? (
                                     <ActiveIcon className="size-4" />
@@ -92,7 +94,9 @@ export function TeamSwitcher({
                             </div>
                             <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                                 <span className="truncate font-medium">{activeItem.name}</span>
-                                {activeItem.subtitle && <span className="truncate text-xs">{activeItem.subtitle}</span>}
+                                {activeItem.subtitle && (
+                                    <span className="truncate text-xs">{activeItem.subtitle}</span>
+                                )}
                             </div>
                             <ChevronsUpDown className="ml-auto group-data-[collapsible=icon]:hidden" />
                         </SidebarMenuButton>
@@ -112,18 +116,23 @@ export function TeamSwitcher({
                             return (
                                 <DropdownMenuItem
                                     key={item.key}
-                                    onClick={() => { setActiveItem(item); onSelectItem?.(item) }}
+                                    onClick={() => {
+                                        setActiveItem(item)
+                                        onSelectItem?.(item)
+                                    }}
                                     className={`gap-2 rounded-md border p-2 ${
                                         isActive
                                             ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400'
                                             : 'border-transparent'
                                     }`}
                                 >
-                                    <div className={`flex size-6 items-center justify-center overflow-hidden rounded-md border ${
-                                        isActive
-                                            ? 'border-emerald-300 dark:border-emerald-800'
-                                            : ''
-                                    }`}>
+                                    <div
+                                        className={`flex size-6 items-center justify-center overflow-hidden rounded-md border ${
+                                            isActive
+                                                ? 'border-emerald-300 dark:border-emerald-800'
+                                                : ''
+                                        }`}
+                                    >
                                         {item.imageUrl ? (
                                             <img
                                                 src={item.imageUrl}
@@ -137,9 +146,13 @@ export function TeamSwitcher({
                                     <div className="grid min-w-0 flex-1 text-sm leading-tight">
                                         <span className="truncate font-medium">{item.name}</span>
                                         {item.subtitle && (
-                                            <span className={`truncate text-xs ${
-                                                isActive ? 'text-emerald-600 dark:text-emerald-500' : 'text-muted-foreground'
-                                            }`}>
+                                            <span
+                                                className={`truncate text-xs ${
+                                                    isActive
+                                                        ? 'text-emerald-600 dark:text-emerald-500'
+                                                        : 'text-muted-foreground'
+                                                }`}
+                                            >
                                                 {item.subtitle}
                                             </span>
                                         )}
@@ -155,7 +168,9 @@ export function TeamSwitcher({
                                     <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                                         <Plus className="size-4" />
                                     </div>
-                                    <div className="text-muted-foreground font-medium">{addActionLabel}</div>
+                                    <div className="text-muted-foreground font-medium">
+                                        {addActionLabel}
+                                    </div>
                                 </DropdownMenuItem>
                             </>
                         )}

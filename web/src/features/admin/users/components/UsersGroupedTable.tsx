@@ -10,21 +10,22 @@ import {
     TableRow,
 } from '@/components/ui/table'
 import { UserAvatar } from '@/components/user-avatar'
+
 import type { IAdminUser } from '../types/UserTypes'
 import { renderUserActions } from './UserColumns'
 
 // role → border-left color class
 const ROLE_COLORS: Record<string, string> = {
-    admin:     'border-l-violet-500',
-    company:   'border-l-blue-500',
+    admin: 'border-l-violet-500',
+    company: 'border-l-blue-500',
     jobseeker: 'border-l-emerald-500',
-    user:      'border-l-orange-400',
+    user: 'border-l-orange-400',
 }
 const ROLE_BG: Record<string, string> = {
-    admin:     'bg-violet-50 dark:bg-violet-950/30',
-    company:   'bg-blue-50 dark:bg-blue-950/30',
+    admin: 'bg-violet-50 dark:bg-violet-950/30',
+    company: 'bg-blue-50 dark:bg-blue-950/30',
     jobseeker: 'bg-emerald-50 dark:bg-emerald-950/30',
-    user:      'bg-orange-50 dark:bg-orange-950/30',
+    user: 'bg-orange-50 dark:bg-orange-950/30',
 }
 
 interface Actions {
@@ -58,24 +59,33 @@ export function UsersGroupedTable({ users, onEdit, onDelete }: UsersGroupedTable
                 <TableHeader>
                     <TableRow>
                         <TableHead className="whitespace-nowrap">Name</TableHead>
-                        <TableHead className="hidden whitespace-nowrap sm:table-cell">Provider</TableHead>
-                        <TableHead className="hidden whitespace-nowrap md:table-cell">Verified</TableHead>
+                        <TableHead className="hidden whitespace-nowrap sm:table-cell">
+                            Provider
+                        </TableHead>
+                        <TableHead className="hidden whitespace-nowrap md:table-cell">
+                            Verified
+                        </TableHead>
                         <TableHead className="whitespace-nowrap">Status</TableHead>
-                        <TableHead className="hidden whitespace-nowrap lg:table-cell">Joined</TableHead>
+                        <TableHead className="hidden whitespace-nowrap lg:table-cell">
+                            Joined
+                        </TableHead>
                         <TableHead />
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {grouped.length === 0 && (
                         <TableRow>
-                            <TableCell colSpan={6} className="text-muted-foreground h-24 text-center">
+                            <TableCell
+                                colSpan={6}
+                                className="text-muted-foreground h-24 text-center"
+                            >
                                 No results found.
                             </TableCell>
                         </TableRow>
                     )}
                     {grouped.map(([roleName, groupUsers], groupIdx) => {
                         const colorBorder = ROLE_COLORS[roleName] ?? 'border-l-gray-400'
-                        const colorBg    = ROLE_BG[roleName]    ?? 'bg-gray-50 dark:bg-gray-900/30'
+                        const colorBg = ROLE_BG[roleName] ?? 'bg-gray-50 dark:bg-gray-900/30'
                         return (
                             <Fragment key={roleName}>
                                 {/* Group separator — 5px top border for every group except first */}
@@ -95,9 +105,12 @@ export function UsersGroupedTable({ users, onEdit, onDelete }: UsersGroupedTable
                                 >
                                     <TableCell colSpan={6} className="py-2">
                                         <div className="flex items-center gap-2">
-                                            <span className="font-semibold capitalize">{roleName}</span>
+                                            <span className="font-semibold capitalize">
+                                                {roleName}
+                                            </span>
                                             <Badge variant="outline" className="font-normal">
-                                                {groupUsers.length} user{groupUsers.length !== 1 ? 's' : ''}
+                                                {groupUsers.length} user
+                                                {groupUsers.length !== 1 ? 's' : ''}
                                             </Badge>
                                         </div>
                                     </TableCell>
@@ -105,7 +118,9 @@ export function UsersGroupedTable({ users, onEdit, onDelete }: UsersGroupedTable
 
                                 {/* User rows */}
                                 {groupUsers.map((u) => {
-                                    const name = `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim() || undefined
+                                    const name =
+                                        `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim() ||
+                                        undefined
                                     return (
                                         <TableRow
                                             key={u.id}
@@ -113,10 +128,18 @@ export function UsersGroupedTable({ users, onEdit, onDelete }: UsersGroupedTable
                                         >
                                             <TableCell>
                                                 <div className="flex items-center gap-2.5">
-                                                    <UserAvatar name={name} image={u.profilePicture} className="h-8 w-8 shrink-0" />
+                                                    <UserAvatar
+                                                        name={name}
+                                                        image={u.profilePicture}
+                                                        className="h-8 w-8 shrink-0"
+                                                    />
                                                     <div className="min-w-0">
-                                                        <p className="truncate font-medium">{name || '—'}</p>
-                                                        <p className="text-muted-foreground truncate text-xs">{u.email}</p>
+                                                        <p className="truncate font-medium">
+                                                            {name || '—'}
+                                                        </p>
+                                                        <p className="text-muted-foreground truncate text-xs">
+                                                            {u.email}
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </TableCell>
@@ -124,19 +147,27 @@ export function UsersGroupedTable({ users, onEdit, onDelete }: UsersGroupedTable
                                                 <Badge variant="outline">{u.provider}</Badge>
                                             </TableCell>
                                             <TableCell className="hidden md:table-cell">
-                                                {u.isEmailVerified
-                                                    ? <Badge variant="default">Yes</Badge>
-                                                    : <Badge variant="outline">No</Badge>}
+                                                {u.isEmailVerified ? (
+                                                    <Badge variant="default">Yes</Badge>
+                                                ) : (
+                                                    <Badge variant="outline">No</Badge>
+                                                )}
                                             </TableCell>
                                             <TableCell>
-                                                {u.isActive
-                                                    ? <Badge className="bg-emerald-100 text-emerald-700">Active</Badge>
-                                                    : <Badge variant="destructive">Inactive</Badge>}
+                                                {u.isActive ? (
+                                                    <Badge className="bg-emerald-100 text-emerald-700">
+                                                        Active
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge variant="destructive">Inactive</Badge>
+                                                )}
                                             </TableCell>
                                             <TableCell className="hidden text-sm lg:table-cell">
                                                 {new Date(u.createdAt).toLocaleDateString()}
                                             </TableCell>
-                                            <TableCell>{renderUserActions(u, { onEdit, onDelete })}</TableCell>
+                                            <TableCell>
+                                                {renderUserActions(u, { onEdit, onDelete })}
+                                            </TableCell>
                                         </TableRow>
                                     )
                                 })}

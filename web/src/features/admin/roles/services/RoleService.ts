@@ -3,11 +3,13 @@ import { api } from '@/lib/api-factory'
 import type { IRolesResponse, IRolesWithPermissionsResponse } from '../types/RoleTypes'
 
 export const adminRoleService = {
-    getAll: () =>
-        api.API<IRolesResponse>('/api/roles', { method: 'GET', cache: 'no-store' }),
+    getAll: () => api.API<IRolesResponse>('/api/roles', { method: 'GET', cache: 'no-store' }),
 
     getAllWithPermissions: () =>
-        api.API<IRolesWithPermissionsResponse>('/api/roles/with-permissions', { method: 'GET', cache: 'no-store' }),
+        api.API<IRolesWithPermissionsResponse>('/api/roles/with-permissions', {
+            method: 'GET',
+            cache: 'no-store',
+        }),
 
     create: (data: { name: string; label?: string; description?: string }) =>
         api.API<any>('/api/roles', {

@@ -1,10 +1,9 @@
-
 'use client'
 
 import * as React from 'react'
 import { format } from 'date-fns'
-import type { Matcher } from 'react-day-picker'
 import { CalendarIcon, X } from 'lucide-react'
+import type { Matcher } from 'react-day-picker'
 
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
@@ -77,7 +76,7 @@ export function UiDatePicker({
                         variant="outline"
                         disabled={disabled}
                         className={cn(
-                            'focus-visible:border-primary focus-visible:ring-0 border-transparent bg-muted/30 dark:bg-white/5 dark:hover:bg-white/10 h-9 w-full justify-between rounded-full border bg-clip-padding px-2.5 py-1 text-sm font-normal outline-none select-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-black/5 disabled:opacity-50 dark:disabled:bg-white/10',
+                            'focus-visible:border-primary bg-muted/30 h-9 w-full justify-between rounded-full border border-transparent bg-clip-padding px-2.5 py-1 text-sm font-normal outline-none select-none focus-visible:ring-0 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-black/5 disabled:opacity-50 dark:bg-white/5 dark:hover:bg-white/10 dark:disabled:bg-white/10',
                             !value && 'text-muted-foreground',
                             error && 'border-destructive focus-visible:ring-destructive',
                         )}

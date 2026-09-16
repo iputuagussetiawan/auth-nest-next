@@ -18,14 +18,14 @@ export function UiViewToggle({ value, onChange }: UiViewToggleProps) {
             <ToggleGroupItem
                 value="grid"
                 aria-label="Grid view"
-                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground !rounded-full gap-1.5 px-3 py-1 text-xs font-medium border-transparent transition-all"
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground gap-1.5 !rounded-full border-transparent px-3 py-1 text-xs font-medium transition-all"
             >
                 <LayoutGrid className="h-3.5 w-3.5" /> Grid
             </ToggleGroupItem>
             <ToggleGroupItem
                 value="list"
                 aria-label="List view"
-                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground !rounded-full gap-1.5 px-3 py-1 text-xs font-medium border-transparent transition-all"
+                className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground gap-1.5 !rounded-full border-transparent px-3 py-1 text-xs font-medium transition-all"
             >
                 <List className="h-3.5 w-3.5" /> List
             </ToggleGroupItem>

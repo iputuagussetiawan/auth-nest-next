@@ -1,4 +1,5 @@
 import { api } from '@/lib/api-factory'
+
 import type { ISiteSettings, ISiteSettingsResponse } from '../types/SiteSettingsTypes'
 
 export const adminSiteSettingsService = {

@@ -1,11 +1,11 @@
 'use client'
 
 import * as React from 'react'
+import { useAuthContext } from '@/providers/auth-provider'
 import { useQuery } from '@tanstack/react-query'
 
-import { useAuthContext } from '@/providers/auth-provider'
-import { getSidebarData } from '@/lib/sidebar-menu'
 import { adminSiteSettingsService } from '@/features/admin/site-settings/services/SiteSettingsService'
+import { getSidebarData } from '@/lib/sidebar-menu'
 
 import { NavMain } from './nav-main'
 import { NavUser } from './nav-user'
@@ -48,7 +48,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return (
         <Sidebar collapsible="icon" {...props}>
             <SidebarHeader className="gap-3 px-3 pt-4 pb-3 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-3 group-data-[collapsible=icon]:pb-2">
-                <div className="px-1 text-[10px] font-semibold tracking-[0.22em] text-sidebar-foreground/50 uppercase group-data-[collapsible=icon]:hidden">
+                <div className="text-sidebar-foreground/50 px-1 text-[10px] font-semibold tracking-[0.22em] uppercase group-data-[collapsible=icon]:hidden">
                     Workspace
                 </div>
                 <TeamSwitcher

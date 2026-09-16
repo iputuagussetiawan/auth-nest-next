@@ -1,20 +1,20 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { APP_GUARD } from '@nestjs/core'
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler'
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { DatabaseModule } from './database/database.module'
-import { MailModule } from './shared/mail/mail.module'
-import { AuthModule } from './modules/auth/auth.module'
-import { RbacModule } from './modules/rbac/rbac.module'
-import { UserModule } from './modules/user/user.module'
-import { SessionModule } from './modules/session/session.module'
-import { ThemeModule } from './modules/theme/theme.module'
 import { AdminStatsModule } from './modules/admin-stats/admin-stats.module'
-import { SiteSettingsModule } from './modules/site-settings/site-settings.module'
+import { AuthModule } from './modules/auth/auth.module'
 import { NotificationModule } from './modules/notification/notification.module'
+import { RbacModule } from './modules/rbac/rbac.module'
+import { SessionModule } from './modules/session/session.module'
+import { SiteSettingsModule } from './modules/site-settings/site-settings.module'
+import { ThemeModule } from './modules/theme/theme.module'
+import { UserModule } from './modules/user/user.module'
+import { MailModule } from './shared/mail/mail.module'
 
 @Module({
     imports: [
@@ -32,9 +32,6 @@ import { NotificationModule } from './modules/notification/notification.module'
         NotificationModule,
     ],
     controllers: [AppController],
-    providers: [
-        AppService,
-        { provide: APP_GUARD, useClass: ThrottlerGuard },
-    ],
+    providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

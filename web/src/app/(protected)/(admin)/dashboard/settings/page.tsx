@@ -1,7 +1,7 @@
-import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import type { Metadata } from 'next'
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query'
 import { ErrorBoundary } from 'react-error-boundary'
-import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 
 import { SiteSettingsError } from '@/features/admin/site-settings/components/SiteSettingsError'
 import { SiteSettingsLoading } from '@/features/admin/site-settings/components/SiteSettingsLoading'

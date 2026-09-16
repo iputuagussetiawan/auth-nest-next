@@ -1,6 +1,7 @@
 import 'dotenv/config'
-import { Pool } from 'pg'
+
 import { drizzle } from 'drizzle-orm/node-postgres'
+import { Pool } from 'pg'
 
 import * as schema from '../schema'
 import { themes } from '../schema/theme/themes.schema'
@@ -9,12 +10,37 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 const db = drizzle(pool, { schema })
 
 const THEME_VARS = [
-    'background', 'foreground', 'card', 'cardForeground', 'popover', 'popoverForeground',
-    'primary', 'primaryForeground', 'secondary', 'secondaryForeground', 'muted', 'mutedForeground',
-    'accent', 'accentForeground', 'destructive', 'border', 'input', 'ring',
-    'chart1', 'chart2', 'chart3', 'chart4', 'chart5', 'sidebar', 'sidebarForeground',
-    'sidebarPrimary', 'sidebarPrimaryForeground', 'sidebarAccent', 'sidebarAccentForeground',
-    'sidebarBorder', 'sidebarRing',
+    'background',
+    'foreground',
+    'card',
+    'cardForeground',
+    'popover',
+    'popoverForeground',
+    'primary',
+    'primaryForeground',
+    'secondary',
+    'secondaryForeground',
+    'muted',
+    'mutedForeground',
+    'accent',
+    'accentForeground',
+    'destructive',
+    'border',
+    'input',
+    'ring',
+    'chart1',
+    'chart2',
+    'chart3',
+    'chart4',
+    'chart5',
+    'sidebar',
+    'sidebarForeground',
+    'sidebarPrimary',
+    'sidebarPrimaryForeground',
+    'sidebarAccent',
+    'sidebarAccentForeground',
+    'sidebarBorder',
+    'sidebarRing',
 ] as const
 
 function validateConfig(config: unknown, slug: string) {
@@ -43,9 +69,11 @@ async function main() {
     const active = rows.filter((theme) => theme.isActive)
     const emerald = rows.find((theme) => theme.slug === 'emerald-forest')
 
-    if (active.length !== 1) errors.push(`expected exactly one active theme, found ${active.length}`)
+    if (active.length !== 1)
+        errors.push(`expected exactly one active theme, found ${active.length}`)
     if (!emerald) errors.push('missing emerald-forest theme')
-    if (rows.some((theme) => theme.slug === 'default')) errors.push('legacy default theme slug still exists')
+    if (rows.some((theme) => theme.slug === 'default'))
+        errors.push('legacy default theme slug still exists')
 
     for (const theme of rows) errors.push(...validateConfig(theme.config, theme.slug))
 

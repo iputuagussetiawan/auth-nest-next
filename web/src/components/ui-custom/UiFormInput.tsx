@@ -5,9 +5,9 @@ import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import type { FieldError } from 'react-hook-form'
 
-import { Label } from '@/components/ui/label'
-import { UiInput, UiTextarea } from '@/components/ui-custom/UiInput'
 import { UiSwitch } from '@/components/ui-custom/UiCheckbox'
+import { UiInput, UiTextarea } from '@/components/ui-custom/UiInput'
+import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 
 interface UiFormFieldProps extends React.ComponentProps<typeof UiInput> {
@@ -17,7 +17,16 @@ interface UiFormFieldProps extends React.ComponentProps<typeof UiInput> {
     isSubmitting?: boolean
 }
 
-function UiFormInput({ label, hint, error, isSubmitting, className, id, disabled, ...props }: UiFormFieldProps) {
+function UiFormInput({
+    label,
+    hint,
+    error,
+    isSubmitting,
+    className,
+    id,
+    disabled,
+    ...props
+}: UiFormFieldProps) {
     const fieldId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined)
     return (
         <div className="space-y-1.5">
@@ -26,7 +35,15 @@ function UiFormInput({ label, hint, error, isSubmitting, className, id, disabled
                     {label}
                 </Label>
             )}
-            <UiInput id={fieldId} disabled={disabled || isSubmitting} className={cn(error && 'border-destructive focus-visible:border-destructive', className)} {...props} />
+            <UiInput
+                id={fieldId}
+                disabled={disabled || isSubmitting}
+                className={cn(
+                    error && 'border-destructive focus-visible:border-destructive',
+                    className,
+                )}
+                {...props}
+            />
             {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
             {error && (
                 <p className="text-destructive text-xs">
@@ -57,7 +74,14 @@ function UiFormTextarea({
                     {label}
                 </Label>
             )}
-            <UiTextarea id={fieldId} className={cn(error && 'border-destructive focus-visible:border-destructive', className)} {...props} />
+            <UiTextarea
+                id={fieldId}
+                className={cn(
+                    error && 'border-destructive focus-visible:border-destructive',
+                    className,
+                )}
+                {...props}
+            />
             {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
             {error && (
                 <p className="text-destructive text-xs">
@@ -68,14 +92,7 @@ function UiFormTextarea({
     )
 }
 
-function UiFormPassword({
-    label,
-    hint,
-    error,
-    className,
-    id,
-    ...props
-}: UiFormFieldProps) {
+function UiFormPassword({ label, hint, error, className, id, ...props }: UiFormFieldProps) {
     const [visible, setVisible] = useState(false)
     const fieldId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined)
     return (
@@ -89,7 +106,11 @@ function UiFormPassword({
                 <UiInput
                     id={fieldId}
                     type={visible ? 'text' : 'password'}
-                    className={cn('pr-10', error && 'border-destructive focus-visible:border-destructive', className)}
+                    className={cn(
+                        'pr-10',
+                        error && 'border-destructive focus-visible:border-destructive',
+                        className,
+                    )}
                     {...props}
                 />
                 <button

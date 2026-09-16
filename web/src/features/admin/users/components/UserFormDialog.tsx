@@ -5,6 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiFormInput, UiFormPassword, UiFormSwitch } from '@/components/ui-custom/UiFormInput'
+import { UiFormSearchSelect } from '@/components/ui-custom/UiFormSearchSelect'
 import {
     Dialog,
     DialogContent,
@@ -12,9 +15,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
-import { UiButton } from '@/components/ui-custom/UiButton'
-import { UiFormInput, UiFormPassword, UiFormSwitch } from '@/components/ui-custom/UiFormInput'
-import { UiFormSearchSelect } from '@/components/ui-custom/UiFormSearchSelect'
+
 import type { IRole } from '../../roles/types/RoleTypes'
 import type { IAdminUser } from '../types/UserTypes'
 
@@ -43,7 +44,14 @@ interface UserFormDialogProps {
     isPending: boolean
 }
 
-export function UserFormDialog({ open, onOpenChange, user, roles, onSubmit, isPending }: UserFormDialogProps) {
+export function UserFormDialog({
+    open,
+    onOpenChange,
+    user,
+    roles,
+    onSubmit,
+    isPending,
+}: UserFormDialogProps) {
     const isEdit = !!user
     const {
         register,
@@ -55,7 +63,14 @@ export function UserFormDialog({ open, onOpenChange, user, roles, onSubmit, isPe
     } = useForm<FormValues>({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resolver: zodResolver(isEdit ? editSchema : createSchema) as any,
-        defaultValues: { email: '', password: '', firstName: '', lastName: '', isActive: true, roleId: '' },
+        defaultValues: {
+            email: '',
+            password: '',
+            firstName: '',
+            lastName: '',
+            isActive: true,
+            roleId: '',
+        },
     })
 
     useEffect(() => {
@@ -69,7 +84,14 @@ export function UserFormDialog({ open, onOpenChange, user, roles, onSubmit, isPe
                 roleId: roles.find((r) => r.name === user.role)?.id ?? '',
             })
         } else {
-            reset({ email: '', password: '', firstName: '', lastName: '', isActive: true, roleId: '' })
+            reset({
+                email: '',
+                password: '',
+                firstName: '',
+                lastName: '',
+                isActive: true,
+                roleId: '',
+            })
         }
     }, [user, roles, reset])
 
@@ -99,8 +121,18 @@ export function UserFormDialog({ open, onOpenChange, user, roles, onSubmit, isPe
                     )}
 
                     <div className="grid grid-cols-2 gap-3">
-                        <UiFormInput label="First Name" {...register('firstName')} placeholder="John" error={errors.firstName} />
-                        <UiFormInput label="Last Name" {...register('lastName')} placeholder="Doe" error={errors.lastName} />
+                        <UiFormInput
+                            label="First Name"
+                            {...register('firstName')}
+                            placeholder="John"
+                            error={errors.firstName}
+                        />
+                        <UiFormInput
+                            label="Last Name"
+                            {...register('lastName')}
+                            placeholder="Doe"
+                            error={errors.lastName}
+                        />
                     </div>
 
                     <UiFormSearchSelect
@@ -121,7 +153,11 @@ export function UserFormDialog({ open, onOpenChange, user, roles, onSubmit, isPe
                     />
 
                     <DialogFooter>
-                        <UiButton type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                        <UiButton
+                            type="button"
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                        >
                             Cancel
                         </UiButton>
                         <UiButton type="submit" disabled={isPending}>

@@ -34,7 +34,10 @@ export function UiFormDatePicker<TFieldValues extends FieldValues>({
     maxYear = new Date().getFullYear() + 10,
 }: DatePickerProps<TFieldValues>) {
     const getValidDate = (value: unknown) => {
-        if (!value || (typeof value !== 'string' && typeof value !== 'number' && !(value instanceof Date))) {
+        if (
+            !value ||
+            (typeof value !== 'string' && typeof value !== 'number' && !(value instanceof Date))
+        ) {
             return undefined
         }
         const date = new Date(value)
@@ -60,7 +63,8 @@ export function UiFormDatePicker<TFieldValues extends FieldValues>({
                                         className={cn(
                                             'w-full justify-start text-left font-normal',
                                             !field.value && 'text-muted-foreground',
-                                            error && 'border-destructive focus-visible:ring-destructive',
+                                            error &&
+                                                'border-destructive focus-visible:ring-destructive',
                                         )}
                                     >
                                         <CalendarIcon className="mr-2 h-4 w-4" />
@@ -78,14 +82,17 @@ export function UiFormDatePicker<TFieldValues extends FieldValues>({
                                         onSelect={(date) => {
                                             if (!date) return
                                             field.onChange(
-                                                outputFormat ? format(date, outputFormat) : date.toISOString(),
+                                                outputFormat
+                                                    ? format(date, outputFormat)
+                                                    : date.toISOString(),
                                             )
                                         }}
                                         captionLayout="dropdown"
                                         startMonth={new Date(minYear, 0)}
                                         endMonth={new Date(maxYear, 11)}
                                         disabled={(date) =>
-                                            date.getFullYear() > maxYear || date.getFullYear() < minYear
+                                            date.getFullYear() > maxYear ||
+                                            date.getFullYear() < minYear
                                         }
                                     />
                                 </PopoverContent>

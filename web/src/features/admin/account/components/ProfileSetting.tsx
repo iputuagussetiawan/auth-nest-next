@@ -7,16 +7,15 @@ import { Camera, Loader2, Save } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
-import type { IUserProfile } from '../types/AccountTypes'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
 import { UiButton } from '@/components/ui-custom/UiButton'
 import { UiFormInput } from '@/components/ui-custom/UiFormInput'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { UserAvatar } from '@/components/user-avatar'
 
 import { accountService } from '../services/AccountService'
-import { profileNameValidation, type profileDTO } from '../types/AccountTypes'
+import { profileNameValidation, type IUserProfile, type profileDTO } from '../types/AccountTypes'
 import ManageEmail from './profile-setting/ManageEmail'
 import ManagePassword from './profile-setting/ManagePasswors'
 
@@ -117,7 +116,7 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                             />
                         </div>
 
-                        <div className="flex-1 max-w-md">
+                        <div className="max-w-md flex-1">
                             <UiFormInput
                                 label="Preferred name"
                                 {...form.register('name')}
@@ -151,7 +150,11 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                         <Label className="text-base">Email</Label>
                         <p className="text-muted-foreground text-sm">{user.email}</p>
                     </div>
-                    <UiButton variant="secondary" size="sm" onClick={() => setActiveDialog('email')}>
+                    <UiButton
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setActiveDialog('email')}
+                    >
                         Manage email
                     </UiButton>
                 </div>
@@ -160,7 +163,9 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                     <div className="space-y-0.5">
                         <Label className="text-base">Password</Label>
                         <p className="text-muted-foreground text-sm">
-                            {user.provider === 'email' ? 'Change your account password' : `Managed by ${user.provider}`}
+                            {user.provider === 'email'
+                                ? 'Change your account password'
+                                : `Managed by ${user.provider}`}
                         </p>
                     </div>
                     <UiButton
@@ -174,7 +179,10 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                 </div>
             </section>
 
-            <Dialog open={activeDialog !== null} onOpenChange={(open) => !open && setActiveDialog(null)}>
+            <Dialog
+                open={activeDialog !== null}
+                onOpenChange={(open) => !open && setActiveDialog(null)}
+            >
                 <DialogContent className="sm:max-w-sm">
                     {activeDialog === 'email' && (
                         <ManageEmail user={user} onSuccess={() => setActiveDialog(null)} />

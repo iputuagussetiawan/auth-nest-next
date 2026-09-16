@@ -10,6 +10,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+
 import type { IAdminUser } from '../types/UserTypes'
 
 interface UserDeleteDialogProps {
@@ -20,7 +21,13 @@ interface UserDeleteDialogProps {
     isPending: boolean
 }
 
-export function UserDeleteDialog({ open, onOpenChange, user, onConfirm, isPending }: UserDeleteDialogProps) {
+export function UserDeleteDialog({
+    open,
+    onOpenChange,
+    user,
+    onConfirm,
+    isPending,
+}: UserDeleteDialogProps) {
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>

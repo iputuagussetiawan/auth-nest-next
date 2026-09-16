@@ -1,14 +1,15 @@
 import 'dotenv/config'
-import { Pool } from 'pg'
-import { drizzle } from 'drizzle-orm/node-postgres'
-import { eq } from 'drizzle-orm'
+
 import * as bcrypt from 'bcrypt'
+import { eq } from 'drizzle-orm'
+import { drizzle } from 'drizzle-orm/node-postgres'
+import { Pool } from 'pg'
 
 import * as schema from './schema'
-import { roles } from './schema/rbac/roles.schema'
+import { users } from './schema/auth/users.schema'
 import { permissions } from './schema/rbac/permissions.schema'
 import { rolePermissions } from './schema/rbac/role-permissions.schema'
-import { users } from './schema/auth/users.schema'
+import { roles } from './schema/rbac/roles.schema'
 import { userRoles } from './schema/rbac/user-roles.schema'
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
@@ -19,8 +20,16 @@ const ROLES = [
     { name: 'participant', label: 'Participant', description: 'Participant account access' },
     { name: 'instructure', label: 'Instructor', description: 'Instructor account access' },
     { name: 'project_owner', label: 'Project Owner', description: 'Project owner account access' },
-    { name: 'project_member', label: 'Project Member', description: 'Project member account access' },
-    { name: 'project_mentor', label: 'Project Mentor', description: 'Project mentor account access' },
+    {
+        name: 'project_member',
+        label: 'Project Member',
+        description: 'Project member account access',
+    },
+    {
+        name: 'project_mentor',
+        label: 'Project Mentor',
+        description: 'Project mentor account access',
+    },
     { name: 'investor', label: 'Investor', description: 'Investor account access' },
 ]
 
@@ -33,10 +42,7 @@ const PERMISSIONS = [
 ]
 
 const ROLE_PERMISSIONS: Record<string, string[]> = {
-    admin: [
-        'user:read', 'user:create', 'user:update', 'user:delete',
-        'role:manage',
-    ],
+    admin: ['user:read', 'user:create', 'user:update', 'user:delete', 'role:manage'],
     participant: ['user:read'],
     instructure: ['user:read'],
     project_owner: ['user:read'],
@@ -66,7 +72,11 @@ async function seedPermissions(): Promise<Map<string, string>> {
     const map = new Map<string, string>()
     console.log('\nSeeding permissions...')
     for (const row of PERMISSIONS) {
-        const existing = await db.select().from(permissions).where(eq(permissions.name, row.name)).limit(1)
+        const existing = await db
+            .select()
+            .from(permissions)
+            .where(eq(permissions.name, row.name))
+            .limit(1)
         if (existing.length) {
             map.set(row.name, existing[0].id)
             console.log(`  skip  permission: ${row.name}`)
@@ -98,13 +108,38 @@ async function assignPermissions(roleMap: Map<string, string>, permMap: Map<stri
 }
 
 const USERS = [
-    { email: 'admin@example.com',         firstName: 'Alice',  lastName: 'Admin',       role: 'admin' },
-    { email: 'participant@example.com',   firstName: 'Pat',    lastName: 'Participant', role: 'participant' },
-    { email: 'instructure@example.com',   firstName: 'Indy',   lastName: 'Instructor',  role: 'instructure' },
-    { email: 'projectowner@example.com',  firstName: 'Olivia', lastName: 'Owner',       role: 'project_owner' },
-    { email: 'projectmember@example.com', firstName: 'Mason',  lastName: 'Member',      role: 'project_member' },
-    { email: 'projectmentor@example.com', firstName: 'Mira',   lastName: 'Mentor',      role: 'project_mentor' },
-    { email: 'investor@example.com',      firstName: 'Ivy',    lastName: 'Investor',    role: 'investor' },
+    { email: 'admin@example.com', firstName: 'Alice', lastName: 'Admin', role: 'admin' },
+    {
+        email: 'participant@example.com',
+        firstName: 'Pat',
+        lastName: 'Participant',
+        role: 'participant',
+    },
+    {
+        email: 'instructure@example.com',
+        firstName: 'Indy',
+        lastName: 'Instructor',
+        role: 'instructure',
+    },
+    {
+        email: 'projectowner@example.com',
+        firstName: 'Olivia',
+        lastName: 'Owner',
+        role: 'project_owner',
+    },
+    {
+        email: 'projectmember@example.com',
+        firstName: 'Mason',
+        lastName: 'Member',
+        role: 'project_member',
+    },
+    {
+        email: 'projectmentor@example.com',
+        firstName: 'Mira',
+        lastName: 'Mentor',
+        role: 'project_mentor',
+    },
+    { email: 'investor@example.com', firstName: 'Ivy', lastName: 'Investor', role: 'investor' },
 ]
 
 async function seedUsers(roleMap: Map<string, string>) {
@@ -116,15 +151,18 @@ async function seedUsers(roleMap: Map<string, string>) {
             console.log(`  skip  user: ${u.email}`)
             continue
         }
-        const [created] = await db.insert(users).values({
-            email: u.email,
-            firstName: u.firstName,
-            lastName: u.lastName,
-            password,
-            provider: 'email',
-            providerId: u.email,
-            isEmailVerified: true,
-        }).returning()
+        const [created] = await db
+            .insert(users)
+            .values({
+                email: u.email,
+                firstName: u.firstName,
+                lastName: u.lastName,
+                password,
+                provider: 'email',
+                providerId: u.email,
+                isEmailVerified: true,
+            })
+            .returning()
 
         const roleId = roleMap.get(u.role)
         if (roleId) await db.insert(userRoles).values({ userId: created.id, roleId })
@@ -141,5 +179,8 @@ async function main() {
 }
 
 main()
-    .catch((e) => { console.error(e); process.exit(1) })
+    .catch((e) => {
+        console.error(e)
+        process.exit(1)
+    })
     .finally(() => pool.end())

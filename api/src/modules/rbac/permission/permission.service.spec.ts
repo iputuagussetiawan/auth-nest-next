@@ -28,7 +28,12 @@ function createUpdateQuery(result: unknown[]) {
 describe('PermissionService', () => {
     it('lists permissions and finds a permission by ID', async () => {
         const permission = { id: 'permission-id', name: 'users:read' }
-        const db = { select: jest.fn().mockReturnValueOnce(createQuery([permission])).mockReturnValueOnce(createQuery([permission])) }
+        const db = {
+            select: jest
+                .fn()
+                .mockReturnValueOnce(createQuery([permission]))
+                .mockReturnValueOnce(createQuery([permission])),
+        }
         const service = new PermissionService(db as never)
 
         await expect(service.findAll()).resolves.toEqual([permission])
@@ -51,13 +56,20 @@ describe('PermissionService', () => {
         }
         const service = new PermissionService(db as never)
 
-        await expect(service.create({ name: 'users:read', description: 'Read users' })).resolves.toEqual(permission)
-        expect(insert.values).toHaveBeenCalledWith({ name: 'users:read', description: 'Read users' })
+        await expect(
+            service.create({ name: 'users:read', description: 'Read users' }),
+        ).resolves.toEqual(permission)
+        expect(insert.values).toHaveBeenCalledWith({
+            name: 'users:read',
+            description: 'Read users',
+        })
 
-        const duplicateDb = { select: jest.fn().mockReturnValue(createQuery([{ id: 'existing-id' }])) }
-        await expect(new PermissionService(duplicateDb as never).create({ name: 'users:read' })).rejects.toBeInstanceOf(
-            BadRequestException,
-        )
+        const duplicateDb = {
+            select: jest.fn().mockReturnValue(createQuery([{ id: 'existing-id' }])),
+        }
+        await expect(
+            new PermissionService(duplicateDb as never).create({ name: 'users:read' }),
+        ).rejects.toBeInstanceOf(BadRequestException)
     })
 
     it('updates a permission after checking that it exists', async () => {
@@ -74,7 +86,9 @@ describe('PermissionService', () => {
             name: 'users:read',
             description: 'Updated',
         })
-        expect(update.set).toHaveBeenCalledWith(expect.objectContaining({ description: 'Updated', updatedAt: expect.any(Date) }))
+        expect(update.set).toHaveBeenCalledWith(
+            expect.objectContaining({ description: 'Updated', updatedAt: expect.any(Date) }),
+        )
     })
 
     it('deletes a permission', async () => {
@@ -85,7 +99,9 @@ describe('PermissionService', () => {
         }
         const service = new PermissionService(db as never)
 
-        await expect(service.remove('permission-id')).resolves.toEqual({ message: 'Permission deleted' })
+        await expect(service.remove('permission-id')).resolves.toEqual({
+            message: 'Permission deleted',
+        })
         expect(del.where).toHaveBeenCalled()
     })
 })

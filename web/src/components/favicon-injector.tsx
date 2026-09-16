@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
+
 import { adminSiteSettingsService } from '@/features/admin/site-settings/services/SiteSettingsService'
 
 export function FaviconInjector() {
@@ -14,8 +15,9 @@ export function FaviconInjector() {
     const faviconUrl = data?.data?.faviconUrl
 
     useEffect(() => {
-        const link = document.querySelector<HTMLLinkElement>("link[rel~='icon']")
-            ?? (() => {
+        const link =
+            document.querySelector<HTMLLinkElement>("link[rel~='icon']") ??
+            (() => {
                 const el = document.createElement('link')
                 el.rel = 'icon'
                 document.head.appendChild(el)

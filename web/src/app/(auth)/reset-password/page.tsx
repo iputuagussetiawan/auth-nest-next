@@ -1,5 +1,5 @@
-import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import type { Metadata } from 'next'
 
 import { ResetPasswordForm } from '@/features/auth/components/ResetPasswordForm'
 

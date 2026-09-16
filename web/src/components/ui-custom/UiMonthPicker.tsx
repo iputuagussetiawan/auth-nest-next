@@ -1,13 +1,29 @@
 'use client'
 
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 
 // Match UiFormInput: rounded control, compact label/hint/error spacing.
 const MONTHS = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
 ]
 
 interface UiMonthPickerProps {
@@ -45,27 +61,55 @@ export function UiMonthPicker({
             {label && <Label className="text-sm font-medium">{label}</Label>}
             <div className="grid grid-cols-2 gap-2">
                 <Select value={month} onValueChange={changeMonth} disabled={disabled}>
-                    <SelectTrigger aria-label="Month" aria-invalid={!!error} className={triggerClassName}>
+                    <SelectTrigger
+                        aria-label="Month"
+                        aria-invalid={!!error}
+                        className={triggerClassName}
+                    >
                         <SelectValue placeholder="Month" />
                     </SelectTrigger>
-                    <SelectContent className="rounded-2xl border-border/60 shadow-lg">
+                    <SelectContent className="border-border/60 rounded-2xl shadow-lg">
                         {MONTHS.map((monthLabel, index) => {
                             const monthValue = String(index + 1).padStart(2, '0')
-                            return <SelectItem key={monthValue} value={monthValue} className="rounded-xl px-3 py-2">{monthLabel}</SelectItem>
+                            return (
+                                <SelectItem
+                                    key={monthValue}
+                                    value={monthValue}
+                                    className="rounded-xl px-3 py-2"
+                                >
+                                    {monthLabel}
+                                </SelectItem>
+                            )
                         })}
                     </SelectContent>
                 </Select>
                 <Select value={year} onValueChange={changeYear} disabled={disabled}>
-                    <SelectTrigger aria-label="Year" aria-invalid={!!error} className={triggerClassName}>
+                    <SelectTrigger
+                        aria-label="Year"
+                        aria-invalid={!!error}
+                        className={triggerClassName}
+                    >
                         <SelectValue placeholder="Year" />
                     </SelectTrigger>
-                    <SelectContent className="rounded-2xl border-border/60 shadow-lg">
-                        {years.map((yearValue) => <SelectItem key={yearValue} value={String(yearValue)} className="rounded-xl px-3 py-2">{yearValue}</SelectItem>)}
+                    <SelectContent className="border-border/60 rounded-2xl shadow-lg">
+                        {years.map((yearValue) => (
+                            <SelectItem
+                                key={yearValue}
+                                value={String(yearValue)}
+                                className="rounded-xl px-3 py-2"
+                            >
+                                {yearValue}
+                            </SelectItem>
+                        ))}
                     </SelectContent>
                 </Select>
             </div>
             {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
-            {error && <p className="text-destructive text-xs" role="alert">{error}</p>}
+            {error && (
+                <p className="text-destructive text-xs" role="alert">
+                    {error}
+                </p>
+            )}
         </div>
     )
 }

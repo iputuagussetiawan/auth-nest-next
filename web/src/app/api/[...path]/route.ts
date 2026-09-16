@@ -26,7 +26,12 @@ function buildRetryHeaders(original: Headers, existingCookie: string, newToken: 
     return updated
 }
 
-const STRIP_HEADERS = new Set(['set-cookie', 'content-encoding', 'content-length', 'transfer-encoding'])
+const STRIP_HEADERS = new Set([
+    'set-cookie',
+    'content-encoding',
+    'content-length',
+    'transfer-encoding',
+])
 
 function copyResponseHeaders(from: Response, to: NextResponse) {
     from.headers.forEach((value, key) => {
@@ -64,7 +69,7 @@ async function proxyRequest(request: NextRequest) {
                 method: 'POST',
                 headers: { cookie: request.headers.get('cookie') ?? '' },
                 cache: 'no-store',
-                redirect: 'manual', 
+                redirect: 'manual',
             })
 
             if (refreshRes.ok) {

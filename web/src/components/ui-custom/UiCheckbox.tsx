@@ -2,7 +2,11 @@
 
 import * as React from 'react'
 import { CheckIcon } from 'lucide-react'
-import { Checkbox as CheckboxPrimitive, RadioGroup as RadioGroupPrimitive, Switch as SwitchPrimitive } from 'radix-ui'
+import {
+    Checkbox as CheckboxPrimitive,
+    RadioGroup as RadioGroupPrimitive,
+    Switch as SwitchPrimitive,
+} from 'radix-ui'
 
 import { cn } from '@/lib/utils'
 
@@ -11,7 +15,7 @@ function UiCheckbox({ className, ...props }: React.ComponentProps<typeof Checkbo
         <CheckboxPrimitive.Root
             data-slot="checkbox"
             className={cn(
-                'peer border-border focus-visible:border-primary focus-visible:ring-0 bg-muted/30 dark:bg-white/5 data-checked:bg-primary data-checked:text-primary-foreground dark:data-checked:bg-primary relative flex size-4 shrink-0 items-center justify-center rounded-[4px] border outline-none group-has-disabled/field:opacity-50 after:absolute after:-inset-x-3 after:-inset-y-2 disabled:cursor-not-allowed disabled:opacity-50',
+                'peer border-border focus-visible:border-primary bg-muted/30 data-checked:bg-primary data-checked:text-primary-foreground dark:data-checked:bg-primary relative flex size-4 shrink-0 items-center justify-center rounded-[4px] border outline-none group-has-disabled/field:opacity-50 after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white/5',
                 className,
             )}
             {...props}
@@ -26,7 +30,10 @@ function UiCheckbox({ className, ...props }: React.ComponentProps<typeof Checkbo
     )
 }
 
-function UiRadioGroup({ className, ...props }: React.ComponentProps<typeof RadioGroupPrimitive.Root>) {
+function UiRadioGroup({
+    className,
+    ...props
+}: React.ComponentProps<typeof RadioGroupPrimitive.Root>) {
     return (
         <RadioGroupPrimitive.Root
             data-slot="radio-group"
@@ -36,12 +43,15 @@ function UiRadioGroup({ className, ...props }: React.ComponentProps<typeof Radio
     )
 }
 
-function UiRadioGroupItem({ className, ...props }: React.ComponentProps<typeof RadioGroupPrimitive.Item>) {
+function UiRadioGroupItem({
+    className,
+    ...props
+}: React.ComponentProps<typeof RadioGroupPrimitive.Item>) {
     return (
         <RadioGroupPrimitive.Item
             data-slot="radio-group-item"
             className={cn(
-                'group/radio-group-item peer border-border focus-visible:border-primary focus-visible:ring-0 bg-muted/30 dark:bg-white/5 data-checked:bg-primary data-checked:text-primary-foreground dark:data-checked:bg-primary relative flex aspect-square size-4 shrink-0 rounded-full border outline-none after:absolute after:-inset-x-3 after:-inset-y-2 disabled:cursor-not-allowed disabled:opacity-50',
+                'group/radio-group-item peer border-border focus-visible:border-primary bg-muted/30 data-checked:bg-primary data-checked:text-primary-foreground dark:data-checked:bg-primary relative flex aspect-square size-4 shrink-0 rounded-full border outline-none after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white/5',
                 className,
             )}
             {...props}
@@ -66,7 +76,7 @@ function UiSwitch({
             data-slot="switch"
             data-size={size}
             className={cn(
-                'peer group/switch focus-visible:border-primary focus-visible:ring-0 data-checked:bg-primary data-unchecked:bg-border dark:data-unchecked:bg-white/15 relative inline-flex shrink-0 items-center rounded-full border-transparent outline-none after:absolute after:-inset-x-3 after:-inset-y-2 data-disabled:cursor-not-allowed data-disabled:opacity-50 data-[size=default]:h-[18.4px] data-[size=default]:w-[32px] data-[size=sm]:h-[14px] data-[size=sm]:w-[24px]',
+                'peer group/switch focus-visible:border-primary data-checked:bg-primary data-unchecked:bg-border relative inline-flex shrink-0 items-center rounded-full border-transparent outline-none after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:ring-0 data-disabled:cursor-not-allowed data-disabled:opacity-50 data-[size=default]:h-[18.4px] data-[size=default]:w-[32px] data-[size=sm]:h-[14px] data-[size=sm]:w-[24px] dark:data-unchecked:bg-white/15',
                 className,
             )}
             {...props}

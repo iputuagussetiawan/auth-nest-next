@@ -71,7 +71,8 @@ export function useRole() {
     })
 
     const updateMutation = useMutation({
-        mutationFn: ({ id, data }: { id: string; data: RolePayload }) => adminRoleService.update(id, data),
+        mutationFn: ({ id, data }: { id: string; data: RolePayload }) =>
+            adminRoleService.update(id, data),
         onError: (error: unknown) => toast.error(getErrorMessage(error)),
     })
 
@@ -139,6 +140,10 @@ export function useRole() {
         openCreate,
         handleSubmit,
         deleteMutation,
-        isPending: createMutation.isPending || updateMutation.isPending || assignMutation.isPending || uploadImageMutation.isPending,
+        isPending:
+            createMutation.isPending ||
+            updateMutation.isPending ||
+            assignMutation.isPending ||
+            uploadImageMutation.isPending,
     }
 }

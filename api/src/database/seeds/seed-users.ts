@@ -1,6 +1,7 @@
 import 'dotenv/config'
-import { Pool } from 'pg'
+
 import { drizzle } from 'drizzle-orm/node-postgres'
+import { Pool } from 'pg'
 
 import * as schema from '../schema'
 import { runRoleSeed } from './role.seed'
@@ -17,5 +18,8 @@ async function main() {
 }
 
 main()
-    .catch((e) => { console.error(e); process.exit(1) })
+    .catch((e) => {
+        console.error(e)
+        process.exit(1)
+    })
     .finally(() => pool.end())

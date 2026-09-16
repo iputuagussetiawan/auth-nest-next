@@ -3,8 +3,8 @@
 import { Globe } from 'lucide-react'
 import type { FieldErrors, UseFormRegister } from 'react-hook-form'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { UiFormInput, UiFormTextarea } from '@/components/ui-custom/UiFormInput'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 import type { FormValues } from '../types'
 
@@ -23,8 +23,18 @@ export function GeneralTab({ register, errors }: GeneralTabProps) {
                 <CardDescription>Basic site identity shown across the platform</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <UiFormInput label="Site Name" error={errors.siteName?.message} {...register('siteName')} placeholder="My App" />
-                <UiFormInput label="Tagline" hint="Short slogan shown under the site name" {...register('tagline')} placeholder="Build something great" />
+                <UiFormInput
+                    label="Site Name"
+                    error={errors.siteName?.message}
+                    {...register('siteName')}
+                    placeholder="My App"
+                />
+                <UiFormInput
+                    label="Tagline"
+                    hint="Short slogan shown under the site name"
+                    {...register('tagline')}
+                    placeholder="Build something great"
+                />
                 <UiFormTextarea
                     label="Description"
                     hint="Used in About sections and meta tags"

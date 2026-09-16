@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react'
-
-export const dynamic = 'force-dynamic'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { AuthProvider } from '@/providers/auth-provider'
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'
 
-import { AUTH_COOKIE_NAME, SIGNIN_URL } from '@/lib/constants'
 import { accountService } from '@/features/admin/account/services/AccountService'
-import { AuthProvider } from '@/providers/auth-provider'
+import { AUTH_COOKIE_NAME, SIGNIN_URL } from '@/lib/constants'
+
+export const dynamic = 'force-dynamic'
 
 export default async function ProtectedLayout({ children }: { children: ReactNode }) {
     const cookieStore = await cookies()

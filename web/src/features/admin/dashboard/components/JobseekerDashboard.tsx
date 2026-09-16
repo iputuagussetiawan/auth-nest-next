@@ -61,7 +61,9 @@ export function JobseekerDashboard() {
         <div className="space-y-6">
             <div>
                 <h2 className="text-2xl font-bold tracking-tight">My Job Search</h2>
-                <p className="text-muted-foreground text-sm">Track your applications and progress</p>
+                <p className="text-muted-foreground text-sm">
+                    Track your applications and progress
+                </p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -78,12 +80,7 @@ export function JobseekerDashboard() {
                     icon={Eye}
                     description="awaiting response"
                 />
-                <StatCard
-                    title="Interviews"
-                    value={2}
-                    icon={Clock}
-                    description="scheduled"
-                />
+                <StatCard title="Interviews" value={2} icon={Clock} description="scheduled" />
                 <StatCard
                     title="Offers"
                     value={1}
@@ -136,7 +133,11 @@ export function JobseekerDashboard() {
                                 <XAxis dataKey="month" tickLine={false} axisLine={false} />
                                 <YAxis tickLine={false} axisLine={false} />
                                 <ChartTooltip content={<ChartTooltipContent />} />
-                                <Bar dataKey="applied" fill="var(--color-applied)" radius={[4, 4, 0, 0]} />
+                                <Bar
+                                    dataKey="applied"
+                                    fill="var(--color-applied)"
+                                    radius={[4, 4, 0, 0]}
+                                />
                             </BarChart>
                         </ChartContainer>
                     </CardContent>
@@ -158,7 +159,9 @@ export function JobseekerDashboard() {
                             >
                                 <div>
                                     <p className="text-sm font-medium">{app.role}</p>
-                                    <p className="text-muted-foreground text-xs">{app.company} · {app.date}</p>
+                                    <p className="text-muted-foreground text-xs">
+                                        {app.company} · {app.date}
+                                    </p>
                                 </div>
                                 <Badge variant={statusVariant[app.status] ?? 'outline'}>
                                     {app.status}

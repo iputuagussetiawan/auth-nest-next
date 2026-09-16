@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, ClipboardCheck, Loader2, Palette, UserRound } from 'lucide-react'
 
-import { UiButton } from '@/components/ui-custom/UiButton'
-import { UiFormInput } from '@/components/ui-custom/UiFormInput'
 import { accountService } from '@/features/admin/account/services/AccountService'
 import { adminThemeService } from '@/features/admin/themes/services/ThemeService'
 import type { ITheme } from '@/features/admin/themes/types/ThemeTypes'
 import { authService } from '@/features/auth/services/AuthService'
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiFormInput } from '@/components/ui-custom/UiFormInput'
 import { DASHBOARD_URL } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
@@ -87,7 +87,7 @@ export function OnboardingWizard() {
 
     return (
         <div className="bg-background flex min-h-screen flex-col items-center justify-center px-4 py-10">
-            <div className="border-border/60 w-full max-w-xl space-y-6 rounded-3xl border bg-card p-6 shadow-sm sm:p-8">
+            <div className="border-border/60 bg-card w-full max-w-xl space-y-6 rounded-3xl border p-6 shadow-sm sm:p-8">
                 {/* Progress */}
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -108,8 +108,12 @@ export function OnboardingWizard() {
                 {step === 0 && (
                     <div className="space-y-4">
                         <div>
-                            <h1 className="text-xl font-semibold">Welcome, {me.firstName || me.email}</h1>
-                            <p className="text-muted-foreground text-sm">Confirm your name to personalize your account.</p>
+                            <h1 className="text-xl font-semibold">
+                                Welcome, {me.firstName || me.email}
+                            </h1>
+                            <p className="text-muted-foreground text-sm">
+                                Confirm your name to personalize your account.
+                            </p>
                         </div>
                         <div className="grid gap-4 sm:grid-cols-2">
                             <UiFormInput
@@ -133,7 +137,9 @@ export function OnboardingWizard() {
                     <div className="space-y-4">
                         <div>
                             <h1 className="text-xl font-semibold">Choose your look</h1>
-                            <p className="text-muted-foreground text-sm">Pick a color theme. You can change this later in settings.</p>
+                            <p className="text-muted-foreground text-sm">
+                                Pick a color theme. You can change this later in settings.
+                            </p>
                         </div>
                         <div className="grid gap-3 sm:grid-cols-2">
                             {themes.map((theme) => {
@@ -144,14 +150,23 @@ export function OnboardingWizard() {
                                         type="button"
                                         onClick={() => setSelectedThemeId(theme.id)}
                                         className={cn(
-                                            'border-border/60 relative rounded-2xl border p-3 text-left transition-colors hover:bg-muted/40',
-                                            selected && 'border-primary ring-primary/30 bg-primary/5 ring-2',
+                                            'border-border/60 hover:bg-muted/40 relative rounded-2xl border p-3 text-left transition-colors',
+                                            selected &&
+                                                'border-primary ring-primary/30 bg-primary/5 ring-2',
                                         )}
                                     >
                                         <p className="truncate text-sm font-medium">{theme.name}</p>
                                         <div className="mt-2 flex gap-1">
-                                            {[theme.config.light.primary, theme.config.light.accent, theme.config.light.background].map((color, index) => (
-                                                <span key={index} className="h-5 w-5 rounded-full border" style={{ backgroundColor: color }} />
+                                            {[
+                                                theme.config.light.primary,
+                                                theme.config.light.accent,
+                                                theme.config.light.background,
+                                            ].map((color, index) => (
+                                                <span
+                                                    key={index}
+                                                    className="h-5 w-5 rounded-full border"
+                                                    style={{ backgroundColor: color }}
+                                                />
                                             ))}
                                         </div>
                                         {selected && (
@@ -170,25 +185,43 @@ export function OnboardingWizard() {
                     <div className="space-y-3">
                         <div>
                             <h1 className="text-xl font-semibold">Ready to go?</h1>
-                            <p className="text-muted-foreground text-sm">Review your choices, then finish setting up your account.</p>
+                            <p className="text-muted-foreground text-sm">
+                                Review your choices, then finish setting up your account.
+                            </p>
                         </div>
                         <div className="bg-muted/40 space-y-2 rounded-2xl p-4 text-sm">
-                            <p><span className="text-muted-foreground">Name:</span> {firstName || me.firstName || 'Not set'} {lastName || me.lastName || ''}</p>
-                            <p><span className="text-muted-foreground">Theme:</span> {themes.find((theme) => theme.id === selectedThemeId)?.name ?? 'Default theme'}</p>
+                            <p>
+                                <span className="text-muted-foreground">Name:</span>{' '}
+                                {firstName || me.firstName || 'Not set'}{' '}
+                                {lastName || me.lastName || ''}
+                            </p>
+                            <p>
+                                <span className="text-muted-foreground">Theme:</span>{' '}
+                                {themes.find((theme) => theme.id === selectedThemeId)?.name ??
+                                    'Default theme'}
+                            </p>
                         </div>
                     </div>
                 )}
 
                 {/* Footer */}
                 <div className="flex items-center justify-between">
-                    <UiButton variant="ghost" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}>
+                    <UiButton
+                        variant="ghost"
+                        onClick={() => setStep((s) => Math.max(0, s - 1))}
+                        disabled={step === 0}
+                    >
                         Back
                     </UiButton>
                     {step < STEPS.length - 1 ? (
                         <UiButton onClick={() => setStep((s) => s + 1)}>Continue</UiButton>
                     ) : (
                         <UiButton onClick={handleFinish} disabled={!canFinish}>
-                            {finishMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Finish'}
+                            {finishMutation.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                'Finish'
+                            )}
                         </UiButton>
                     )}
                 </div>

@@ -15,16 +15,23 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nes
 import { IsOptional, IsString, IsUrl } from 'class-validator'
 import { memoryStorage } from 'multer'
 
-import { successResponse } from '../../common/helpers/response.helper'
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
-import { RolesGuard } from '../../common/guards/roles.guard'
 import { Roles } from '../../common/decorators/roles.decorator'
+import { RolesGuard } from '../../common/guards/roles.guard'
+import { successResponse } from '../../common/helpers/response.helper'
 import { CloudinaryService } from '../../shared/cloudinary/cloudinary.service'
-import { SiteSettingsService } from './site-settings.service'
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { UpdateSiteSettingsDto } from './dto/update-site-settings.dto'
+import { SiteSettingsService } from './site-settings.service'
 
 const MAX_SIZE = 5 * 1024 * 1024
-const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/x-icon', 'image/vnd.microsoft.icon']
+const ALLOWED_MIME = [
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'image/svg+xml',
+    'image/x-icon',
+    'image/vnd.microsoft.icon',
+]
 
 class DeleteAssetDto {
     @IsString() url: string
@@ -59,7 +66,9 @@ export class SiteSettingsController {
     @ApiBearerAuth('access-token')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles('admin')
-    @ApiOperation({ summary: 'Upload logo or favicon — deletes oldUrl from Cloudinary if provided' })
+    @ApiOperation({
+        summary: 'Upload logo or favicon — deletes oldUrl from Cloudinary if provided',
+    })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
         schema: {
@@ -77,16 +86,18 @@ export class SiteSettingsController {
             limits: { fileSize: MAX_SIZE },
             fileFilter: (_req, file, cb) => {
                 if (!ALLOWED_MIME.includes(file.mimetype)) {
-                    return cb(new BadRequestException('Only image files are allowed (JPEG, PNG, WebP, SVG, ICO)'), false)
+                    return cb(
+                        new BadRequestException(
+                            'Only image files are allowed (JPEG, PNG, WebP, SVG, ICO)',
+                        ),
+                        false,
+                    )
                 }
                 cb(null, true)
             },
         }),
     )
-    async uploadAsset(
-        @UploadedFile() file: Express.Multer.File,
-        @Body('oldUrl') oldUrl?: string,
-    ) {
+    async uploadAsset(@UploadedFile() file: Express.Multer.File, @Body('oldUrl') oldUrl?: string) {
         if (!file) throw new BadRequestException('No file provided')
 
         // Upload new image first — if it fails, old image is untouched

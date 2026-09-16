@@ -1,14 +1,23 @@
 import {
-    Controller, Get, Post, Put, Delete,
-    Body, Param, UseGuards, HttpCode, HttpStatus,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Param,
+    Post,
+    Put,
+    UseGuards,
 } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard'
-import { RolesGuard } from '../../../common/guards/roles.guard'
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
+
 import { Roles } from '../../../common/decorators/roles.decorator'
-import { PermissionService } from './permission.service'
-import { CreatePermissionDto } from './dto/create-permission.dto'
+import { RolesGuard } from '../../../common/guards/roles.guard'
 import { successResponse } from '../../../common/helpers/response.helper'
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard'
+import { CreatePermissionDto } from './dto/create-permission.dto'
+import { PermissionService } from './permission.service'
 
 @ApiTags('permissions')
 @ApiBearerAuth('access-token')

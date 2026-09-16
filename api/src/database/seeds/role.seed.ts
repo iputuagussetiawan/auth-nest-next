@@ -2,39 +2,66 @@ import { eq, notInArray } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
 import type * as schema from '../schema'
-import { roles } from '../schema/rbac/roles.schema'
 import { permissions } from '../schema/rbac/permissions.schema'
 import { rolePermissions } from '../schema/rbac/role-permissions.schema'
+import { roles } from '../schema/rbac/roles.schema'
 
 const ROLES = [
-    { name: 'admin',          label: 'Admin',           description: 'Full system access',           icon: 'ShieldCheck'   },
-    { name: 'participant',    label: 'Participant',     description: 'Participant account access',   icon: 'User'          },
-    { name: 'instructure',    label: 'Instructor',      description: 'Instructor account access',    icon: 'GraduationCap' },
-    { name: 'project_owner',  label: 'Project Owner',   description: 'Project owner account access', icon: 'Crown'         },
-    { name: 'project_member', label: 'Project Member',  description: 'Project member account access', icon: 'Users'        },
-    { name: 'project_mentor', label: 'Project Mentor',  description: 'Project mentor account access', icon: 'Compass'      },
-    { name: 'investor',       label: 'Investor',        description: 'Investor account access',      icon: 'Landmark'      },
+    { name: 'admin', label: 'Admin', description: 'Full system access', icon: 'ShieldCheck' },
+    {
+        name: 'participant',
+        label: 'Participant',
+        description: 'Participant account access',
+        icon: 'User',
+    },
+    {
+        name: 'instructure',
+        label: 'Instructor',
+        description: 'Instructor account access',
+        icon: 'GraduationCap',
+    },
+    {
+        name: 'project_owner',
+        label: 'Project Owner',
+        description: 'Project owner account access',
+        icon: 'Crown',
+    },
+    {
+        name: 'project_member',
+        label: 'Project Member',
+        description: 'Project member account access',
+        icon: 'Users',
+    },
+    {
+        name: 'project_mentor',
+        label: 'Project Mentor',
+        description: 'Project mentor account access',
+        icon: 'Compass',
+    },
+    {
+        name: 'investor',
+        label: 'Investor',
+        description: 'Investor account access',
+        icon: 'Landmark',
+    },
 ]
 
 const PERMISSIONS = [
-    { name: 'user:read',           description: 'Read user data' },
-    { name: 'user:create',         description: 'Create users' },
-    { name: 'user:update',         description: 'Update user data' },
-    { name: 'user:delete',         description: 'Delete users' },
-    { name: 'role:manage',         description: 'Manage roles and permissions' },
+    { name: 'user:read', description: 'Read user data' },
+    { name: 'user:create', description: 'Create users' },
+    { name: 'user:update', description: 'Update user data' },
+    { name: 'user:delete', description: 'Delete users' },
+    { name: 'role:manage', description: 'Manage roles and permissions' },
 ]
 
 const ROLE_PERMISSIONS: Record<string, string[]> = {
-    admin: [
-        'user:read', 'user:create', 'user:update', 'user:delete',
-        'role:manage',
-    ],
-    participant:    ['user:read'],
-    instructure:    ['user:read'],
-    project_owner:  ['user:read'],
+    admin: ['user:read', 'user:create', 'user:update', 'user:delete', 'role:manage'],
+    participant: ['user:read'],
+    instructure: ['user:read'],
+    project_owner: ['user:read'],
     project_member: ['user:read'],
     project_mentor: ['user:read'],
-    investor:       ['user:read'],
+    investor: ['user:read'],
 }
 
 async function seedRoles(db: NodePgDatabase<typeof schema>): Promise<Map<string, string>> {
@@ -48,7 +75,8 @@ async function seedRoles(db: NodePgDatabase<typeof schema>): Promise<Map<string,
         const existing = await db.select().from(roles).where(eq(roles.name, row.name)).limit(1)
         if (existing.length) {
             map.set(row.name, existing[0].id)
-            await db.update(roles)
+            await db
+                .update(roles)
                 .set({ label: row.label, description: row.description, icon: row.icon })
                 .where(eq(roles.id, existing[0].id))
             console.log(`  update role: ${row.name}`)
@@ -69,7 +97,11 @@ async function seedPermissions(db: NodePgDatabase<typeof schema>): Promise<Map<s
     await db.delete(permissions).where(notInArray(permissions.name, permNames))
 
     for (const row of PERMISSIONS) {
-        const existing = await db.select().from(permissions).where(eq(permissions.name, row.name)).limit(1)
+        const existing = await db
+            .select()
+            .from(permissions)
+            .where(eq(permissions.name, row.name))
+            .limit(1)
         if (existing.length) {
             map.set(row.name, existing[0].id)
             console.log(`  skip  permission: ${row.name}`)

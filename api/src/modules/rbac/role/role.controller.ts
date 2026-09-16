@@ -1,20 +1,40 @@
 import {
-    Controller, Get, Post, Put, Patch, Delete,
-    Body, Param, UseGuards, HttpCode, HttpStatus, ParseUUIDPipe,
-    UseInterceptors, UploadedFile, BadRequestException,
+    BadRequestException,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Param,
+    ParseUUIDPipe,
+    Patch,
+    Post,
+    Put,
+    UploadedFile,
+    UseGuards,
+    UseInterceptors,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger'
+import {
+    ApiBearerAuth,
+    ApiBody,
+    ApiConsumes,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger'
 import { memoryStorage } from 'multer'
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard'
-import { RolesGuard } from '../../../common/guards/roles.guard'
+
 import { Roles } from '../../../common/decorators/roles.decorator'
-import { RoleService } from './role.service'
+import { RolesGuard } from '../../../common/guards/roles.guard'
+import { successResponse } from '../../../common/helpers/response.helper'
 import { CloudinaryService } from '../../../shared/cloudinary/cloudinary.service'
-import { CreateRoleDto } from './dto/create-role.dto'
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard'
 import { AssignPermissionsDto } from './dto/assign-permissions.dto'
 import { AssignRoleDto } from './dto/assign-role.dto'
-import { successResponse } from '../../../common/helpers/response.helper'
+import { CreateRoleDto } from './dto/create-role.dto'
+import { RoleService } from './role.service'
 
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const MAX_SIZE = 2 * 1024 * 1024 // 2 MB
@@ -90,7 +110,13 @@ export class RoleController {
     @Roles('admin')
     @ApiOperation({ summary: 'Upload role image to Cloudinary (admin)' })
     @ApiConsumes('multipart/form-data')
-    @ApiBody({ schema: { type: 'object', properties: { image: { type: 'string', format: 'binary' } }, required: ['image'] } })
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: { image: { type: 'string', format: 'binary' } },
+            required: ['image'],
+        },
+    })
     @UseInterceptors(
         FileInterceptor('image', {
             storage: memoryStorage(),

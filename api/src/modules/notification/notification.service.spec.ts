@@ -78,7 +78,9 @@ describe('NotificationService', () => {
         const db = { select: jest.fn().mockReturnValue(select) }
         const service = new NotificationService(db as never)
 
-        await expect(service.markRead('missing-id', 'admin-id')).rejects.toBeInstanceOf(NotFoundException)
+        await expect(service.markRead('missing-id', 'admin-id')).rejects.toBeInstanceOf(
+            NotFoundException,
+        )
     })
 
     it('marks an existing notification as read', async () => {
@@ -93,7 +95,10 @@ describe('NotificationService', () => {
         await expect(service.markRead('notification-id', 'admin-id')).resolves.toEqual({
             message: 'Notification marked as read',
         })
-        expect(insert.values).toHaveBeenCalledWith({ notificationId: 'notification-id', userId: 'admin-id' })
+        expect(insert.values).toHaveBeenCalledWith({
+            notificationId: 'notification-id',
+            userId: 'admin-id',
+        })
         expect(insert.onConflictDoNothing).toHaveBeenCalled()
     })
 

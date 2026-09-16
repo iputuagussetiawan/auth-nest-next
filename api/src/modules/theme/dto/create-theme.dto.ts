@@ -1,5 +1,14 @@
 import { Type } from 'class-transformer'
-import { IsBoolean, IsIn, IsObject, IsOptional, IsString, Matches, MaxLength, ValidateNested } from 'class-validator'
+import {
+    IsBoolean,
+    IsIn,
+    IsObject,
+    IsOptional,
+    IsString,
+    Matches,
+    MaxLength,
+    ValidateNested,
+} from 'class-validator'
 
 const hexColor = () => Matches(/^#[0-9a-fA-F]{6}$/)
 

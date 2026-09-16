@@ -10,6 +10,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+
 import type { IRole } from './types/RoleTypes'
 
 interface RoleDeleteDialogProps {
@@ -20,14 +21,21 @@ interface RoleDeleteDialogProps {
     isPending: boolean
 }
 
-export function RoleDeleteDialog({ open, onOpenChange, role, onConfirm, isPending }: RoleDeleteDialogProps) {
+export function RoleDeleteDialog({
+    open,
+    onOpenChange,
+    role,
+    onConfirm,
+    isPending,
+}: RoleDeleteDialogProps) {
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Delete Role</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Permanently delete role <strong>{role?.name}</strong>? Users with this role will lose it.
+                        Permanently delete role <strong>{role?.name}</strong>? Users with this role
+                        will lose it.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

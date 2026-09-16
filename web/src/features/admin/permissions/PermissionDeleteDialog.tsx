@@ -10,6 +10,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+
 import type { IPermission } from './types/PermissionTypes'
 
 interface PermissionDeleteDialogProps {
@@ -20,14 +21,21 @@ interface PermissionDeleteDialogProps {
     isPending: boolean
 }
 
-export function PermissionDeleteDialog({ open, onOpenChange, permission, onConfirm, isPending }: PermissionDeleteDialogProps) {
+export function PermissionDeleteDialog({
+    open,
+    onOpenChange,
+    permission,
+    onConfirm,
+    isPending,
+}: PermissionDeleteDialogProps) {
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Delete Permission</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Permanently delete permission <strong>{permission?.name}</strong>? Roles with this permission will lose it.
+                        Permanently delete permission <strong>{permission?.name}</strong>? Roles
+                        with this permission will lose it.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

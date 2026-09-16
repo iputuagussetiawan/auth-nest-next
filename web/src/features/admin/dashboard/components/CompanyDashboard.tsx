@@ -101,12 +101,28 @@ export function CompanyDashboard() {
                         <AreaChart data={applicationTrendData}>
                             <defs>
                                 <linearGradient id="fillApps" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="var(--color-applications)" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="var(--color-applications)" stopOpacity={0} />
+                                    <stop
+                                        offset="5%"
+                                        stopColor="var(--color-applications)"
+                                        stopOpacity={0.3}
+                                    />
+                                    <stop
+                                        offset="95%"
+                                        stopColor="var(--color-applications)"
+                                        stopOpacity={0}
+                                    />
                                 </linearGradient>
                                 <linearGradient id="fillHired" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="var(--color-hired)" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="var(--color-hired)" stopOpacity={0} />
+                                    <stop
+                                        offset="5%"
+                                        stopColor="var(--color-hired)"
+                                        stopOpacity={0.3}
+                                    />
+                                    <stop
+                                        offset="95%"
+                                        stopColor="var(--color-hired)"
+                                        stopOpacity={0}
+                                    />
                                 </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -114,8 +130,20 @@ export function CompanyDashboard() {
                             <YAxis tickLine={false} axisLine={false} />
                             <ChartTooltip content={<ChartTooltipContent />} />
                             <ChartLegend content={<ChartLegendContent />} />
-                            <Area type="monotone" dataKey="applications" stroke="var(--color-applications)" fill="url(#fillApps)" strokeWidth={2} />
-                            <Area type="monotone" dataKey="hired" stroke="var(--color-hired)" fill="url(#fillHired)" strokeWidth={2} />
+                            <Area
+                                type="monotone"
+                                dataKey="applications"
+                                stroke="var(--color-applications)"
+                                fill="url(#fillApps)"
+                                strokeWidth={2}
+                            />
+                            <Area
+                                type="monotone"
+                                dataKey="hired"
+                                stroke="var(--color-hired)"
+                                fill="url(#fillHired)"
+                                strokeWidth={2}
+                            />
                         </AreaChart>
                     </ChartContainer>
                 </CardContent>
@@ -134,7 +162,11 @@ export function CompanyDashboard() {
                                 <XAxis dataKey="status" tickLine={false} axisLine={false} />
                                 <YAxis tickLine={false} axisLine={false} />
                                 <ChartTooltip content={<ChartTooltipContent />} />
-                                <Bar dataKey="count" fill="var(--color-count)" radius={[4, 4, 0, 0]} />
+                                <Bar
+                                    dataKey="count"
+                                    fill="var(--color-count)"
+                                    radius={[4, 4, 0, 0]}
+                                />
                             </BarChart>
                         </ChartContainer>
                     </CardContent>
@@ -150,9 +182,19 @@ export function CompanyDashboard() {
                             <BarChart data={jobsPerRoleData} layout="vertical">
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                                 <XAxis type="number" tickLine={false} axisLine={false} />
-                                <YAxis type="category" dataKey="role" tickLine={false} axisLine={false} width={60} />
+                                <YAxis
+                                    type="category"
+                                    dataKey="role"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    width={60}
+                                />
                                 <ChartTooltip content={<ChartTooltipContent />} />
-                                <Bar dataKey="jobs" fill="var(--color-jobs)" radius={[0, 4, 4, 0]} />
+                                <Bar
+                                    dataKey="jobs"
+                                    fill="var(--color-jobs)"
+                                    radius={[0, 4, 4, 0]}
+                                />
                             </BarChart>
                         </ChartContainer>
                     </CardContent>

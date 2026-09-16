@@ -34,17 +34,29 @@ export function useUser() {
 
     const createMutation = useMutation({
         mutationFn: (data: any) => adminUserService.create(data),
-        onSuccess: () => { toast.success('User created'); invalidate(); setFormOpen(false) },
+        onSuccess: () => {
+            toast.success('User created')
+            invalidate()
+            setFormOpen(false)
+        },
         onError: (error: unknown) => toast.error(getErrorMessage(error)),
     })
     const updateMutation = useMutation({
         mutationFn: ({ id, data }: { id: string; data: any }) => adminUserService.update(id, data),
-        onSuccess: () => { toast.success('User updated'); invalidate(); setFormOpen(false) },
+        onSuccess: () => {
+            toast.success('User updated')
+            invalidate()
+            setFormOpen(false)
+        },
         onError: (error: unknown) => toast.error(getErrorMessage(error)),
     })
     const deleteMutation = useMutation({
         mutationFn: (id: string) => adminUserService.delete(id),
-        onSuccess: () => { toast.success('User deleted'); invalidate(); setDeleteUser(null) },
+        onSuccess: () => {
+            toast.success('User deleted')
+            invalidate()
+            setDeleteUser(null)
+        },
         onError: (error: unknown) => toast.error(getErrorMessage(error)),
     })
     const assignRoleMutation = useMutation({

@@ -6,6 +6,10 @@ import { ImagePlus, X } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiCheckbox } from '@/components/ui-custom/UiCheckbox'
+import { UiFormInput, UiFormTextarea } from '@/components/ui-custom/UiFormInput'
+import { UiImage } from '@/components/ui-custom/UiImage'
 import {
     Dialog,
     DialogContent,
@@ -15,12 +19,9 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { UiButton } from '@/components/ui-custom/UiButton'
-import { UiCheckbox } from '@/components/ui-custom/UiCheckbox'
-import { UiFormInput, UiFormTextarea } from '@/components/ui-custom/UiFormInput'
-import { UiImage } from '@/components/ui-custom/UiImage'
-import type { IPermission } from '../permissions/types/PermissionTypes'
+
 import { PermissionName } from '../permissions/PermissionName'
+import type { IPermission } from '../permissions/types/PermissionTypes'
 import type { IRole } from './types/RoleTypes'
 
 const schema = z.object({
@@ -43,9 +44,22 @@ interface RoleFormDialogProps {
 }
 
 export function RoleFormDialog({
-    open, onOpenChange, role, allPermissions, selectedPermissions, onSubmit, isPending,
+    open,
+    onOpenChange,
+    role,
+    allPermissions,
+    selectedPermissions,
+    onSubmit,
+    isPending,
 }: RoleFormDialogProps) {
-    const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormValues>({
+    const {
+        register,
+        handleSubmit,
+        reset,
+        watch,
+        setValue,
+        formState: { errors },
+    } = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: { name: '', label: '', description: '', permissionIds: [] },
     })
@@ -79,7 +93,10 @@ export function RoleFormDialog({
         if (fileRef.current) fileRef.current.value = ''
     }
 
-    const isImagePreview = imagePreview?.startsWith('http') || imagePreview?.startsWith('blob:') || imagePreview?.startsWith('/')
+    const isImagePreview =
+        imagePreview?.startsWith('http') ||
+        imagePreview?.startsWith('blob:') ||
+        imagePreview?.startsWith('/')
     const checked = watch('permissionIds')
     const toggle = (id: string) => {
         const next = checked.includes(id) ? checked.filter((x) => x !== id) : [...checked, id]
@@ -117,12 +134,20 @@ export function RoleFormDialog({
                         <Label>Role Image</Label>
                         <div className="flex items-center gap-3">
                             <div className="bg-muted relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border">
-                                {imagePreview && isImagePreview
-                                    ? <UiImage src={imagePreview} alt="role" fill className="h-full w-full object-cover" />
-                                    : imagePreview
-                                        ? <span className="text-primary px-1 text-center text-[10px] font-semibold break-all">{imagePreview}</span>
-                                        : <ImagePlus className="text-muted-foreground h-6 w-6" />
-                                }
+                                {imagePreview && isImagePreview ? (
+                                    <UiImage
+                                        src={imagePreview}
+                                        alt="role"
+                                        fill
+                                        className="h-full w-full object-cover"
+                                    />
+                                ) : imagePreview ? (
+                                    <span className="text-primary px-1 text-center text-[10px] font-semibold break-all">
+                                        {imagePreview}
+                                    </span>
+                                ) : (
+                                    <ImagePlus className="text-muted-foreground h-6 w-6" />
+                                )}
                             </div>
                             <div className="space-y-1.5">
                                 <input
@@ -151,7 +176,9 @@ export function RoleFormDialog({
                                         <X className="h-3.5 w-3.5" /> Remove
                                     </UiButton>
                                 )}
-                                <p className="text-muted-foreground text-xs">JPG, PNG, WebP, GIF · max 2 MB</p>
+                                <p className="text-muted-foreground text-xs">
+                                    JPG, PNG, WebP, GIF · max 2 MB
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -167,10 +194,15 @@ export function RoleFormDialog({
                                             checked={checked.includes(p.id)}
                                             onCheckedChange={() => toggle(p.id)}
                                         />
-                                        <label htmlFor={p.id} className="flex cursor-pointer flex-wrap items-center gap-1.5">
+                                        <label
+                                            htmlFor={p.id}
+                                            className="flex cursor-pointer flex-wrap items-center gap-1.5"
+                                        >
                                             <PermissionName name={p.name} />
                                             {p.description && (
-                                                <span className="text-muted-foreground text-xs">{p.description}</span>
+                                                <span className="text-muted-foreground text-xs">
+                                                    {p.description}
+                                                </span>
                                             )}
                                         </label>
                                     </div>
@@ -180,7 +212,13 @@ export function RoleFormDialog({
                     </div>
 
                     <DialogFooter>
-                        <UiButton type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</UiButton>
+                        <UiButton
+                            type="button"
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                        >
+                            Cancel
+                        </UiButton>
                         <UiButton type="submit" disabled={isPending}>
                             {isPending ? 'Saving...' : 'Save'}
                         </UiButton>

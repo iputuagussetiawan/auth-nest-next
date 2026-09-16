@@ -1,7 +1,7 @@
 'use client'
 
-import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, Sparkles } from 'lucide-react'
 import Link from 'next/link'
+import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, Sparkles } from 'lucide-react'
 
 import type { IUserProfile } from '@/features/admin/account/types/AccountTypes'
 import {
@@ -21,8 +21,8 @@ import {
 } from '@/components/ui/sidebar'
 
 import { LogoutMenuItem } from './logout-menu-item'
-import { UserAvatar } from './user-avatar'
 import { ThemePickerMenuItem } from './theme-picker'
+import { UserAvatar } from './user-avatar'
 
 export function NavUser({ user }: { user: IUserProfile | null }) {
     const { isMobile } = useSidebar()
@@ -35,7 +35,7 @@ export function NavUser({ user }: { user: IUserProfile | null }) {
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="lg"
-                            className="rounded-2xl border border-sidebar-border/50 bg-sidebar-accent/40 px-3 py-2 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:hidden"
+                            className="border-sidebar-border/50 bg-sidebar-accent/40 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-2xl border px-3 py-2 group-data-[collapsible=icon]:hidden"
                         >
                             <UserAvatar
                                 name={`${user.firstName} ${user.lastName}`}

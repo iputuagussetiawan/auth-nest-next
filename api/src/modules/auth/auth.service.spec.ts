@@ -1,10 +1,10 @@
+import * as bcrypt from 'bcrypt'
+
 import {
     BadRequestException,
     NotFoundException,
     UnauthorizedException,
 } from '../../common/exceptions/app-error'
-import * as bcrypt from 'bcrypt'
-
 import { AuthService } from './auth.service'
 
 jest.mock('bcrypt', () => ({
@@ -61,7 +61,10 @@ function createService(
             assignRoleToUser: jest.fn(),
             ...(overrides.roleService ?? {}),
         } as never,
-        { notifyNewUser: jest.fn().mockResolvedValue({}), ...(overrides.notificationService ?? {}) } as never,
+        {
+            notifyNewUser: jest.fn().mockResolvedValue({}),
+            ...(overrides.notificationService ?? {}),
+        } as never,
     )
 }
 
@@ -72,14 +75,25 @@ describe('AuthService', () => {
 
     describe('validateUser', () => {
         it('returns the user without password on valid credentials', async () => {
-            const user = { id: 'user-id', email: 'a@example.com', password: 'hashed', isEmailVerified: true, isActive: true }
+            const user = {
+                id: 'user-id',
+                email: 'a@example.com',
+                password: 'hashed',
+                isEmailVerified: true,
+                isActive: true,
+            }
             const db = { select: jest.fn().mockReturnValue(createSelectChain([user])) }
             ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
             const service = createService(db)
 
             const result = await service.validateUser('a@example.com', 'password')
 
-            expect(result).toEqual({ id: 'user-id', email: 'a@example.com', isEmailVerified: true, isActive: true })
+            expect(result).toEqual({
+                id: 'user-id',
+                email: 'a@example.com',
+                isEmailVerified: true,
+                isActive: true,
+            })
             expect(result).not.toHaveProperty('password')
         })
 
@@ -91,7 +105,12 @@ describe('AuthService', () => {
         })
 
         it('returns null when the password does not match', async () => {
-            const user = { id: 'user-id', password: 'hashed', isEmailVerified: true, isActive: true }
+            const user = {
+                id: 'user-id',
+                password: 'hashed',
+                isEmailVerified: true,
+                isActive: true,
+            }
             const db = { select: jest.fn().mockReturnValue(createSelectChain([user])) }
             ;(bcrypt.compare as jest.Mock).mockResolvedValue(false)
             const service = createService(db)
@@ -100,26 +119,45 @@ describe('AuthService', () => {
         })
 
         it('rejects unverified email', async () => {
-            const user = { id: 'user-id', password: 'hashed', isEmailVerified: false, isActive: true }
+            const user = {
+                id: 'user-id',
+                password: 'hashed',
+                isEmailVerified: false,
+                isActive: true,
+            }
             const db = { select: jest.fn().mockReturnValue(createSelectChain([user])) }
             ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
             const service = createService(db)
 
-            await expect(service.validateUser('a@example.com', 'password')).rejects.toBeInstanceOf(UnauthorizedException)
+            await expect(service.validateUser('a@example.com', 'password')).rejects.toBeInstanceOf(
+                UnauthorizedException,
+            )
         })
 
         it('rejects disabled accounts', async () => {
-            const user = { id: 'user-id', password: 'hashed', isEmailVerified: true, isActive: false }
+            const user = {
+                id: 'user-id',
+                password: 'hashed',
+                isEmailVerified: true,
+                isActive: false,
+            }
             const db = { select: jest.fn().mockReturnValue(createSelectChain([user])) }
             ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
             const service = createService(db)
 
-            await expect(service.validateUser('a@example.com', 'password')).rejects.toBeInstanceOf(UnauthorizedException)
+            await expect(service.validateUser('a@example.com', 'password')).rejects.toBeInstanceOf(
+                UnauthorizedException,
+            )
         })
     })
 
     describe('register', () => {
-        const dto = { email: 'new@example.com', firstName: ' New ', lastName: 'User ', password: 'Password123!' }
+        const dto = {
+            email: 'new@example.com',
+            firstName: ' New ',
+            lastName: 'User ',
+            password: 'Password123!',
+        }
 
         it('creates the user, verification code, role and notification', async () => {
             const created = { id: 'user-id', email: 'new@example.com', provider: 'email' }
@@ -130,7 +168,10 @@ describe('AuthService', () => {
                     .mockReturnValueOnce(createInsertChain([created]))
                     .mockReturnValueOnce(createInsertChain([{ id: 'code-id' }])),
             }
-            const roleService = { findByName: jest.fn().mockResolvedValue({ id: 'role-id', name: 'user' }), assignRoleToUser: jest.fn() }
+            const roleService = {
+                findByName: jest.fn().mockResolvedValue({ id: 'role-id', name: 'user' }),
+                assignRoleToUser: jest.fn(),
+            }
             const notificationService = { notifyNewUser: jest.fn().mockResolvedValue({}) }
             const service = createService(db, { roleService, notificationService })
 
@@ -160,7 +201,9 @@ describe('AuthService', () => {
         })
 
         it('rejects duplicate email', async () => {
-            const db = { select: jest.fn().mockReturnValue(createSelectChain([{ id: 'existing-id' }])) }
+            const db = {
+                select: jest.fn().mockReturnValue(createSelectChain([{ id: 'existing-id' }])),
+            }
             const service = createService(db)
 
             await expect(service.register(dto as never)).rejects.toBeInstanceOf(BadRequestException)
@@ -175,7 +218,9 @@ describe('AuthService', () => {
                     .mockReturnValueOnce(createInsertChain([created]))
                     .mockReturnValueOnce(createInsertChain([{ id: 'code-id' }])),
             }
-            const notificationService = { notifyNewUser: jest.fn().mockRejectedValue(new Error('db down')) }
+            const notificationService = {
+                notifyNewUser: jest.fn().mockRejectedValue(new Error('db down')),
+            }
             const service = createService(db, { notificationService })
             const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined)
 
@@ -199,8 +244,12 @@ describe('AuthService', () => {
             }
             const service = createService(db)
 
-            await expect(service.verifyEmail('code')).resolves.toEqual({ message: 'Email verified successfully' })
-            expect(update.set).toHaveBeenCalledWith(expect.objectContaining({ isEmailVerified: true }))
+            await expect(service.verifyEmail('code')).resolves.toEqual({
+                message: 'Email verified successfully',
+            })
+            expect(update.set).toHaveBeenCalledWith(
+                expect.objectContaining({ isEmailVerified: true }),
+            )
             expect(del.where).toHaveBeenCalled()
         })
 
@@ -220,7 +269,10 @@ describe('AuthService', () => {
                 select: jest.fn().mockReturnValue(createSelectChain([])),
                 insert: jest.fn().mockReturnValue(insert),
             }
-            const roleService = { findByName: jest.fn().mockResolvedValue({ id: 'role-id', name: 'user' }), assignRoleToUser: jest.fn() }
+            const roleService = {
+                findByName: jest.fn().mockResolvedValue({ id: 'role-id', name: 'user' }),
+                assignRoleToUser: jest.fn(),
+            }
             const notificationService = { notifyNewUser: jest.fn().mockResolvedValue({}) }
             const service = createService(db, { roleService, notificationService })
 
@@ -233,7 +285,9 @@ describe('AuthService', () => {
             })
 
             expect(result).toEqual(created)
-            expect(insert.values).toHaveBeenCalledWith(expect.objectContaining({ isEmailVerified: true }))
+            expect(insert.values).toHaveBeenCalledWith(
+                expect.objectContaining({ isEmailVerified: true }),
+            )
             expect(roleService.assignRoleToUser).toHaveBeenCalledWith('user-id', 'role-id')
             expect(notificationService.notifyNewUser).toHaveBeenCalled()
         })
@@ -257,7 +311,9 @@ describe('AuthService', () => {
             })
 
             expect(result).toEqual(existing)
-            expect(update.set).toHaveBeenCalledWith(expect.objectContaining({ lastLogin: expect.any(Date) }))
+            expect(update.set).toHaveBeenCalledWith(
+                expect.objectContaining({ lastLogin: expect.any(Date) }),
+            )
             expect(notificationService.notifyNewUser).not.toHaveBeenCalled()
         })
     })
@@ -285,7 +341,8 @@ describe('AuthService', () => {
         it('stores a reset code and sends the email', async () => {
             const user = { id: 'user-id', email: 'a@example.com' }
             const db = {
-                select: jest.fn()
+                select: jest
+                    .fn()
                     .mockReturnValueOnce(createSelectChain([user]))
                     .mockReturnValueOnce(createSelectChain([{ recentCount: 0 }])),
                 insert: jest.fn().mockReturnValue(createInsertChain([{ id: 'code-id' }])),
@@ -313,9 +370,14 @@ describe('AuthService', () => {
             const service = createService(db)
 
             await expect(
-                service.resetPassword({ verificationCode: 'code', password: 'NewPass123!' } as never),
+                service.resetPassword({
+                    verificationCode: 'code',
+                    password: 'NewPass123!',
+                } as never),
             ).resolves.toEqual({ message: 'Password reset successfully' })
-            expect(update.set).toHaveBeenCalledWith(expect.objectContaining({ password: 'new-hash' }))
+            expect(update.set).toHaveBeenCalledWith(
+                expect.objectContaining({ password: 'new-hash' }),
+            )
         })
 
         it('rejects an invalid or expired code', async () => {
@@ -323,18 +385,28 @@ describe('AuthService', () => {
             const service = createService(db)
 
             await expect(
-                service.resetPassword({ verificationCode: 'bad', password: 'NewPass123!' } as never),
+                service.resetPassword({
+                    verificationCode: 'bad',
+                    password: 'NewPass123!',
+                } as never),
             ).rejects.toBeInstanceOf(NotFoundException)
         })
     })
 
     describe('refreshToken', () => {
         function createTokenService(verifyResult: unknown) {
-            return { sign: jest.fn().mockReturnValue('token'), verify: jest.fn().mockReturnValue(verifyResult) }
+            return {
+                sign: jest.fn().mockReturnValue('token'),
+                verify: jest.fn().mockReturnValue(verifyResult),
+            }
         }
 
         it('rotates tokens for a valid session', async () => {
-            const session = { id: 'session-id', userId: 'user-id', expiredAt: new Date(Date.now() + 60_000) }
+            const session = {
+                id: 'session-id',
+                userId: 'user-id',
+                expiredAt: new Date(Date.now() + 60_000),
+            }
             const update = createUpdateChain()
             const db = {
                 select: jest.fn().mockReturnValue(createSelectChain([session])),
@@ -352,23 +424,48 @@ describe('AuthService', () => {
             const result = await service.refreshToken('refresh-token')
 
             expect(result).toEqual({ access_token: 'token', refresh_token: 'token' })
-            expect(update.set).toHaveBeenCalledWith(expect.objectContaining({ expiredAt: expect.any(Date) }))
+            expect(update.set).toHaveBeenCalledWith(
+                expect.objectContaining({ expiredAt: expect.any(Date) }),
+            )
         })
 
         it('rejects an invalid refresh token', async () => {
-            const jwt = { sign: jest.fn(), verify: jest.fn().mockImplementation(() => { throw new Error('bad') }) }
-            const service = new AuthService({} as never, jwt as never, {} as never, {} as never, {} as never)
+            const jwt = {
+                sign: jest.fn(),
+                verify: jest.fn().mockImplementation(() => {
+                    throw new Error('bad')
+                }),
+            }
+            const service = new AuthService(
+                {} as never,
+                jwt as never,
+                {} as never,
+                {} as never,
+                {} as never,
+            )
 
             await expect(service.refreshToken('bad')).rejects.toBeInstanceOf(UnauthorizedException)
         })
 
         it('rejects an expired session', async () => {
-            const session = { id: 'session-id', userId: 'user-id', expiredAt: new Date(Date.now() - 60_000) }
+            const session = {
+                id: 'session-id',
+                userId: 'user-id',
+                expiredAt: new Date(Date.now() - 60_000),
+            }
             const db = { select: jest.fn().mockReturnValue(createSelectChain([session])) }
             const jwt = createTokenService({ sessionId: 'session-id' })
-            const service = new AuthService(db as never, jwt as never, {} as never, {} as never, {} as never)
+            const service = new AuthService(
+                db as never,
+                jwt as never,
+                {} as never,
+                {} as never,
+                {} as never,
+            )
 
-            await expect(service.refreshToken('refresh-token')).rejects.toBeInstanceOf(UnauthorizedException)
+            await expect(service.refreshToken('refresh-token')).rejects.toBeInstanceOf(
+                UnauthorizedException,
+            )
         })
     })
 })

@@ -1,16 +1,16 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-
-import { ThemeToggle } from '@/components/theme-toggle'
-import { NotificationBell } from '@/features/admin/notifications/components/NotificationBell'
 import { useAuthContext } from '@/providers/auth-provider'
 
+import { NotificationBell } from '@/features/admin/notifications/components/NotificationBell'
+import { ThemeToggle } from '@/components/theme-toggle'
+
+import { getDashboardPageTitle } from './dashboard-utils'
 import {
     DashboardSidebarCollapseToggle,
     DashboardSidebarMobileToggle,
 } from './DashboardSidebarToggle'
-import { getDashboardPageTitle } from './dashboard-utils'
 
 export default function DashboardHeader() {
     const pathname = usePathname()

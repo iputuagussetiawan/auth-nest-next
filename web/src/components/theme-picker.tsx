@@ -4,13 +4,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, Palette } from 'lucide-react'
 import { toast } from 'sonner'
 
+import { adminThemeService } from '@/features/admin/themes/services/ThemeService'
 import {
+    DropdownMenuItem,
     DropdownMenuSub,
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
-    DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
-import { adminThemeService } from '@/features/admin/themes/services/ThemeService'
 
 export function ThemePickerMenuItem() {
     const qc = useQueryClient()
@@ -36,7 +36,7 @@ export function ThemePickerMenuItem() {
             qc.invalidateQueries({ queryKey: ['my-theme'] })
             toast.success('Theme updated')
         },
-        onError: (e: any) => toast.error(e?.message ?? 'Failed to update theme'),
+        onError: (e: Error) => toast.error(e?.message ?? 'Failed to update theme'),
     })
 
     if (themes.length === 0) return null
@@ -55,24 +55,26 @@ export function ThemePickerMenuItem() {
                         <DropdownMenuItem
                             key={theme.id}
                             onClick={() => !isSelected && mutation.mutate(theme.id)}
-                            className="flex items-center justify-between gap-2 cursor-pointer"
+                            className="flex cursor-pointer items-center justify-between gap-2"
                         >
                             <div className="flex items-center gap-2">
                                 <div className="flex gap-0.5">
                                     {[l.primary, l.accent, l.sidebar].map((c, i) => (
                                         <span
                                             key={i}
-                                            className="h-3.5 w-3.5 rounded-full border border-border"
+                                            className="border-border h-3.5 w-3.5 rounded-full border"
                                             style={{ backgroundColor: c }}
                                         />
                                     ))}
                                 </div>
                                 <span className="text-sm">{theme.name}</span>
                                 {theme.isActive && !isSelected && (
-                                    <span className="text-[10px] text-muted-foreground">(default)</span>
+                                    <span className="text-muted-foreground text-[10px]">
+                                        (default)
+                                    </span>
                                 )}
                             </div>
-                            {isSelected && <Check className="h-3.5 w-3.5 shrink-0 text-primary" />}
+                            {isSelected && <Check className="text-primary h-3.5 w-3.5 shrink-0" />}
                         </DropdownMenuItem>
                     )
                 })}

@@ -1,26 +1,29 @@
+import * as crypto from 'crypto'
 import { Inject, Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
-import { NodePgDatabase } from 'drizzle-orm/node-postgres'
-import { eq, and, gt, count } from 'drizzle-orm'
 import * as bcrypt from 'bcrypt'
-import * as crypto from 'crypto'
+import { and, count, eq, gt } from 'drizzle-orm'
+import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
-import { DRIZZLE } from '../../database/drizzle.provider'
-import * as schema from '../../database/schema'
-import { users } from '../../database/schema/auth/users.schema'
-import { sessions } from '../../database/schema/auth/sessions.schema'
-import { verificationCodes, VerificationTypeEnum } from '../../database/schema/auth/verification-codes.schema'
-import { MailService } from '../../shared/mail/mail.service'
-import { RoleService } from '../rbac/role/role.service'
 import {
     BadRequestException,
     NotFoundException,
-    UnauthorizedException,
     TooManyRequestsException,
+    UnauthorizedException,
 } from '../../common/exceptions/app-error'
+import { DRIZZLE } from '../../database/drizzle.provider'
+import * as schema from '../../database/schema'
+import { sessions } from '../../database/schema/auth/sessions.schema'
+import { users } from '../../database/schema/auth/users.schema'
+import {
+    verificationCodes,
+    VerificationTypeEnum,
+} from '../../database/schema/auth/verification-codes.schema'
+import { MailService } from '../../shared/mail/mail.service'
+import { NotificationService } from '../notification/notification.service'
+import { RoleService } from '../rbac/role/role.service'
 import type { RegisterDto } from './dto/register.dto'
 import type { ResetPasswordDto } from './dto/reset-password.dto'
-import { NotificationService } from '../notification/notification.service'
 
 const COOKIE_OPTS = (maxAge: number) => ({
     httpOnly: true,
@@ -65,7 +68,11 @@ export class AuthService {
         if (existing.length) {
             const [updated] = await this.db
                 .update(sessions)
-                .set({ updatedAt: new Date(), expiredAt, ipAddress: ipAddress ?? existing[0].ipAddress })
+                .set({
+                    updatedAt: new Date(),
+                    expiredAt,
+                    ipAddress: ipAddress ?? existing[0].ipAddress,
+                })
                 .where(eq(sessions.id, existing[0].id))
                 .returning()
             return updated
@@ -79,18 +86,15 @@ export class AuthService {
     }
 
     async validateUser(email: string, password: string) {
-        const [user] = await this.db
-            .select()
-            .from(users)
-            .where(eq(users.email, email))
-            .limit(1)
+        const [user] = await this.db.select().from(users).where(eq(users.email, email)).limit(1)
 
         if (!user || !user.password) return null
 
         const isMatch = await bcrypt.compare(password, user.password)
         if (!isMatch) return null
 
-        if (!user.isEmailVerified) throw new UnauthorizedException('Please verify your email before logging in')
+        if (!user.isEmailVerified)
+            throw new UnauthorizedException('Please verify your email before logging in')
         if (!user.isActive) throw new UnauthorizedException('Account is disabled')
 
         const { password: _, ...safe } = user
@@ -142,7 +146,11 @@ export class AuthService {
         if (userRole) await this.roleService.assignRoleToUser(user.id, userRole.id)
 
         try {
-            await this.notificationService.notifyNewUser({ id: user.id, email: user.email, provider: user.provider })
+            await this.notificationService.notifyNewUser({
+                id: user.id,
+                email: user.email,
+                provider: user.provider,
+            })
         } catch (error) {
             console.error('Failed to create new-user notification:', error)
         }
@@ -208,7 +216,11 @@ export class AuthService {
             if (userRole) await this.roleService.assignRoleToUser(user.id, userRole.id)
 
             try {
-                await this.notificationService.notifyNewUser({ id: user.id, email: user.email, provider: user.provider })
+                await this.notificationService.notifyNewUser({
+                    id: user.id,
+                    email: user.email,
+                    provider: user.provider,
+                })
             } catch (error) {
                 console.error('Failed to create new-user notification:', error)
             }
@@ -223,11 +235,7 @@ export class AuthService {
     }
 
     async forgotPassword(email: string) {
-        const [user] = await this.db
-            .select()
-            .from(users)
-            .where(eq(users.email, email))
-            .limit(1)
+        const [user] = await this.db.select().from(users).where(eq(users.email, email)).limit(1)
 
         if (!user) return { message: 'Password reset email sent' }
 

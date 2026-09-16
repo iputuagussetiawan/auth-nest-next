@@ -9,6 +9,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+
 import type { IRoleWithPermissions } from '../types/RoleTypes'
 
 interface Actions {
@@ -28,10 +29,17 @@ export function getRoleColumns(actions: Actions): ColumnDef<IRoleWithPermissions
                 return (
                     <div className="flex items-center gap-2.5">
                         <div className="bg-muted flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border">
-                            {isUrl
-                                ? <img src={icon!} alt={name} className="h-full w-full object-cover" />
-                                : <span className="text-primary text-sm font-bold">{name[0].toUpperCase()}</span>
-                            }
+                            {isUrl ? (
+                                <img
+                                    src={icon!}
+                                    alt={name}
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : (
+                                <span className="text-primary text-sm font-bold">
+                                    {name[0].toUpperCase()}
+                                </span>
+                            )}
                         </div>
                         <span className="font-medium">{label ?? name}</span>
                     </div>
@@ -42,7 +50,8 @@ export function getRoleColumns(actions: Actions): ColumnDef<IRoleWithPermissions
             accessorKey: 'description',
             header: 'Description',
             meta: { className: 'hidden sm:table-cell' },
-            cell: ({ getValue }) => getValue<string | null>() ?? <span className="text-muted-foreground">—</span>,
+            cell: ({ getValue }) =>
+                getValue<string | null>() ?? <span className="text-muted-foreground">—</span>,
         },
         {
             accessorKey: 'userCount',

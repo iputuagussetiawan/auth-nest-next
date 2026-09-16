@@ -49,7 +49,7 @@ export function PermissionsLoading() {
                                 {/* Group header rows + permission rows, mirroring the matrix layout */}
                                 {Array.from({ length: 2 }).map((_, group) => (
                                     <Fragment key={group}>
-                                        <tr className="border-y bg-muted/40">
+                                        <tr className="bg-muted/40 border-y">
                                             <td className="border-r py-2 pr-4 pl-4">
                                                 <div className="flex items-center gap-2">
                                                     <Skeleton className="h-3.5 w-3.5" />

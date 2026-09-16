@@ -3,8 +3,8 @@
 import * as React from 'react'
 import { Controller, useFormContext, type FieldError } from 'react-hook-form'
 
-import { Label } from '@/components/ui/label'
 import { UiInput } from '@/components/ui-custom/UiInput'
+import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 
 interface UiFormCurrencyInputProps {
@@ -60,7 +60,11 @@ export function UiFormCurrencyInput({
                             ref={field.ref}
                             disabled={disabled}
                             placeholder={placeholder}
-                            className={cn('pl-10', error && 'border-destructive focus-visible:border-destructive', className)}
+                            className={cn(
+                                'pl-10',
+                                error && 'border-destructive focus-visible:border-destructive',
+                                className,
+                            )}
                         />
                     </div>
                     {hint && <p className="text-muted-foreground text-xs">{hint}</p>}

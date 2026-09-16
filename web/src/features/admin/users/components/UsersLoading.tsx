@@ -19,7 +19,10 @@ export function UsersLoading() {
 
                 <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     {Array.from({ length: 4 }).map((_, index) => (
-                        <div key={index} className="border-border/60 bg-card rounded-3xl border p-6 shadow-sm">
+                        <div
+                            key={index}
+                            className="border-border/60 bg-card rounded-3xl border p-6 shadow-sm"
+                        >
                             <div className="flex items-center justify-between gap-3">
                                 <Skeleton className="h-4 w-24" />
                                 <Skeleton className="h-9 w-9 rounded-2xl" />

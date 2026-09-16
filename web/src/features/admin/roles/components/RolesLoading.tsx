@@ -26,7 +26,10 @@ export function RolesLoading() {
                     </div>
                     <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                         {Array.from({ length: 10 }).map((_, index) => (
-                            <div key={index} className="border-border/60 bg-card gap-3 rounded-2xl border p-3 shadow-sm">
+                            <div
+                                key={index}
+                                className="border-border/60 bg-card gap-3 rounded-2xl border p-3 shadow-sm"
+                            >
                                 <div className="flex min-w-0 items-center gap-2">
                                     <Skeleton className="h-8 w-8 shrink-0 rounded-md" />
                                     <div className="min-w-0 flex-1 space-y-1.5">

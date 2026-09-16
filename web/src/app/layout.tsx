@@ -1,15 +1,27 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 
-export const dynamic = 'force-dynamic'
-
 import './globals.css'
+
+import { DbThemeProvider } from '@/providers/db-theme-provider'
+import QueryProvider from '@/providers/query-provider'
+import { ThemeProvider } from '@/providers/theme-provider'
+
+import { FaviconInjector } from '@/components/favicon-injector'
+import { Toaster } from '@/components/ui/sonner'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import { getActiveThemeConfig, getActiveThemeStyle } from '@/lib/active-theme-server'
+
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata(): Promise<Metadata> {
     try {
         const base = process.env.BACKEND_URL
         if (!base) return { title: { default: 'App', template: '%s | App' } }
-        const res = await fetch(`${base}/site-settings`, { next: { revalidate: 300 }, signal: AbortSignal.timeout(5000) })
+        const res = await fetch(`${base}/site-settings`, {
+            next: { revalidate: 300 },
+            signal: AbortSignal.timeout(5000),
+        })
         const json = res.ok ? await res.json() : null
         const s = json?.data
         const name = s?.siteName || 'App'
@@ -34,15 +46,6 @@ export async function generateMetadata(): Promise<Metadata> {
     }
 }
 
-import QueryProvider from '@/providers/query-provider'
-import { ThemeProvider } from '@/providers/theme-provider'
-import { DbThemeProvider } from '@/providers/db-theme-provider'
-import { getActiveThemeConfig, getActiveThemeStyle } from '@/lib/active-theme-server'
-
-import { Toaster } from '@/components/ui/sonner'
-import { TooltipProvider } from '@/components/ui/tooltip'
-import { FaviconInjector } from '@/components/favicon-injector'
-
 // Initialize the Inter font
 const inter = Inter({
     subsets: ['latin'],
@@ -50,16 +53,13 @@ const inter = Inter({
     variable: '--font-inter', // Useful if using Tailwind
 })
 
-
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     // Inject the active DB theme before first paint so there is no palette flash.
     const themeStyle = getActiveThemeStyle(await getActiveThemeConfig())
 
     return (
         <html lang="en" className={inter.variable} suppressHydrationWarning>
-            <head>
-                {themeStyle && <style dangerouslySetInnerHTML={{ __html: themeStyle }} />}
-            </head>
+            <head>{themeStyle && <style dangerouslySetInnerHTML={{ __html: themeStyle }} />}</head>
             {/* Apply the font to the body */}
             <body className={inter.className}>
                 <ThemeProvider

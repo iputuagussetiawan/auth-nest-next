@@ -5,6 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiFormInput, UiFormSwitch } from '@/components/ui-custom/UiFormInput'
+import { UiFormSearchSelect } from '@/components/ui-custom/UiFormSearchSelect'
 import {
     Dialog,
     DialogContent,
@@ -13,9 +16,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { UiButton } from '@/components/ui-custom/UiButton'
-import { UiFormInput, UiFormSwitch } from '@/components/ui-custom/UiFormInput'
-import { UiFormSearchSelect } from '@/components/ui-custom/UiFormSearchSelect'
+
 import type { ITheme } from './types/ThemeTypes'
 
 const configSchema = z.object({
@@ -33,7 +34,10 @@ const configSchema = z.object({
 
 const schema = z.object({
     name: z.string().min(2).max(100),
-    slug: z.string().regex(/^[a-z0-9-]+$/, 'Lowercase letters, numbers, hyphens only').max(100),
+    slug: z
+        .string()
+        .regex(/^[a-z0-9-]+$/, 'Lowercase letters, numbers, hyphens only')
+        .max(100),
     isActive: z.boolean(),
     config: configSchema,
 })
@@ -61,8 +65,21 @@ interface ThemeFormDialogProps {
     isPending: boolean
 }
 
-export function ThemeFormDialog({ open, onOpenChange, theme, onSubmit, isPending }: ThemeFormDialogProps) {
-    const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormValues>({
+export function ThemeFormDialog({
+    open,
+    onOpenChange,
+    theme,
+    onSubmit,
+    isPending,
+}: ThemeFormDialogProps) {
+    const {
+        register,
+        handleSubmit,
+        reset,
+        watch,
+        setValue,
+        formState: { errors },
+    } = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: { name: '', slug: '', isActive: false, config: DEFAULT_CONFIG },
     })
@@ -87,7 +104,10 @@ export function ThemeFormDialog({ open, onOpenChange, theme, onSubmit, isPending
         const val = e.target.value
         setValue('name', val)
         if (!theme) {
-            const derived = val.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+            const derived = val
+                .toLowerCase()
+                .replace(/\s+/g, '-')
+                .replace(/[^a-z0-9-]/g, '')
             setValue('slug', derived)
         }
     }
@@ -113,7 +133,9 @@ export function ThemeFormDialog({ open, onOpenChange, theme, onSubmit, isPending
                     />
                 </div>
                 {(errors.config as any)?.[field] && (
-                    <p className="text-destructive text-xs">{(errors.config as any)[field]?.message}</p>
+                    <p className="text-destructive text-xs">
+                        {(errors.config as any)[field]?.message}
+                    </p>
                 )}
             </div>
         )
@@ -121,7 +143,7 @@ export function ThemeFormDialog({ open, onOpenChange, theme, onSubmit, isPending
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>{theme ? 'Edit Theme' : 'New Theme'}</DialogTitle>
                 </DialogHeader>
@@ -165,22 +187,47 @@ export function ThemeFormDialog({ open, onOpenChange, theme, onSubmit, isPending
 
                     {/* Typography & layout */}
                     <div className="grid grid-cols-2 gap-3">
-                        <UiFormInput label="Font Family" {...register('config.fontFamily')} placeholder="Inter" />
-                        <UiFormInput label="Border Radius (rem)" {...register('config.borderRadius')} placeholder="0.5" />
+                        <UiFormInput
+                            label="Font Family"
+                            {...register('config.fontFamily')}
+                            placeholder="Inter"
+                        />
+                        <UiFormInput
+                            label="Border Radius (rem)"
+                            {...register('config.borderRadius')}
+                            placeholder="0.5"
+                        />
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                         <UiFormSearchSelect
                             label="Hero Variant"
                             value={watch('config.heroVariant')}
-                            onChange={(v) => setValue('config.heroVariant', v as FormValues['config']['heroVariant'])}
-                            options={[{ value: 'centered', label: 'Centered' }, { value: 'fullwidth', label: 'Full Width' }]}
+                            onChange={(v) =>
+                                setValue(
+                                    'config.heroVariant',
+                                    v as FormValues['config']['heroVariant'],
+                                )
+                            }
+                            options={[
+                                { value: 'centered', label: 'Centered' },
+                                { value: 'fullwidth', label: 'Full Width' },
+                            ]}
                         />
                         <UiFormSearchSelect
                             label="Hero Background"
                             value={watch('config.heroBackground')}
-                            onChange={(v) => setValue('config.heroBackground', v as FormValues['config']['heroBackground'])}
-                            options={[{ value: 'gradient', label: 'Gradient' }, { value: 'solid', label: 'Solid' }, { value: 'mesh', label: 'Mesh' }]}
+                            onChange={(v) =>
+                                setValue(
+                                    'config.heroBackground',
+                                    v as FormValues['config']['heroBackground'],
+                                )
+                            }
+                            options={[
+                                { value: 'gradient', label: 'Gradient' },
+                                { value: 'solid', label: 'Solid' },
+                                { value: 'mesh', label: 'Mesh' },
+                            ]}
                         />
                     </div>
 
@@ -192,7 +239,13 @@ export function ThemeFormDialog({ open, onOpenChange, theme, onSubmit, isPending
                     />
 
                     <DialogFooter>
-                        <UiButton type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</UiButton>
+                        <UiButton
+                            type="button"
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                        >
+                            Cancel
+                        </UiButton>
                         <UiButton type="submit" disabled={isPending}>
                             {isPending ? 'Saving...' : 'Save'}
                         </UiButton>

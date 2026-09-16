@@ -5,6 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiFormInput, UiFormTextarea } from '@/components/ui-custom/UiFormInput'
 import {
     Dialog,
     DialogContent,
@@ -12,8 +14,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
-import { UiButton } from '@/components/ui-custom/UiButton'
-import { UiFormInput, UiFormTextarea } from '@/components/ui-custom/UiFormInput'
+
 import type { IPermission } from './types/PermissionTypes'
 
 const schema = z.object({
@@ -32,9 +33,18 @@ interface PermissionFormDialogProps {
 }
 
 export function PermissionFormDialog({
-    open, onOpenChange, permission, onSubmit, isPending,
+    open,
+    onOpenChange,
+    permission,
+    onSubmit,
+    isPending,
 }: PermissionFormDialogProps) {
-    const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors },
+    } = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: { name: '', description: '' },
     })
@@ -68,7 +78,13 @@ export function PermissionFormDialog({
                     />
 
                     <DialogFooter>
-                        <UiButton type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</UiButton>
+                        <UiButton
+                            type="button"
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                        >
+                            Cancel
+                        </UiButton>
                         <UiButton type="submit" disabled={isPending}>
                             {isPending ? 'Saving...' : 'Save'}
                         </UiButton>
