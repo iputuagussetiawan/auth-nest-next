@@ -40,7 +40,7 @@ const Profile = () => {
                             <TabsTrigger
                                 key={value}
                                 value={value}
-                                className="!w-auto min-w-0 justify-center gap-2 rounded-lg border border-transparent px-3 py-2.5 text-xs font-medium transition-colors hover:bg-background/80 data-[state=active]:border-primary/20 data-[state=active]:bg-primary/10 data-[state=active]:text-primary sm:px-4 sm:text-sm lg:!w-full lg:justify-start lg:rounded-r-lg lg:rounded-l-none lg:border-l-2 lg:border-y-0 lg:border-r-0 lg:px-4 lg:py-3 lg:data-[state=active]:border-primary lg:data-[state=active]:bg-primary/10"
+                                className="!w-auto min-w-0 justify-center gap-2 rounded-lg border border-transparent px-3 py-2.5 text-xs font-medium transition-colors hover:bg-background/80 data-[state=active]:!border-primary data-[state=active]:!bg-primary/10 data-[state=active]:!text-primary sm:px-4 sm:text-sm lg:!w-full lg:justify-start lg:rounded-r-lg lg:rounded-l-none lg:border-l-2 lg:border-y-0 lg:border-r-0 lg:px-4 lg:py-3 lg:data-[state=active]:!border-primary lg:data-[state=active]:!bg-primary/10"
                             >
                                 <Icon className="h-4 w-4 shrink-0" />
                                 <span className="truncate">{label}</span>
