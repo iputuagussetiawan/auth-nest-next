@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { Button } from '@/components/ui/button'
 import {
     Dialog,
     DialogContent,
@@ -13,8 +12,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiFormInput, UiFormTextarea } from '@/components/ui-custom/UiFormInput'
 import type { IPermission } from './types/PermissionTypes'
 
 const schema = z.object({
@@ -54,22 +53,25 @@ export function PermissionFormDialog({
                     <DialogTitle>{permission ? 'Edit Permission' : 'New Permission'}</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    <div className="space-y-1">
-                        <Label>Name</Label>
-                        <Input {...register('name')} placeholder="e.g. users:read" />
-                        {errors.name && <p className="text-destructive text-xs">{errors.name.message}</p>}
-                    </div>
+                    <UiFormInput
+                        label="Name"
+                        {...register('name')}
+                        placeholder="e.g. users:read"
+                        error={errors.name}
+                    />
 
-                    <div className="space-y-1">
-                        <Label>Description</Label>
-                        <Input {...register('description')} placeholder="What this permission allows" />
-                    </div>
+                    <UiFormTextarea
+                        label="Description"
+                        {...register('description')}
+                        placeholder="What this permission allows"
+                        rows={3}
+                    />
 
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-                        <Button type="submit" disabled={isPending}>
+                        <UiButton type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</UiButton>
+                        <UiButton type="submit" disabled={isPending}>
                             {isPending ? 'Saving...' : 'Save'}
-                        </Button>
+                        </UiButton>
                     </DialogFooter>
                 </form>
             </DialogContent>

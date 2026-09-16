@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { Button } from '@/components/ui/button'
 import {
     Dialog,
     DialogContent,
@@ -13,16 +12,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiFormInput, UiFormPassword, UiFormSwitch } from '@/components/ui-custom/UiFormInput'
+import { UiFormSearchSelect } from '@/components/ui-custom/UiFormSearchSelect'
 import type { IRole } from '../../roles/types/RoleTypes'
 import type { IAdminUser } from '../types/UserTypes'
 
@@ -90,63 +82,51 @@ export function UserFormDialog({ open, onOpenChange, user, roles, onSubmit, isPe
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     {!isEdit && (
                         <>
-                            <div className="space-y-1">
-                                <Label>Email</Label>
-                                <Input {...register('email')} type="email" placeholder="john@example.com" />
-                                {errors.email && <p className="text-destructive text-xs">{errors.email.message}</p>}
-                            </div>
-                            <div className="space-y-1">
-                                <Label>Password</Label>
-                                <Input {...register('password')} type="password" placeholder="Min 8 characters" />
-                                {errors.password && <p className="text-destructive text-xs">{errors.password.message}</p>}
-                            </div>
+                            <UiFormInput
+                                label="Email"
+                                {...register('email')}
+                                type="email"
+                                placeholder="john@example.com"
+                                error={errors.email}
+                            />
+                            <UiFormPassword
+                                label="Password"
+                                {...register('password')}
+                                placeholder="Min 8 characters"
+                                error={errors.password}
+                            />
                         </>
                     )}
 
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                            <Label>First Name</Label>
-                            <Input {...register('firstName')} placeholder="John" />
-                            {errors.firstName && <p className="text-destructive text-xs">{errors.firstName.message}</p>}
-                        </div>
-                        <div className="space-y-1">
-                            <Label>Last Name</Label>
-                            <Input {...register('lastName')} placeholder="Doe" />
-                            {errors.lastName && <p className="text-destructive text-xs">{errors.lastName.message}</p>}
-                        </div>
+                        <UiFormInput label="First Name" {...register('firstName')} placeholder="John" error={errors.firstName} />
+                        <UiFormInput label="Last Name" {...register('lastName')} placeholder="Doe" error={errors.lastName} />
                     </div>
 
-                    <div className="space-y-1">
-                        <Label>Role</Label>
-                        <Select value={watch('roleId')} onValueChange={(v) => setValue('roleId', v)}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select role" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {roles.map((r) => (
-                                    <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {errors.roleId && <p className="text-destructive text-xs">{errors.roleId.message}</p>}
-                    </div>
+                    <UiFormSearchSelect
+                        label="Role"
+                        value={watch('roleId')}
+                        onChange={(v) => setValue('roleId', v)}
+                        options={roles.map((r) => ({ value: r.id, label: r.name }))}
+                        placeholder="Select role"
+                        searchPlaceholder="Search roles..."
+                        error={errors.roleId}
+                    />
 
-                    <div className="flex items-center gap-3">
-                        <Switch
-                            id="isActive"
-                            checked={watch('isActive')}
-                            onCheckedChange={(v) => setValue('isActive', v)}
-                        />
-                        <Label htmlFor="isActive">Active account</Label>
-                    </div>
+                    <UiFormSwitch
+                        label="Active account"
+                        id="isActive"
+                        checked={watch('isActive')}
+                        onCheckedChange={(v) => setValue('isActive', v)}
+                    />
 
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                        <UiButton type="button" variant="outline" onClick={() => onOpenChange(false)}>
                             Cancel
-                        </Button>
-                        <Button type="submit" disabled={isPending}>
+                        </UiButton>
+                        <UiButton type="submit" disabled={isPending}>
                             {isPending ? 'Saving...' : 'Save'}
-                        </Button>
+                        </UiButton>
                     </DialogFooter>
                 </form>
             </DialogContent>

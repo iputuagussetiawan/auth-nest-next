@@ -6,8 +6,6 @@ import { ImagePlus, X } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
     Dialog,
     DialogContent,
@@ -15,9 +13,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiCheckbox } from '@/components/ui-custom/UiCheckbox'
+import { UiFormInput, UiFormTextarea } from '@/components/ui-custom/UiFormInput'
+import { UiImage } from '@/components/ui-custom/UiImage'
 import type { IPermission } from '../permissions/types/PermissionTypes'
 import { PermissionName } from '../permissions/PermissionName'
 import type { IRole } from './types/RoleTypes'
@@ -90,28 +91,32 @@ export function RoleFormDialog({
                     <DialogTitle>{role ? 'Edit Role' : 'New Role'}</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit((v) => onSubmit(v, imageFile))} className="space-y-4">
-                    <div className="space-y-1">
-                        <Label>Name</Label>
-                        <Input {...register('name')} placeholder="e.g. editor" />
-                        {errors.name && <p className="text-destructive text-xs">{errors.name.message}</p>}
-                    </div>
+                    <UiFormInput
+                        label="Name"
+                        {...register('name')}
+                        placeholder="e.g. editor"
+                        error={errors.name}
+                    />
 
-                    <div className="space-y-1">
-                        <Label>Label</Label>
-                        <Input {...register('label')} placeholder="e.g. Project Owner" />
-                    </div>
+                    <UiFormInput
+                        label="Label"
+                        {...register('label')}
+                        placeholder="e.g. Project Owner"
+                    />
 
-                    <div className="space-y-1">
-                        <Label>Description</Label>
-                        <Input {...register('description')} placeholder="What this role can do" />
-                    </div>
+                    <UiFormTextarea
+                        label="Description"
+                        {...register('description')}
+                        placeholder="What this role can do"
+                        rows={3}
+                    />
 
                     <div className="space-y-2">
                         <Label>Role Image</Label>
                         <div className="flex items-center gap-3">
-                            <div className="bg-muted flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border">
+                            <div className="bg-muted relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border">
                                 {imagePreview
-                                    ? <img src={imagePreview} alt="role" className="h-full w-full object-cover" />
+                                    ? <UiImage src={imagePreview} alt="role" fill className="h-full w-full object-cover" />
                                     : <ImagePlus className="text-muted-foreground h-6 w-6" />
                                 }
                             </div>
@@ -123,16 +128,16 @@ export function RoleFormDialog({
                                     className="hidden"
                                     onChange={handleFileChange}
                                 />
-                                <Button
+                                <UiButton
                                     type="button"
                                     variant="outline"
                                     size="sm"
                                     onClick={() => fileRef.current?.click()}
                                 >
                                     {imagePreview ? 'Change image' : 'Upload image'}
-                                </Button>
+                                </UiButton>
                                 {imagePreview && (
-                                    <Button
+                                    <UiButton
                                         type="button"
                                         variant="ghost"
                                         size="sm"
@@ -140,7 +145,7 @@ export function RoleFormDialog({
                                         className="text-muted-foreground gap-1"
                                     >
                                         <X className="h-3.5 w-3.5" /> Remove
-                                    </Button>
+                                    </UiButton>
                                 )}
                                 <p className="text-muted-foreground text-xs">JPG, PNG, WebP, GIF · max 2 MB</p>
                             </div>
@@ -153,7 +158,7 @@ export function RoleFormDialog({
                             <div className="space-y-2">
                                 {allPermissions.map((p) => (
                                     <div key={p.id} className="flex items-center gap-2">
-                                        <Checkbox
+                                        <UiCheckbox
                                             id={p.id}
                                             checked={checked.includes(p.id)}
                                             onCheckedChange={() => toggle(p.id)}
@@ -171,10 +176,10 @@ export function RoleFormDialog({
                     </div>
 
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-                        <Button type="submit" disabled={isPending}>
+                        <UiButton type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</UiButton>
+                        <UiButton type="submit" disabled={isPending}>
                             {isPending ? 'Saving...' : 'Save'}
-                        </Button>
+                        </UiButton>
                     </DialogFooter>
                 </form>
             </DialogContent>

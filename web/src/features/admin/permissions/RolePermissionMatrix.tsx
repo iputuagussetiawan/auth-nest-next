@@ -5,10 +5,10 @@ import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-q
 import { toast } from 'sonner'
 import { ChevronDown, ChevronRight, Layers, Loader2, Pencil, Search, Trash2 } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiCheckbox } from '@/components/ui-custom/UiCheckbox'
+import { UiInput } from '@/components/ui-custom/UiInput'
 
 const PINNED_SLUGS = ['user', 'role'] as const
 import { adminRoleService } from '../roles/services/RoleService'
@@ -216,18 +216,18 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
                         {!isProtected && (onEdit || onDelete) && (
                             <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                                 {onEdit && (
-                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onEdit(perm)}>
+                                    <UiButton variant="ghost" size="icon-xs" className="h-6 w-6" onClick={() => onEdit(perm)}>
                                         <Pencil className="h-3 w-3" />
-                                    </Button>
+                                    </UiButton>
                                 )}
                                 {onDelete && (
-                                    <Button
-                                        variant="ghost" size="icon"
+                                    <UiButton
+                                        variant="ghost" size="icon-xs"
                                         className="text-destructive hover:text-destructive h-6 w-6"
                                         onClick={() => onDelete(perm)}
                                     >
                                         <Trash2 className="h-3 w-3" />
-                                    </Button>
+                                    </UiButton>
                                 )}
                             </div>
                         )}
@@ -241,7 +241,7 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
                             {isPending ? (
                                 <Loader2 className="mx-auto h-4 w-4 animate-spin text-muted-foreground" />
                             ) : (
-                                <Checkbox
+                                <UiCheckbox
                                     checked={checked}
                                     onCheckedChange={() => toggle(role.id, perm.id)}
                                     aria-label={`${role.name} has ${perm.name}`}
@@ -270,14 +270,20 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
 
     return (
         <div className="min-w-0 space-y-3">
-            <div className="relative max-w-sm">
-                <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
-                <Input
-                    placeholder="Search permission…"
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    className="pl-9"
-                />
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p className="text-sm font-medium">Role access matrix</p>
+                    <p className="text-xs text-muted-foreground">Toggle permissions by role. Changes save automatically.</p>
+                </div>
+                <div className="relative w-full sm:max-w-sm">
+                    <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+                    <UiInput
+                        placeholder="Search permission…"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        className="pl-9"
+                    />
+                </div>
             </div>
 
             <div className="scrollbar-flat max-h-[70vh] overflow-auto rounded-lg border">

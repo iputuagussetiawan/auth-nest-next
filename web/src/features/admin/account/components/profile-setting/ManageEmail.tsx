@@ -1,8 +1,7 @@
 import type { IUserProfile } from '../../types/AccountTypes'
-import { Button } from '@/components/ui/button'
 import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiFormInput } from '@/components/ui-custom/UiFormInput'
 
 interface ManageEmailProps {
     user: IUserProfile
@@ -19,11 +18,10 @@ export default function ManageEmail({ user, onSuccess }: ManageEmailProps) {
                 </DialogDescription>
             </DialogHeader>
             <div className="py-4">
-                <Label>Current Email</Label>
-                <Input value={user.email} readOnly className="bg-muted mt-1 cursor-not-allowed" />
+                <UiFormInput label="Current Email" value={user.email} readOnly className="cursor-not-allowed" />
             </div>
             <DialogFooter>
-                <Button variant="outline" onClick={onSuccess}>Close</Button>
+                <UiButton variant="outline" onClick={onSuccess}>Close</UiButton>
             </DialogFooter>
         </>
     )

@@ -1,632 +1,144 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect } from 'react'
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
-import { toast } from 'sonner'
-import {
-    Globe,
-    Image as ImageIcon,
-    Loader2,
-    Mail,
-    Search,
-    Settings,
-    Share2,
-    Trash2,
-    TriangleAlert,
-    Upload,
-} from 'lucide-react'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { toast } from 'sonner'
+import { Image as ImageIcon, Mail, Search, Settings, Share2, TriangleAlert } from 'lucide-react'
+import { useForm, useWatch } from 'react-hook-form'
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Switch } from '@/components/ui/switch'
-import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
+import DashboardPageMain from '@/components/layouts/backend/DashboardPageMain'
+import DashboardPageHeader from '@/components/layouts/backend/DashboardPageHeader'
+import DashboardPageCard from '@/components/layouts/backend/DashboardPageCard'
+import { UiButton } from '@/components/ui-custom/UiButton'
+
+import {
+    BrandingTab,
+    ContactTab,
+    EMPTY,
+    GeneralTab,
+    MaintenanceTab,
+    schema,
+    SeoTab,
+    SocialTab,
+    type FormValues,
+} from './index'
 import { adminSiteSettingsService } from './services/SiteSettingsService'
 
-// ── Schema ────────────────────────────────────────────────────────────────────
-
-const schema = z.object({
-    siteName: z.string().min(1).max(200),
-    tagline: z.string().max(300).optional().or(z.literal('')),
-    description: z.string().optional().or(z.literal('')),
-    logoUrl: z.string().max(500).optional().or(z.literal('')),
-    faviconUrl: z.string().max(500).optional().or(z.literal('')),
-    contactEmail: z.string().email().optional().or(z.literal('')),
-    contactPhone: z.string().max(50).optional().or(z.literal('')),
-    contactAddress: z.string().optional().or(z.literal('')),
-    socialTwitter: z.string().max(500).optional().or(z.literal('')),
-    socialFacebook: z.string().max(500).optional().or(z.literal('')),
-    socialInstagram: z.string().max(500).optional().or(z.literal('')),
-    socialLinkedin: z.string().max(500).optional().or(z.literal('')),
-    socialYoutube: z.string().max(500).optional().or(z.literal('')),
-    metaTitle: z.string().max(200).optional().or(z.literal('')),
-    metaDescription: z.string().max(500).optional().or(z.literal('')),
-    metaKeywords: z.string().max(300).optional().or(z.literal('')),
-    ogImageUrl: z.string().max(500).optional().or(z.literal('')),
-    googleAnalyticsId: z.string().max(50).optional().or(z.literal('')),
-    maintenanceMode: z.boolean(),
-    maintenanceMessage: z.string().max(500).optional().or(z.literal('')),
-})
-
-type FormValues = z.infer<typeof schema>
-
-const EMPTY: FormValues = {
-    siteName: 'My App', tagline: '', description: '',
-    logoUrl: '', faviconUrl: '',
-    contactEmail: '', contactPhone: '', contactAddress: '',
-    socialTwitter: '', socialFacebook: '', socialInstagram: '', socialLinkedin: '', socialYoutube: '',
-    metaTitle: '', metaDescription: '', metaKeywords: '', ogImageUrl: '', googleAnalyticsId: '',
-    maintenanceMode: false, maintenanceMessage: '',
-}
-
-// ── ImageUploader ─────────────────────────────────────────────────────────────
-
-type UploadMode = 'upload' | 'url'
-
-interface ImageUploaderProps {
-    label: string
-    hint: string
-    value: string
-    onChange: (url: string) => void
-    /** Tailwind size classes for the dropzone, e.g. "h-[100px] w-[100px]" (square) or "h-[120px] w-full" (wide). */
-    dropzoneClassName?: string
-    /** Tailwind size classes for the preview thumbnail once an image is set. */
-    previewClassName?: string
-    maxSizeKb?: number
-}
-
-const DEFAULT_DROPZONE_CLASSNAME = 'h-[100px] w-[100px]'
-const DEFAULT_PREVIEW_CLASSNAME = 'h-14 w-14'
-
-function ImageUploader({
-    label,
-    hint,
-    value,
-    onChange,
-    dropzoneClassName = DEFAULT_DROPZONE_CLASSNAME,
-    previewClassName = DEFAULT_PREVIEW_CLASSNAME,
-    maxSizeKb = 200,
-}: ImageUploaderProps) {
-    const inputRef = useRef<HTMLInputElement>(null)
-    const [mode, setMode] = useState<UploadMode>('upload')
-    const [uploading, setUploading] = useState(false)
-    const [dragOver, setDragOver] = useState(false)
-    const [urlDraft, setUrlDraft] = useState(value)
-
-    const handleFile = async (file: File) => {
-        if (!file.type.startsWith('image/')) { toast.error('Only image files are allowed'); return }
-        if (file.size > maxSizeKb * 1024) { toast.error(`File too large — max ${maxSizeKb} KB`); return }
-        setUploading(true)
-        try {
-            const res = await adminSiteSettingsService.uploadAsset(file, value || undefined)
-            onChange(res.data.url)
-            setUrlDraft(res.data.url)
-            toast.success('Image uploaded')
-        } catch (e: any) {
-            toast.error(e?.message ?? 'Upload failed')
-        } finally {
-            setUploading(false)
-        }
-    }
-
-    const handleClear = async () => {
-        if (value?.startsWith('http')) {
-            try { await adminSiteSettingsService.deleteAsset(value) } catch {}
-        }
-        onChange('')
-        setUrlDraft('')
-    }
-
-    const handleUrlApply = () => {
-        onChange(urlDraft.trim())
-    }
-
-    const onFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (file) handleFile(file)
-        e.target.value = ''
-    }
-
-    const onDrop = (e: React.DragEvent) => {
-        e.preventDefault()
-        setDragOver(false)
-        const file = e.dataTransfer.files?.[0]
-        if (file) handleFile(file)
-    }
-
-    return (
-        <div className="space-y-3">
-            {/* Header row: label + mode toggle */}
-            <div className="flex items-center justify-between gap-3">
-                <div>
-                    <Label className="text-sm font-medium">{label}</Label>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>
-                </div>
-                <div className="flex shrink-0 items-center rounded-lg border bg-muted/40 p-0.5">
-                    <button
-                        type="button"
-                        onClick={() => setMode('upload')}
-                        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors
-                            ${mode === 'upload' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                    >
-                        <Upload className="h-3.5 w-3.5" /> Upload
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setMode('url')}
-                        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors
-                            ${mode === 'url' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                    >
-                        <Globe className="h-3.5 w-3.5" /> URL
-                    </button>
-                </div>
-            </div>
-
-            {/* Current image preview (always visible when set) */}
-            {value && (
-                <div className="flex items-center gap-3 rounded-lg border bg-muted/20 px-4 py-3">
-                    <img
-                        src={value}
-                        alt={label}
-                        className={cn('shrink-0 rounded-md object-contain', previewClassName)}
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                    />
-                    <div className="min-w-0 flex-1">
-                        <p className="text-xs font-medium text-foreground">Current image</p>
-                        <p className="truncate text-xs text-muted-foreground">{value}</p>
-                    </div>
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="shrink-0 text-muted-foreground hover:text-destructive"
-                        onClick={handleClear}
-                    >
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
-                </div>
-            )}
-
-            {/* Upload mode */}
-            {mode === 'upload' && (
-                <div className="flex flex-wrap items-center gap-4">
-                    <div
-                        className={cn(
-                            'flex shrink-0 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed transition-colors',
-                            dropzoneClassName,
-                            dragOver ? 'border-primary bg-primary/5' : 'border-border bg-muted/20 hover:border-muted-foreground/40',
-                        )}
-                        onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
-                        onDragLeave={() => setDragOver(false)}
-                        onDrop={onDrop}
-                        onClick={() => !uploading && inputRef.current?.click()}
-                        style={{ cursor: uploading ? 'default' : 'pointer' }}
-                    >
-                        {uploading ? (
-                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                        ) : (
-                            <>
-                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                                    <Upload className="h-5 w-5 text-muted-foreground" />
-                                </div>
-                                <p className="text-center text-[11px] font-medium leading-tight text-muted-foreground">
-                                    Drop or click
-                                </p>
-                            </>
-                        )}
-                        <input
-                            ref={inputRef}
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={onFileInput}
-                        />
-                    </div>
-
-                    <div className="space-y-1 text-sm">
-                        <p className="font-medium text-foreground">
-                            {value ? 'Replace current image' : 'Upload a new image'}
-                        </p>
-                        <p className="text-muted-foreground text-xs">
-                            PNG, JPG, SVG, WebP, ICO — max {maxSizeKb} KB
-                        </p>
-                    </div>
-                </div>
-            )}
-
-            {/* URL mode */}
-            {mode === 'url' && (
-                <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                        <Input
-                            value={urlDraft}
-                            onChange={(e) => setUrlDraft(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleUrlApply())}
-                            placeholder="https://example.com/logo.png"
-                            className="font-mono text-xs"
-                        />
-                        <Button
-                            type="button"
-                            size="sm"
-                            variant="secondary"
-                            onClick={handleUrlApply}
-                            disabled={!urlDraft.trim() || urlDraft.trim() === value}
-                        >
-                            Apply
-                        </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground">Press Enter or click Apply to preview the URL.</p>
-                </div>
-            )}
-        </div>
-    )
-}
-
-// ── Field wrapper ─────────────────────────────────────────────────────────────
-
-function Field({ label, hint, error, children }: {
-    label: string; hint?: string; error?: string; children: React.ReactNode
-}) {
-    return (
-        <div className="space-y-1.5">
-            <Label className="text-sm font-medium">{label}</Label>
-            {children}
-            {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
-            {error && <p className="text-xs text-destructive">{error}</p>}
-        </div>
-    )
-}
-
-// ── Page ──────────────────────────────────────────────────────────────────────
+const TABS = [
+    { value: 'general', icon: Settings, label: 'General' },
+    { value: 'branding', icon: ImageIcon, label: 'Branding' },
+    { value: 'contact', icon: Mail, label: 'Contact' },
+    { value: 'social', icon: Share2, label: 'Social' },
+    { value: 'seo', icon: Search, label: 'SEO' },
+    { value: 'maintenance', icon: TriangleAlert, label: 'Maintenance' },
+] as const
 
 export function SiteSettingsPage() {
-    const qc = useQueryClient()
-
+    const queryClient = useQueryClient()
     const { data } = useSuspenseQuery({
         queryKey: ['site-settings'],
         queryFn: () => adminSiteSettingsService.get(),
     })
-
     const {
         register,
         handleSubmit,
         reset,
-        watch,
         setValue,
+        control,
         formState: { errors, isDirty },
-    } = useForm<FormValues>({
-        resolver: zodResolver(schema),
-        defaultValues: EMPTY,
-    })
+    } = useForm<FormValues>({ resolver: zodResolver(schema), defaultValues: EMPTY })
 
     useEffect(() => {
-        const s = data?.data
-        if (!s) return
+        const settings = data?.data
+        if (!settings) return
         reset({
-            siteName: s.siteName ?? '',
-            tagline: s.tagline ?? '',
-            description: s.description ?? '',
-            logoUrl: s.logoUrl ?? '',
-            faviconUrl: s.faviconUrl ?? '',
-            contactEmail: s.contactEmail ?? '',
-            contactPhone: s.contactPhone ?? '',
-            contactAddress: s.contactAddress ?? '',
-            socialTwitter: s.socialTwitter ?? '',
-            socialFacebook: s.socialFacebook ?? '',
-            socialInstagram: s.socialInstagram ?? '',
-            socialLinkedin: s.socialLinkedin ?? '',
-            socialYoutube: s.socialYoutube ?? '',
-            metaTitle: s.metaTitle ?? '',
-            metaDescription: s.metaDescription ?? '',
-            metaKeywords: s.metaKeywords ?? '',
-            ogImageUrl: s.ogImageUrl ?? '',
-            googleAnalyticsId: s.googleAnalyticsId ?? '',
-            maintenanceMode: s.maintenanceMode ?? false,
-            maintenanceMessage: s.maintenanceMessage ?? '',
+            siteName: settings.siteName ?? '',
+            tagline: settings.tagline ?? '',
+            description: settings.description ?? '',
+            logoUrl: settings.logoUrl ?? '',
+            faviconUrl: settings.faviconUrl ?? '',
+            contactEmail: settings.contactEmail ?? '',
+            contactPhone: settings.contactPhone ?? '',
+            contactAddress: settings.contactAddress ?? '',
+            socialTwitter: settings.socialTwitter ?? '',
+            socialFacebook: settings.socialFacebook ?? '',
+            socialInstagram: settings.socialInstagram ?? '',
+            socialLinkedin: settings.socialLinkedin ?? '',
+            socialYoutube: settings.socialYoutube ?? '',
+            metaTitle: settings.metaTitle ?? '',
+            metaDescription: settings.metaDescription ?? '',
+            metaKeywords: settings.metaKeywords ?? '',
+            ogImageUrl: settings.ogImageUrl ?? '',
+            googleAnalyticsId: settings.googleAnalyticsId ?? '',
+            maintenanceMode: settings.maintenanceMode ?? false,
+            maintenanceMessage: settings.maintenanceMessage ?? '',
         })
     }, [data, reset])
 
-    const stripEmpty = (values: FormValues) =>
-        Object.fromEntries(
-            Object.entries(values).map(([k, v]) => [k, v === '' ? undefined : v]),
-        ) as FormValues
-
     const updateMutation = useMutation({
-        mutationFn: (values: FormValues) => adminSiteSettingsService.update(stripEmpty(values)),
+        mutationFn: (values: FormValues) =>
+            adminSiteSettingsService.update(
+                Object.fromEntries(Object.entries(values).map(([key, value]) => [key, value === '' ? undefined : value])) as FormValues,
+            ),
         onSuccess: () => {
             toast.success('Settings saved')
-            qc.invalidateQueries({ queryKey: ['site-settings'] })
+            queryClient.invalidateQueries({ queryKey: ['site-settings'] })
         },
-        onError: (e: any) => toast.error(e?.message ?? 'Failed to save settings'),
+        onError: (error: unknown) => toast.error(error instanceof Error ? error.message : 'Failed to save settings'),
     })
 
-    const maintenanceMode = watch('maintenanceMode')
-    const logoUrl = watch('logoUrl') ?? ''
-    const faviconUrl = watch('faviconUrl') ?? ''
-    const ogImageUrl = watch('ogImageUrl') ?? ''
+    const values = useWatch({ control })
+    const submit = handleSubmit((formValues) => updateMutation.mutate(formValues))
 
     return (
-        <div className="space-y-6 p-6">
-            <div className="rounded-[28px] border border-border/60 bg-gradient-to-br from-primary/8 via-background to-background px-6 py-5 shadow-sm">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                        <h1 className="text-3xl font-semibold tracking-tight">Site Settings</h1>
-                        <p className="text-sm text-muted-foreground leading-6">Manage your site identity, contact info, and SEO</p>
-                    </div>
+        <DashboardPageMain>
+            <DashboardPageHeader
+                title="Site Settings"
+                actions={
                     <div className="flex items-center gap-3">
-                        {maintenanceMode && (
+                        {values.maintenanceMode && (
                             <Badge variant="destructive" className="gap-1 rounded-full px-3 py-1">
                                 <TriangleAlert className="h-3 w-3" /> Maintenance Mode ON
                             </Badge>
                         )}
-                        <Button
-                            onClick={handleSubmit((v) => updateMutation.mutate(v))}
-                            disabled={updateMutation.isPending}
-                            className="rounded-full px-5 shadow-sm"
-                        >
+                        <UiButton onClick={submit} disabled={updateMutation.isPending} className="rounded-full px-5 shadow-sm">
                             {updateMutation.isPending ? 'Saving…' : 'Save Changes'}
-                        </Button>
+                        </UiButton>
                     </div>
-                </div>
-            </div>
+                }
+            />
 
-            <div className="rounded-[28px] border border-border/60 bg-background p-4 shadow-sm md:p-5">
-
-            <form onSubmit={handleSubmit((v) => updateMutation.mutate(v))}>
-                    <Tabs
-                        defaultValue="general"
-                        orientation="vertical"
-                        className="flex-row gap-8"
-                    >
-                        <TabsList className="h-fit w-48 shrink-0 flex-col items-stretch justify-start gap-1 bg-transparent p-0">
-                            <TabsTrigger value="general" className="justify-start gap-1.5">
-                                <Settings className="h-3.5 w-3.5" /> General
-                            </TabsTrigger>
-                            <TabsTrigger value="branding" className="justify-start gap-1.5">
-                                <ImageIcon className="h-3.5 w-3.5" /> Branding
-                            </TabsTrigger>
-                            <TabsTrigger value="contact" className="justify-start gap-1.5">
-                                <Mail className="h-3.5 w-3.5" /> Contact
-                            </TabsTrigger>
-                            <TabsTrigger value="social" className="justify-start gap-1.5">
-                                <Share2 className="h-3.5 w-3.5" /> Social
-                            </TabsTrigger>
-                            <TabsTrigger value="seo" className="justify-start gap-1.5">
-                                <Search className="h-3.5 w-3.5" /> SEO
-                            </TabsTrigger>
-                            <TabsTrigger value="maintenance" className="justify-start gap-1.5">
-                                <TriangleAlert className="h-3.5 w-3.5" /> Maintenance
-                            </TabsTrigger>
+            <DashboardPageCard className="overflow-visible">
+                <form onSubmit={submit}>
+                    <Tabs defaultValue="general" orientation="vertical" className="gap-6 lg:flex-row lg:gap-8">
+                        <TabsList
+                            aria-label="Site settings sections"
+                            className="!flex-row flex-wrap items-center justify-start gap-1 rounded-xl border bg-muted/30 p-1 lg:!flex-col lg:flex-nowrap lg:items-stretch lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0"
+                        >
+                            {TABS.map(({ value, icon: Icon, label }) => (
+                                <TabsTrigger
+                                    key={value}
+                                    value={value}
+                                    className="!w-auto justify-center gap-2 rounded-lg border border-transparent px-3 py-2.5 text-xs font-medium transition-colors hover:bg-background/80 data-[state=active]:border-primary/20 data-[state=active]:bg-primary/10 data-[state=active]:text-primary sm:px-4 sm:text-sm lg:!w-full lg:justify-start lg:rounded-r-lg lg:rounded-l-none lg:border-l-2 lg:border-y-0 lg:border-r-0 lg:px-4 lg:py-3 lg:data-[state=active]:border-primary lg:data-[state=active]:bg-primary/10"
+                                >
+                                    <Icon className="h-4 w-4 shrink-0" />
+                                    <span>{label}</span>
+                                </TabsTrigger>
+                            ))}
                         </TabsList>
 
-                        {/* ── General ── */}
-                        <TabsContent value="general">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2 text-base">
-                                        <Globe className="h-4 w-4" /> General Info
-                                    </CardTitle>
-                                    <CardDescription>Basic site identity shown across the platform</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <Field label="Site Name" error={errors.siteName?.message}>
-                                        <Input {...register('siteName')} placeholder="My App" />
-                                    </Field>
-                                    <Field label="Tagline" hint="Short slogan shown under the site name">
-                                        <Input {...register('tagline')} placeholder="Build something great" />
-                                    </Field>
-                                    <Field label="Description" hint="Used in About sections and meta tags">
-                                        <Textarea
-                                            {...register('description')}
-                                            placeholder="A brief description of your site…"
-                                            rows={4}
-                                            className="resize-none"
-                                        />
-                                    </Field>
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        {/* ── Branding ── */}
-                        <TabsContent value="branding">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2 text-base">
-                                        <ImageIcon className="h-4 w-4" /> Branding
-                                    </CardTitle>
-                                    <CardDescription>
-                                        Upload and manage the brand assets used across your site.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="grid gap-6 xl:grid-cols-2">
-                                    <div className="rounded-xl border bg-muted/10 p-5">
-                                        <ImageUploader
-                                            label="Logo"
-                                            hint="Shown in the header and emails. PNG, SVG, WebP recommended."
-                                            value={logoUrl}
-                                            onChange={(url) => setValue('logoUrl', url, { shouldDirty: true })}
-                                        />
-                                    </div>
-
-                                    <div className="rounded-xl border bg-muted/10 p-5">
-                                        <ImageUploader
-                                            label="Favicon"
-                                            hint="32×32 or 64×64 icon shown in browser tabs. ICO, PNG supported."
-                                            value={faviconUrl}
-                                            onChange={(url) => setValue('faviconUrl', url, { shouldDirty: true })}
-                                            dropzoneClassName="h-[100px] w-[100px]"
-                                            previewClassName="h-[100px] w-[100px]"
-                                        />
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        {/* ── Contact ── */}
-                        <TabsContent value="contact">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2 text-base">
-                                        <Mail className="h-4 w-4" /> Contact Information
-                                    </CardTitle>
-                                    <CardDescription>Displayed on contact pages and footer</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="grid gap-4 sm:grid-cols-2">
-                                        <Field label="Contact Email" error={errors.contactEmail?.message}>
-                                            <Input {...register('contactEmail')} type="email" placeholder="hello@example.com" />
-                                        </Field>
-                                        <Field label="Phone Number">
-                                            <Input {...register('contactPhone')} placeholder="+1 (555) 000-0000" />
-                                        </Field>
-                                    </div>
-                                    <Field label="Address">
-                                        <Textarea
-                                            {...register('contactAddress')}
-                                            placeholder="123 Main Street, City, Country"
-                                            rows={3}
-                                            className="resize-none"
-                                        />
-                                    </Field>
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        {/* ── Social ── */}
-                        <TabsContent value="social">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2 text-base">
-                                        <Share2 className="h-4 w-4" /> Social Media
-                                    </CardTitle>
-                                    <CardDescription>Links to your social profiles</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    {([
-                                        { key: 'socialTwitter', label: 'X / Twitter', placeholder: 'https://x.com/yourhandle' },
-                                        { key: 'socialFacebook', label: 'Facebook', placeholder: 'https://facebook.com/yourpage' },
-                                        { key: 'socialInstagram', label: 'Instagram', placeholder: 'https://instagram.com/yourhandle' },
-                                        { key: 'socialLinkedin', label: 'LinkedIn', placeholder: 'https://linkedin.com/company/yourco' },
-                                        { key: 'socialYoutube', label: 'YouTube', placeholder: 'https://youtube.com/@yourchannel' },
-                                    ] as const).map(({ key, label, placeholder }) => (
-                                        <Field key={key} label={label}>
-                                            <Input {...register(key)} placeholder={placeholder} />
-                                        </Field>
-                                    ))}
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        {/* ── SEO ── */}
-                        <TabsContent value="seo">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2 text-base">
-                                        <Search className="h-4 w-4" /> SEO &amp; Analytics
-                                    </CardTitle>
-                                    <CardDescription>Search engine optimization and tracking</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <Field
-                                        label="Meta Title"
-                                        hint="Shown in browser tab and search results (50–60 chars recommended)"
-                                        error={errors.metaTitle?.message}
-                                    >
-                                        <Input {...register('metaTitle')} placeholder="My App — Build something great" />
-                                        <p className="mt-1 text-right text-xs text-muted-foreground">
-                                            {watch('metaTitle')?.length ?? 0}/200
-                                        </p>
-                                    </Field>
-                                    <Field
-                                        label="Meta Description"
-                                        hint="Search engine snippet (150–160 chars recommended)"
-                                        error={errors.metaDescription?.message}
-                                    >
-                                        <Textarea
-                                            {...register('metaDescription')}
-                                            placeholder="A short description of your site for search engines…"
-                                            rows={3}
-                                            className="resize-none"
-                                        />
-                                        <p className="mt-1 text-right text-xs text-muted-foreground">
-                                            {watch('metaDescription')?.length ?? 0}/500
-                                        </p>
-                                    </Field>
-                                    <Field label="Meta Keywords" hint="Comma-separated keywords">
-                                        <Input {...register('metaKeywords')} placeholder="app, dashboard, saas" />
-                                    </Field>
-                                    <Separator />
-                                    <ImageUploader
-                                        label="OG Image"
-                                        hint="Shown when shared on social media. 1200×630px recommended."
-                                        value={ogImageUrl}
-                                        onChange={(url) => setValue('ogImageUrl', url, { shouldDirty: true })}
-                                        dropzoneClassName="aspect-[1200/630] w-full max-w-sm"
-                                        previewClassName="aspect-[1200/630] w-full max-w-sm"
-                                    />
-                                    <Separator />
-                                    <Field label="Google Analytics ID" hint="e.g. G-XXXXXXXXXX or UA-XXXXXX-X">
-                                        <Input {...register('googleAnalyticsId')} placeholder="G-XXXXXXXXXX" className="font-mono" />
-                                    </Field>
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        {/* ── Maintenance ── */}
-                        <TabsContent value="maintenance">
-                            <Card className={maintenanceMode ? 'border-destructive/50 ring-1 ring-destructive/30' : ''}>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2 text-base">
-                                        <TriangleAlert className={`h-4 w-4 ${maintenanceMode ? 'text-destructive' : ''}`} />
-                                        Maintenance Mode
-                                    </CardTitle>
-                                    <CardDescription>
-                                        When enabled, visitors see a maintenance page. Admins can still log in.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="flex items-center justify-between rounded-lg border p-4">
-                                        <div>
-                                            <p className="text-sm font-medium">Enable Maintenance Mode</p>
-                                            <p className="mt-0.5 text-xs text-muted-foreground">Public access will be blocked</p>
-                                        </div>
-                                        <Switch
-                                            checked={maintenanceMode}
-                                            onCheckedChange={(v) => setValue('maintenanceMode', v, { shouldDirty: true })}
-                                        />
-                                    </div>
-                                    {maintenanceMode && (
-                                        <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3">
-                                            <p className="flex items-center gap-1.5 text-sm font-medium text-destructive">
-                                                <TriangleAlert className="h-4 w-4" /> Maintenance mode is active
-                                            </p>
-                                            <p className="mt-1 text-xs text-muted-foreground">
-                                                Your site is currently in maintenance mode. Save to apply changes.
-                                            </p>
-                                        </div>
-                                    )}
-                                    <Field label="Maintenance Message" hint="Shown to visitors during maintenance">
-                                        <Textarea
-                                            {...register('maintenanceMessage')}
-                                            placeholder="We're currently performing maintenance. We'll be back shortly!"
-                                            rows={3}
-                                            className="resize-none"
-                                        />
-                                    </Field>
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
+                        <TabsContent value="general" className="mt-0 focus-visible:outline-none"><GeneralTab register={register} errors={errors} /></TabsContent>
+                        <TabsContent value="branding" className="mt-0 focus-visible:outline-none"><BrandingTab logoUrl={values.logoUrl ?? ''} faviconUrl={values.faviconUrl ?? ''} setValue={setValue} /></TabsContent>
+                        <TabsContent value="contact" className="mt-0 focus-visible:outline-none"><ContactTab register={register} errors={errors} /></TabsContent>
+                        <TabsContent value="social" className="mt-0 focus-visible:outline-none"><SocialTab register={register} /></TabsContent>
+                        <TabsContent value="seo" className="mt-0 focus-visible:outline-none"><SeoTab register={register} setValue={setValue} control={control} errors={errors} ogImageUrl={values.ogImageUrl ?? ''} /></TabsContent>
+                        <TabsContent value="maintenance" className="mt-0 focus-visible:outline-none"><MaintenanceTab register={register} setValue={setValue} maintenanceMode={values.maintenanceMode ?? false} /></TabsContent>
                     </Tabs>
 
-                    {/* Sticky save bar */}
                     {isDirty && (
                         <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-xl border bg-background/90 px-5 py-3 shadow-lg backdrop-blur-md">
                             <p className="text-sm text-muted-foreground">You have unsaved changes</p>
@@ -636,7 +148,7 @@ export function SiteSettingsPage() {
                         </div>
                     )}
                 </form>
-            </div>
-        </div>
+            </DashboardPageCard>
+        </DashboardPageMain>
     )
 }

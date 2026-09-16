@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { Button } from '@/components/ui/button'
 import {
     Dialog,
     DialogContent,
@@ -13,16 +12,10 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiFormInput, UiFormSwitch } from '@/components/ui-custom/UiFormInput'
+import { UiFormSearchSelect } from '@/components/ui-custom/UiFormSearchSelect'
 import type { ITheme } from './types/ThemeTypes'
 
 const configSchema = z.object({
@@ -111,11 +104,12 @@ export function ThemeFormDialog({ open, onOpenChange, theme, onSubmit, isPending
                         onChange={(e) => setValue(`config.${field}` as any, e.target.value)}
                         className="h-9 w-12 cursor-pointer rounded border p-0.5"
                     />
-                    <Input
+                    <UiFormInput
                         value={val}
                         onChange={(e) => setValue(`config.${field}` as any, e.target.value)}
                         placeholder="#6366f1"
                         className="font-mono text-sm"
+                        error={(errors.config as any)?.[field]}
                     />
                 </div>
                 {(errors.config as any)?.[field] && (
@@ -134,34 +128,28 @@ export function ThemeFormDialog({ open, onOpenChange, theme, onSubmit, isPending
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                     {/* Basic info */}
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                            <Label>Name</Label>
-                            <Input
-                                value={name}
-                                onChange={handleNameChange}
-                                placeholder="e.g. Ocean Blue"
-                            />
-                            {errors.name && <p className="text-destructive text-xs">{errors.name.message}</p>}
-                        </div>
-                        <div className="space-y-1">
-                            <Label>Slug</Label>
-                            <Input
-                                value={slug}
-                                onChange={(e) => setValue('slug', e.target.value)}
-                                placeholder="ocean-blue"
-                            />
-                            {errors.slug && <p className="text-destructive text-xs">{errors.slug.message}</p>}
-                        </div>
+                        <UiFormInput
+                            label="Name"
+                            value={name}
+                            onChange={handleNameChange}
+                            placeholder="e.g. Ocean Blue"
+                            error={errors.name}
+                        />
+                        <UiFormInput
+                            label="Slug"
+                            value={slug}
+                            onChange={(e) => setValue('slug', e.target.value)}
+                            placeholder="ocean-blue"
+                            error={errors.slug}
+                        />
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <Switch
-                            id="isActive"
-                            checked={watch('isActive')}
-                            onCheckedChange={(v) => setValue('isActive', v)}
-                        />
-                        <Label htmlFor="isActive">Set as active theme on save</Label>
-                    </div>
+                    <UiFormSwitch
+                        label="Set as active theme on save"
+                        id="isActive"
+                        checked={watch('isActive')}
+                        onCheckedChange={(v) => setValue('isActive', v)}
+                    />
 
                     {/* Colors */}
                     <div>
@@ -177,64 +165,37 @@ export function ThemeFormDialog({ open, onOpenChange, theme, onSubmit, isPending
 
                     {/* Typography & layout */}
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                            <Label>Font Family</Label>
-                            <Input {...register('config.fontFamily')} placeholder="Inter" />
-                        </div>
-                        <div className="space-y-1">
-                            <Label>Border Radius <span className="text-muted-foreground text-xs">(rem)</span></Label>
-                            <Input {...register('config.borderRadius')} placeholder="0.5" />
-                        </div>
+                        <UiFormInput label="Font Family" {...register('config.fontFamily')} placeholder="Inter" />
+                        <UiFormInput label="Border Radius (rem)" {...register('config.borderRadius')} placeholder="0.5" />
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                            <Label>Hero Variant</Label>
-                            <Select
-                                value={watch('config.heroVariant')}
-                                onValueChange={(v) => setValue('config.heroVariant', v as any)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="centered">Centered</SelectItem>
-                                    <SelectItem value="fullwidth">Full Width</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1">
-                            <Label>Hero Background</Label>
-                            <Select
-                                value={watch('config.heroBackground')}
-                                onValueChange={(v) => setValue('config.heroBackground', v as any)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="gradient">Gradient</SelectItem>
-                                    <SelectItem value="solid">Solid</SelectItem>
-                                    <SelectItem value="mesh">Mesh</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                        <UiFormSearchSelect
+                            label="Hero Variant"
+                            value={watch('config.heroVariant')}
+                            onChange={(v) => setValue('config.heroVariant', v as FormValues['config']['heroVariant'])}
+                            options={[{ value: 'centered', label: 'Centered' }, { value: 'fullwidth', label: 'Full Width' }]}
+                        />
+                        <UiFormSearchSelect
+                            label="Hero Background"
+                            value={watch('config.heroBackground')}
+                            onChange={(v) => setValue('config.heroBackground', v as FormValues['config']['heroBackground'])}
+                            options={[{ value: 'gradient', label: 'Gradient' }, { value: 'solid', label: 'Solid' }, { value: 'mesh', label: 'Mesh' }]}
+                        />
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <Switch
-                            id="darkMode"
-                            checked={watch('config.darkMode')}
-                            onCheckedChange={(v) => setValue('config.darkMode', v)}
-                        />
-                        <Label htmlFor="darkMode">Dark Mode</Label>
-                    </div>
+                    <UiFormSwitch
+                        label="Dark Mode"
+                        id="darkMode"
+                        checked={watch('config.darkMode')}
+                        onCheckedChange={(v) => setValue('config.darkMode', v)}
+                    />
 
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-                        <Button type="submit" disabled={isPending}>
+                        <UiButton type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</UiButton>
+                        <UiButton type="submit" disabled={isPending}>
                             {isPending ? 'Saving...' : 'Save'}
-                        </Button>
+                        </UiButton>
                     </DialogFooter>
                 </form>
             </DialogContent>

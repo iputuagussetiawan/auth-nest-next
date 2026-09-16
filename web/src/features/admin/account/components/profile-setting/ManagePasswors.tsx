@@ -7,10 +7,9 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-import { Button } from '@/components/ui/button'
 import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiFormPassword } from '@/components/ui-custom/UiFormInput'
 import { accountService } from '../../services/AccountService'
 
 const schema = z.object({
@@ -52,27 +51,15 @@ export default function ManagePassword({ onSuccess }: ManagePasswordProps) {
                 <DialogDescription>Choose a strong password of at least 8 characters.</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit((v) => mutate(v))} className="space-y-4 py-2">
-                <div className="space-y-1">
-                    <Label>Current Password</Label>
-                    <Input {...register('currentPassword')} type="password" placeholder="Current password" />
-                    {errors.currentPassword && <p className="text-destructive text-xs">{errors.currentPassword.message}</p>}
-                </div>
-                <div className="space-y-1">
-                    <Label>New Password</Label>
-                    <Input {...register('newPassword')} type="password" placeholder="New password" />
-                    {errors.newPassword && <p className="text-destructive text-xs">{errors.newPassword.message}</p>}
-                </div>
-                <div className="space-y-1">
-                    <Label>Confirm New Password</Label>
-                    <Input {...register('confirmPassword')} type="password" placeholder="Confirm password" />
-                    {errors.confirmPassword && <p className="text-destructive text-xs">{errors.confirmPassword.message}</p>}
-                </div>
+                <UiFormPassword label="Current Password" {...register('currentPassword')} placeholder="Current password" error={errors.currentPassword} />
+                <UiFormPassword label="New Password" {...register('newPassword')} placeholder="New password" error={errors.newPassword} />
+                <UiFormPassword label="Confirm New Password" {...register('confirmPassword')} placeholder="Confirm password" error={errors.confirmPassword} />
                 <DialogFooter>
-                    <Button type="button" variant="outline" onClick={onSuccess}>Cancel</Button>
-                    <Button type="submit" disabled={isPending}>
+                    <UiButton type="button" variant="outline" onClick={onSuccess}>Cancel</UiButton>
+                    <UiButton type="submit" disabled={isPending}>
                         {isPending && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
                         Update Password
-                    </Button>
+                    </UiButton>
                 </DialogFooter>
             </form>
         </>

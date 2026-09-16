@@ -8,10 +8,10 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
 import type { IUserProfile } from '../types/AccountTypes'
-import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiFormInput } from '@/components/ui-custom/UiFormInput'
 import { Separator } from '@/components/ui/separator'
 import { UserAvatar } from '@/components/user-avatar'
 
@@ -117,25 +117,23 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                             />
                         </div>
 
-                        <div className="flex-1 space-y-2">
-                            <Label htmlFor="name">Preferred name</Label>
-                            <Input
+                        <div className="flex-1 max-w-md">
+                            <UiFormInput
+                                label="Preferred name"
                                 {...form.register('name')}
                                 id="name"
-                                className="bg-secondary/50 max-w-md"
+                                className="bg-secondary/50"
                                 disabled={isPending}
+                                error={form.formState.errors.name}
                             />
-                            {form.formState.errors.name && (
-                                <p className="text-destructive text-xs">{form.formState.errors.name.message}</p>
-                            )}
                         </div>
                     </div>
 
                     <div className="flex justify-start">
-                        <Button type="submit" disabled={isPending}>
+                        <UiButton type="submit" disabled={isPending}>
                             {isSavingProfile ? <Loader2 className="animate-spin" /> : <Save />}
                             Save Changes
-                        </Button>
+                        </UiButton>
                     </div>
                 </form>
             </section>
@@ -153,9 +151,9 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                         <Label className="text-base">Email</Label>
                         <p className="text-muted-foreground text-sm">{user.email}</p>
                     </div>
-                    <Button variant="secondary" size="sm" onClick={() => setActiveDialog('email')}>
+                    <UiButton variant="secondary" size="sm" onClick={() => setActiveDialog('email')}>
                         Manage email
-                    </Button>
+                    </UiButton>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -165,14 +163,14 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                             {user.provider === 'email' ? 'Change your account password' : `Managed by ${user.provider}`}
                         </p>
                     </div>
-                    <Button
+                    <UiButton
                         variant="secondary"
                         size="sm"
                         disabled={user.provider !== 'email'}
                         onClick={() => setActiveDialog('password')}
                     >
                         Manage password
-                    </Button>
+                    </UiButton>
                 </div>
             </section>
 

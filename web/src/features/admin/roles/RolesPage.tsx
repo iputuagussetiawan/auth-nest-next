@@ -1,20 +1,25 @@
 'use client'
 
 import { useState } from 'react'
-import { LayoutGrid, List, MoreHorizontal, Pencil, Plus, Search, Shield, Trash2, Users } from 'lucide-react'
+import { MoreHorizontal, Pencil, Plus, Search, Shield, Trash2, Users } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { DataTable } from '@/components/ui/data-table'
+import { UiButton } from '@/components/ui-custom/UiButton'
+import { UiDataTable } from '@/components/ui-custom/UiTable'
+import { UiInput } from '@/components/ui-custom/UiInput'
+import { UiImage } from '@/components/ui-custom/UiImage'
+import DashboardPageMain from '@/components/layouts/backend/DashboardPageMain'
+import DashboardPageHeader from '@/components/layouts/backend/DashboardPageHeader'
+import DashboardPageCard from '@/components/layouts/backend/DashboardPageCard'
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { UiViewToggle } from '@/components/ui-custom/UiViewToggle'
 import { getRoleColumns } from './components/RoleColumns'
 import { useRole } from './hooks/UseRole'
 import { RoleDeleteDialog } from './RoleDeleteDialog'
@@ -58,73 +63,57 @@ export function RolesPage() {
     const columns = getRoleColumns({ onEdit: openEdit, onDelete: setDeleteRole })
 
     return (
-        <div className="space-y-6">
-            <div className="rounded-[28px] border border-border/60 bg-gradient-to-br from-primary/8 via-background to-background px-6 py-5 shadow-sm">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="space-y-1">
-                        <h2 className="text-3xl font-semibold tracking-tight">Roles</h2>
-                        <p className="text-muted-foreground text-sm leading-6">Manage roles and access with compact cards or table view</p>
-                    </div>
-                    <div className="flex items-center gap-2 self-start sm:self-auto">
-                        <ToggleGroup
-                            type="single"
-                            variant="outline"
-                            value={view}
-                            onValueChange={(v) => v && setView(v as 'list' | 'grid')}
-                            className="rounded-full border border-border/60 bg-background p-1 shadow-sm"
-                        >
-                            <ToggleGroupItem value="grid" aria-label="Grid view" className="rounded-full">
-                                <LayoutGrid className="h-4 w-4" />
-                            </ToggleGroupItem>
-                            <ToggleGroupItem value="list" aria-label="List view" className="rounded-full">
-                                <List className="h-4 w-4" />
-                            </ToggleGroupItem>
-                        </ToggleGroup>
-                        <Button onClick={openCreate} className="rounded-full px-5 shadow-sm">
+        <DashboardPageMain>
+            <DashboardPageHeader
+                title="Roles"
+                description={<>Manage roles and access with compact cards or table view</>}
+                actions={
+                    <div className="flex items-center gap-2">
+                        <UiViewToggle value={view} onChange={setView} />
+                        <UiButton onClick={openCreate} className="rounded-full px-5 shadow-sm">
                             <Plus className="mr-2 h-4 w-4" /> Add Role
-                        </Button>
+                        </UiButton>
                     </div>
-                </div>
-            </div>
+                }
+            />
 
-            <div className="rounded-[28px] border border-border/60 bg-background p-4 shadow-sm md:p-5">
-
-            {view === 'grid' ? (
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between gap-3">
-                        <div className="relative w-full sm:max-w-xs">
-                            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-                            <Input
-                                placeholder="Search roles…"
-                                value={gridSearch}
-                                onChange={(e) => { setGridSearch(e.target.value); setGridPage(1) }}
-                                className="pl-9"
-                            />
+            <DashboardPageCard className="overflow-visible">
+                {view === 'grid' ? (
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between gap-3">
+                            <div className="relative w-full sm:max-w-xs">
+                                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                                <UiInput
+                                    placeholder="Search roles…"
+                                    value={gridSearch}
+                                    onChange={(e) => { setGridSearch(e.target.value); setGridPage(1) }}
+                                    className="pl-9"
+                                />
+                            </div>
+                            <p className="text-muted-foreground hidden shrink-0 text-sm sm:block">
+                                {filteredRoles.length} role{filteredRoles.length === 1 ? '' : 's'}
+                            </p>
                         </div>
-                        <p className="text-muted-foreground hidden shrink-0 text-sm sm:block">
-                            {filteredRoles.length} role{filteredRoles.length === 1 ? '' : 's'}
-                        </p>
-                    </div>
 
-                    {paginatedRoles.length === 0 ? (
-                        <div className="text-muted-foreground flex h-24 flex-col items-center justify-center gap-1 rounded-lg border border-dashed text-sm">
-                            <span>No roles match &ldquo;{gridSearch}&rdquo;</span>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                            {paginatedRoles.map((role) => {
+                        {paginatedRoles.length === 0 ? (
+                            <div className="text-muted-foreground flex h-24 flex-col items-center justify-center gap-1 rounded-lg border border-dashed text-sm">
+                                <span>No roles match &ldquo;{gridSearch}&rdquo;</span>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                                {paginatedRoles.map((role) => {
                                 const isUrl = role.icon?.startsWith('http')
                                 const permCount = role.permissions?.length ?? 0
                                 return (
                                     <Card
                                         key={role.id}
-                                        className="group gap-3 py-3 transition-shadow hover:shadow-md"
+                                        className="group gap-3 rounded-2xl py-3 transition-shadow hover:shadow-md"
                                     >
                                         <CardHeader className="px-3">
                                             <div className="flex min-w-0 items-center gap-2">
                                                 <div className="bg-muted flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md border">
                                                     {isUrl
-                                                        ? <img src={role.icon!} alt={role.name} className="h-full w-full object-cover" />
+                                                        ? <UiImage src={role.icon!} alt={role.name} width={32} height={32} className="h-full w-full object-cover" />
                                                         : <span className="text-primary text-xs font-bold">{role.name[0].toUpperCase()}</span>
                                                     }
                                                 </div>
@@ -207,10 +196,11 @@ export function RolesPage() {
                     </div>
                 </div>
             ) : (
-                <DataTable columns={columns} data={roles} searchPlaceholder="Search roles…" />
+                <div className="rounded-[24px] bg-card">
+                    <UiDataTable columns={columns} data={roles} searchPlaceholder="Search roles…" />
+                </div>
             )}
-
-            </div>
+            </DashboardPageCard>
 
             <RoleFormDialog
                 open={formOpen}
@@ -229,6 +219,6 @@ export function RolesPage() {
                 onConfirm={() => deleteRole && deleteMutation.mutate(deleteRole.id)}
                 isPending={deleteMutation.isPending}
             />
-        </div>
+        </DashboardPageMain>
     )
 }
