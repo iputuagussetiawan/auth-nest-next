@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common'
-import { RoleService } from './role.service'
-import { RoleController } from './role.controller'
+
 import { RolesGuard } from '../../../common/guards/roles.guard'
 import { CloudinaryModule } from '../../../shared/cloudinary/cloudinary.module'
+import { RoleController } from './role.controller'
+import { RoleService } from './role.service'
 
 @Module({
     imports: [CloudinaryModule],

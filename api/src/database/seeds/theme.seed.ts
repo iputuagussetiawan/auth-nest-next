@@ -2,8 +2,7 @@ import { eq } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
 import type * as schema from '../schema'
-import { themes } from '../schema/theme/themes.schema'
-import type { ThemeConfig } from '../schema/theme/themes.schema'
+import { themes, type ThemeConfig } from '../schema/theme/themes.schema'
 
 const PRESET_THEMES: { name: string; slug: string; config: ThemeConfig }[] = [
     // ── 1. Midnight Ocean ────────────────────────────────────────────────────

@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common'
-import { UserService } from './user.service'
-import { UserController } from './user.controller'
-import { RoleModule } from '../rbac/role/role.module'
+
 import { CloudinaryModule } from '../../shared/cloudinary/cloudinary.module'
+import { RoleModule } from '../rbac/role/role.module'
 import { SessionModule } from '../session/session.module'
+import { UserController } from './user.controller'
+import { UserService } from './user.service'
 
 @Module({
     imports: [RoleModule, CloudinaryModule, SessionModule],

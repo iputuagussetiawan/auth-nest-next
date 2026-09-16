@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Resend } from 'resend'
 
-import { verifyEmailTemplate, passwordResetTemplate } from './templates'
+import { passwordResetTemplate, verifyEmailTemplate } from './templates'
 
 @Injectable()
 export class MailService {

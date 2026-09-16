@@ -1,4 +1,4 @@
-import { pgTable, primaryKey, text, timestamp, uuid, varchar, jsonb } from 'drizzle-orm/pg-core'
+import { jsonb, pgTable, primaryKey, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
 
 import { users } from '../auth/users.schema'
 

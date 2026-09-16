@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, boolean, timestamp, json } from 'drizzle-orm/pg-core'
+import { boolean, json, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
 
 export interface ThemeVars {
     background: string

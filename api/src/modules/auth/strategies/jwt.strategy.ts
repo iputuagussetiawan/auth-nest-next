@@ -1,9 +1,9 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
-import { ExtractJwt, Strategy } from 'passport-jwt'
-import { Request } from 'express'
 import { eq } from 'drizzle-orm'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
+import { Request } from 'express'
+import { ExtractJwt, Strategy } from 'passport-jwt'
 
 import { DRIZZLE } from '../../../database/drizzle.provider'
 import * as schema from '../../../database/schema'

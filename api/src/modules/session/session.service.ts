@@ -1,12 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common'
+import { and, eq, ne } from 'drizzle-orm'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
-import { eq, and, ne } from 'drizzle-orm'
 import { UAParser } from 'ua-parser-js'
 
+import { ForbiddenException, NotFoundException } from '../../common/exceptions/app-error'
 import { DRIZZLE } from '../../database/drizzle.provider'
 import * as schema from '../../database/schema'
 import { sessions } from '../../database/schema/auth/sessions.schema'
-import { NotFoundException, ForbiddenException } from '../../common/exceptions/app-error'
 
 @Injectable()
 export class SessionService {
