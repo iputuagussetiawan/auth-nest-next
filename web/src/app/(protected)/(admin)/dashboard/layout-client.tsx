@@ -1,21 +1,32 @@
 'use client'
 
-import { AppSidebar } from '@/components/app-sidebar'
-import { DynamicBreadcrumbs } from '@/components/dynamic-breadcrumbs'
-import { Separator } from '@/components/ui/separator'
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { useEffect, useState, type ReactNode } from 'react'
 
-export function DashboardLayoutClient({ children }: { children: React.ReactNode }) {
+import { AppSidebar } from '@/components/app-sidebar'
+import DashboardHeader from '@/components/layouts/backend/DashboardHeader'
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+
+export function DashboardLayoutClient({ children }: { children: ReactNode }) {
+    const [sidebarOpen, setSidebarOpen] = useState<boolean | undefined>(undefined)
+
+    useEffect(() => {
+        const mql = window.matchMedia('(min-width: 1280px)')
+        const onChange = () => setSidebarOpen(mql.matches)
+        onChange()
+        mql.addEventListener('change', onChange)
+        return () => mql.removeEventListener('change', onChange)
+    }, [])
+
     return (
-        <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-                <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-                    <SidebarTrigger className="-ml-1" />
-                    <Separator orientation="vertical" className="mr-2 h-4" />
-                    <DynamicBreadcrumbs />
-                </header>
-                <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
+        <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
+            <AppSidebar variant="inset" />
+            <SidebarInset className="bg-background min-w-0 overflow-x-clip md:m-3 md:ml-0 md:rounded-[28px]">
+                <div className="flex min-w-0 flex-1 flex-col gap-4 p-3 sm:gap-5 sm:p-5 lg:gap-6 lg:p-7">
+                    <DashboardHeader />
+                    <div className="flex min-w-0 flex-1 flex-col gap-4 sm:gap-5 lg:gap-6">
+                        {children}
+                    </div>
+                </div>
             </SidebarInset>
         </SidebarProvider>
     )

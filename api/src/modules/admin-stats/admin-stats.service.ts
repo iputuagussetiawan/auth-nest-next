@@ -4,12 +4,11 @@ import { eq, gt, sql } from 'drizzle-orm'
 
 import { DRIZZLE } from '../../database/drizzle.provider'
 import * as schema from '../../database/schema'
-import { users } from '../../database/schema/users.schema'
-import { sessions } from '../../database/schema/sessions.schema'
-import { roles } from '../../database/schema/roles.schema'
-import { userRoles } from '../../database/schema/user-roles.schema'
-import { appModules } from '../../database/schema/app-modules.schema'
-import { permissions } from '../../database/schema/permissions.schema'
+import { users } from '../../database/schema/auth/users.schema'
+import { sessions } from '../../database/schema/auth/sessions.schema'
+import { roles } from '../../database/schema/rbac/roles.schema'
+import { userRoles } from '../../database/schema/rbac/user-roles.schema'
+import { permissions } from '../../database/schema/rbac/permissions.schema'
 
 @Injectable()
 export class AdminStatsService {
@@ -22,7 +21,6 @@ export class AdminStatsService {
             unverifiedRows,
             activeSessionsRows,
             totalRolesRows,
-            totalModulesRows,
             totalPermissionsRows,
             usersByRole,
             userGrowth,
@@ -33,7 +31,6 @@ export class AdminStatsService {
             this.db.select({ v: sql<number>`cast(count(*) as int)` }).from(users).where(eq(users.isEmailVerified, false)),
             this.db.select({ v: sql<number>`cast(count(*) as int)` }).from(sessions).where(gt(sessions.expiredAt, new Date())),
             this.db.select({ v: sql<number>`cast(count(*) as int)` }).from(roles),
-            this.db.select({ v: sql<number>`cast(count(*) as int)` }).from(appModules),
             this.db.select({ v: sql<number>`cast(count(*) as int)` }).from(permissions),
 
             this.db
@@ -76,7 +73,6 @@ export class AdminStatsService {
             unverifiedEmails: unverifiedRows[0]?.v ?? 0,
             activeSessions: activeSessionsRows[0]?.v ?? 0,
             totalRoles: totalRolesRows[0]?.v ?? 0,
-            totalModules: totalModulesRows[0]?.v ?? 0,
             totalPermissions: totalPermissionsRows[0]?.v ?? 0,
             usersByRole: usersByRole.map(r => ({ role: r.role ?? 'Unknown', count: r.count })),
             userGrowth: userGrowth.map(r => ({

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Profile from '@/features/user/component/profile'
+import Profile from '@/features/admin/account/components/Profile'
 
 export const metadata: Metadata = { title: 'Account' }
 

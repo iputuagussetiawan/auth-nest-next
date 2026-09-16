@@ -37,6 +37,7 @@ export async function generateMetadata(): Promise<Metadata> {
 import QueryProvider from '@/providers/query-provider'
 import { ThemeProvider } from '@/providers/theme-provider'
 import { DbThemeProvider } from '@/providers/db-theme-provider'
+import { getActiveThemeConfig, getActiveThemeStyle } from '@/lib/active-theme-server'
 
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -51,8 +52,14 @@ const inter = Inter({
 
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
+    // Inject the active DB theme before first paint so there is no palette flash.
+    const themeStyle = getActiveThemeStyle(await getActiveThemeConfig())
+
     return (
         <html lang="en" className={inter.variable} suppressHydrationWarning>
+            <head>
+                {themeStyle && <style dangerouslySetInnerHTML={{ __html: themeStyle }} />}
+            </head>
             {/* Apply the font to the body */}
             <body className={inter.className}>
                 <ThemeProvider

@@ -1,29 +1,33 @@
 export const dynamic = 'force-dynamic'
 
-import { buildThemeCss } from '@/lib/theme-utils'
-import { MaintenancePage } from './maintenance-page'
 import Link from 'next/link'
 import {
     ArrowRight,
+    BarChart3,
     Briefcase,
+    Building2,
+    CalendarClock,
     CheckCircle2,
     FileUser,
     GalleryVerticalEnd,
-    Search,
-    Shield,
+    ShieldCheck,
     Sparkles,
     Star,
     TrendingUp,
+    UserPlus,
     Users,
+    Wallet,
     Zap,
 } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
+import { MaintenancePage } from './maintenance-page'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { SIGNIN_URL, SIGNUP_URL } from '@/lib/constants'
+import { buildThemeCss } from '@/lib/theme-utils'
 
-// ── Nav ───────────────────────────────────────────────────────────────────────
-function Navbar() {
+function Navbar({ siteName }: { siteName: string }) {
     return (
         <header className="border-border/50 bg-background/80 fixed top-0 z-50 w-full border-b backdrop-blur-md">
             <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
@@ -31,19 +35,20 @@ function Navbar() {
                     <div className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-lg">
                         <GalleryVerticalEnd className="size-4" />
                     </div>
-                    <span className="text-lg">Acme Inc.</span>
+                    <span className="text-lg">{siteName}</span>
                 </Link>
                 <nav className="hidden items-center gap-6 text-sm md:flex">
-                    <Link href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Features</Link>
-                    <Link href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">How it works</Link>
-                    <Link href="#stats" className="text-muted-foreground hover:text-foreground transition-colors">About</Link>
+                    <Link href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Modules</Link>
+                    <Link href="#workflow" className="text-muted-foreground hover:text-foreground transition-colors">Workflow</Link>
+                    <Link href="#results" className="text-muted-foreground hover:text-foreground transition-colors">Results</Link>
                 </nav>
                 <div className="flex items-center gap-3">
+                    <ThemeToggle />
                     <Button variant="ghost" size="sm" asChild>
                         <Link href={SIGNIN_URL}>Sign in</Link>
                     </Button>
                     <Button size="sm" asChild>
-                        <Link href={SIGNUP_URL}>Get started <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
+                        <Link href={SIGNUP_URL}>Request demo <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
                     </Button>
                 </div>
             </div>
@@ -51,35 +56,33 @@ function Navbar() {
     )
 }
 
-// ── Hero ──────────────────────────────────────────────────────────────────────
-function Hero() {
+function Hero({ siteName }: { siteName: string }) {
     return (
         <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 pt-16 text-center">
-            {/* background glow */}
             <div className="bg-primary/10 absolute top-1/3 left-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" />
             <div className="absolute top-1/2 right-1/4 -z-10 h-[300px] w-[300px] rounded-full bg-violet-500/10 blur-3xl" />
 
             <Badge variant="secondary" className="mb-6 gap-1.5 px-3 py-1">
                 <Sparkles className="h-3.5 w-3.5" />
-                The smarter way to find your next opportunity
+                Built for modern HR teams
             </Badge>
 
-            <h1 className="max-w-4xl text-5xl leading-tight font-extrabold tracking-tight sm:text-6xl lg:text-7xl">
-                Land your dream job{' '}
+            <h1 className="max-w-5xl text-5xl leading-tight font-extrabold tracking-tight sm:text-6xl lg:text-7xl">
+                Run hiring, people ops, and performance in{' '}
                 <span className="from-primary to-violet-500 bg-gradient-to-r bg-clip-text text-transparent">
-                    faster than ever
+                    one HR system
                 </span>
             </h1>
 
-            <p className="text-muted-foreground mt-6 max-w-2xl text-lg leading-relaxed sm:text-xl">
-                Connect talent with opportunity. Build your resume, browse thousands of jobs,
-                and track your career growth — all in one powerful platform.
+            <p className="text-muted-foreground mt-6 max-w-3xl text-lg leading-relaxed sm:text-xl">
+                {siteName} helps HR teams centralize employee data, automate leave and attendance,
+                manage recruitment, and gain real-time visibility across the workforce.
             </p>
 
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
                 <Button size="lg" className="h-12 px-8 text-base" asChild>
                     <Link href={SIGNUP_URL}>
-                        Create free account
+                        Start with your team
                         <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                 </Button>
@@ -89,7 +92,7 @@ function Hero() {
             </div>
 
             <div className="text-muted-foreground mt-8 flex flex-wrap items-center justify-center gap-6 text-sm">
-                {['Free to get started', 'No credit card required', 'Cancel anytime'].map((t) => (
+                {['Employee records', 'Leave & attendance', 'Recruitment pipeline', 'Role-based access'].map((t) => (
                     <span key={t} className="flex items-center gap-1.5">
                         <CheckCircle2 className="text-primary h-4 w-4" />
                         {t}
@@ -97,21 +100,21 @@ function Hero() {
                 ))}
             </div>
 
-            {/* mock dashboard preview */}
-            <div className="border-border bg-card relative mt-16 w-full max-w-4xl overflow-hidden rounded-2xl border shadow-2xl">
+            <div className="border-border bg-card relative mt-16 w-full max-w-5xl overflow-hidden rounded-2xl border shadow-2xl">
                 <div className="bg-muted/50 border-border flex items-center gap-1.5 border-b px-4 py-3">
                     {['bg-red-400', 'bg-yellow-400', 'bg-green-400'].map((c, i) => (
                         <div key={i} className={`h-3 w-3 rounded-full ${c}`} />
                     ))}
-                    <div className="bg-background mx-auto w-64 rounded-md px-3 py-1 text-xs text-center text-gray-400">
-                        app.acmeinc.com/dashboard
+                    <div className="bg-background mx-auto w-64 rounded-md px-3 py-1 text-center text-xs text-gray-400">
+                        hr.{siteName.toLowerCase().replace(/\s+/g, '-')}.com
                     </div>
                 </div>
-                <div className="grid grid-cols-3 gap-0 divide-x divide-y">
+                <div className="grid grid-cols-2 gap-0 divide-x divide-y sm:grid-cols-4">
                     {[
-                        { label: 'Jobs Applied', value: '24', color: 'text-blue-500' },
-                        { label: 'Profile Views', value: '182', color: 'text-violet-500' },
-                        { label: 'Interviews', value: '6', color: 'text-emerald-500' },
+                        { label: 'Employees', value: '248', color: 'text-blue-500' },
+                        { label: 'Open Roles', value: '12', color: 'text-violet-500' },
+                        { label: 'Leave Requests', value: '18', color: 'text-emerald-500' },
+                        { label: 'Payroll Ready', value: '99%', color: 'text-orange-500' },
                     ].map((s) => (
                         <div key={s.label} className="bg-card p-6 text-center">
                             <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
@@ -120,13 +123,18 @@ function Hero() {
                     ))}
                 </div>
                 <div className="bg-card grid grid-cols-2 gap-3 p-6 sm:grid-cols-4">
-                    {['Frontend Engineer', 'Product Designer', 'Data Analyst', 'Backend Dev'].map((job) => (
-                        <div key={job} className="bg-muted rounded-lg p-3 text-xs">
+                    {[
+                        { title: 'Employee Hub', meta: 'Profiles · Documents', icon: Users },
+                        { title: 'Attendance', meta: 'Shifts · Time logs', icon: CalendarClock },
+                        { title: 'Recruitment', meta: 'Jobs · Candidates', icon: Briefcase },
+                        { title: 'Payroll', meta: 'Salary · Benefits', icon: Wallet },
+                    ].map((item) => (
+                        <div key={item.title} className="bg-muted rounded-lg p-3 text-left text-xs">
                             <div className="bg-primary/10 mb-2 flex h-7 w-7 items-center justify-center rounded-md">
-                                <Briefcase className="text-primary h-3.5 w-3.5" />
+                                <item.icon className="text-primary h-3.5 w-3.5" />
                             </div>
-                            <p className="font-medium">{job}</p>
-                            <p className="text-muted-foreground mt-0.5">Remote · Full-time</p>
+                            <p className="font-medium">{item.title}</p>
+                            <p className="text-muted-foreground mt-0.5">{item.meta}</p>
                         </div>
                     ))}
                 </div>
@@ -135,42 +143,41 @@ function Hero() {
     )
 }
 
-// ── Features ──────────────────────────────────────────────────────────────────
 const features = [
     {
         icon: FileUser,
-        title: 'Smart Resume Builder',
-        desc: 'Create a standout CV in minutes with guided templates. Preview, export, and share with one click.',
+        title: 'Employee Records',
+        desc: 'Store employee profiles, contracts, documents, and organizational data in one secure workspace.',
         color: 'bg-blue-500/10 text-blue-500',
     },
     {
-        icon: Search,
-        title: 'Intelligent Job Search',
-        desc: 'Discover thousands of curated job listings matched to your skills, experience, and career goals.',
+        icon: CalendarClock,
+        title: 'Attendance & Leave',
+        desc: 'Track attendance, shift schedules, time-off balances, and approval workflows without spreadsheets.',
         color: 'bg-violet-500/10 text-violet-500',
     },
     {
-        icon: TrendingUp,
-        title: 'Career Growth Tracker',
-        desc: 'Set milestones, track skill development, and visualize your career progression over time.',
+        icon: Wallet,
+        title: 'Payroll Readiness',
+        desc: 'Keep compensation, deductions, and HR records aligned so payroll preparation is faster and cleaner.',
         color: 'bg-emerald-500/10 text-emerald-500',
     },
     {
         icon: Briefcase,
-        title: 'Application Manager',
-        desc: 'Keep track of every application, interview, and offer in one organized dashboard.',
+        title: 'Recruitment Pipeline',
+        desc: 'Manage job openings, candidate stages, interview coordination, and hiring decisions in one flow.',
         color: 'bg-orange-500/10 text-orange-500',
     },
     {
-        icon: Users,
-        title: 'Company Hub',
-        desc: 'Companies can post jobs, review applicants, and manage their hiring pipeline effortlessly.',
+        icon: TrendingUp,
+        title: 'Performance Insights',
+        desc: 'Monitor headcount, engagement, productivity, and team growth with clear HR analytics.',
         color: 'bg-pink-500/10 text-pink-500',
     },
     {
-        icon: Shield,
-        title: 'Role-based Access',
-        desc: 'Powerful admin tools with granular permissions. Manage users, roles, and modules with ease.',
+        icon: ShieldCheck,
+        title: 'Access & Compliance',
+        desc: 'Protect sensitive HR data with role-based permissions, audit-friendly workflows, and admin controls.',
         color: 'bg-cyan-500/10 text-cyan-500',
     },
 ]
@@ -179,10 +186,10 @@ function Features() {
     return (
         <section id="features" className="mx-auto max-w-6xl px-6 py-24">
             <div className="mb-16 text-center">
-                <Badge variant="secondary" className="mb-4">Features</Badge>
-                <h2 className="text-4xl font-bold tracking-tight">Everything you need to succeed</h2>
-                <p className="text-muted-foreground mx-auto mt-4 max-w-xl">
-                    A complete platform for job seekers, companies, and administrators.
+                <Badge variant="secondary" className="mb-4">Core modules</Badge>
+                <h2 className="text-4xl font-bold tracking-tight">Everything HR needs in one place</h2>
+                <p className="text-muted-foreground mx-auto mt-4 max-w-2xl">
+                    Replace scattered spreadsheets and disconnected tools with one platform for people operations.
                 </p>
             </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -200,21 +207,36 @@ function Features() {
     )
 }
 
-// ── How it works ──────────────────────────────────────────────────────────────
 const steps = [
-    { step: '01', title: 'Create your account', desc: 'Sign up for free in under 60 seconds. No credit card needed.' },
-    { step: '02', title: 'Build your profile', desc: 'Add your experience, skills, and upload your resume to stand out.' },
-    { step: '03', title: 'Browse & apply', desc: 'Discover matching jobs and apply with a single click.' },
-    { step: '04', title: 'Track your progress', desc: 'Monitor applications, schedule interviews, and grow your career.' },
+    {
+        step: '01',
+        title: 'Set up your company',
+        desc: 'Configure teams, roles, locations, policies, and permissions for your HR workflow.',
+    },
+    {
+        step: '02',
+        title: 'Centralize people data',
+        desc: 'Import employees, contracts, leave balances, and historical HR records into one source of truth.',
+    },
+    {
+        step: '03',
+        title: 'Automate daily operations',
+        desc: 'Run onboarding, attendance, leave approvals, recruitment, and admin tasks with less manual effort.',
+    },
+    {
+        step: '04',
+        title: 'Track workforce results',
+        desc: 'Use live dashboards to monitor headcount, hiring velocity, compliance, and people performance.',
+    },
 ]
 
 function HowItWorks() {
     return (
-        <section id="how-it-works" className="bg-muted/40 py-24">
+        <section id="workflow" className="bg-muted/40 py-24">
             <div className="mx-auto max-w-6xl px-6">
                 <div className="mb-16 text-center">
-                    <Badge variant="secondary" className="mb-4">How it works</Badge>
-                    <h2 className="text-4xl font-bold tracking-tight">Get hired in 4 simple steps</h2>
+                    <Badge variant="secondary" className="mb-4">Workflow</Badge>
+                    <h2 className="text-4xl font-bold tracking-tight">Launch a stronger HR operation in 4 steps</h2>
                 </div>
                 <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
                     {steps.map((s, i) => (
@@ -235,17 +257,16 @@ function HowItWorks() {
     )
 }
 
-// ── Stats ─────────────────────────────────────────────────────────────────────
 const stats = [
-    { value: '50K+', label: 'Active job seekers' },
-    { value: '8K+', label: 'Companies hiring' },
-    { value: '120K+', label: 'Jobs posted' },
-    { value: '92%', label: 'Placement rate' },
+    { value: '10x', label: 'Less manual HR admin' },
+    { value: '99%', label: 'Payroll prep accuracy' },
+    { value: '3x', label: 'Faster hiring coordination' },
+    { value: '24/7', label: 'Visibility into people data' },
 ]
 
 function Stats() {
     return (
-        <section id="stats" className="mx-auto max-w-6xl px-6 py-24">
+        <section id="results" className="mx-auto max-w-6xl px-6 py-24">
             <div className="from-primary/5 to-violet-500/5 grid gap-8 rounded-3xl bg-gradient-to-br p-12 sm:grid-cols-2 lg:grid-cols-4">
                 {stats.map((s) => (
                     <div key={s.label} className="text-center">
@@ -260,11 +281,22 @@ function Stats() {
     )
 }
 
-// ── Testimonials ──────────────────────────────────────────────────────────────
 const testimonials = [
-    { name: 'Sarah K.', role: 'Frontend Engineer', text: 'Landed my dream job at a Series B startup within 3 weeks of signing up. The job matching is incredibly accurate.' },
-    { name: 'Marcus T.', role: 'Product Designer', text: 'The resume builder is a game-changer. Clean, professional, and exports perfectly. Got 3x more callbacks.' },
-    { name: 'Priya M.', role: 'HR Manager', text: 'Managing our hiring pipeline has never been smoother. The company dashboard saves us hours every week.' },
+    {
+        name: 'Alicia R.',
+        role: 'HR Manager',
+        text: 'We moved employee data, leave approvals, and recruitment into one workflow. Our HR team finally works from a single source of truth.',
+    },
+    {
+        name: 'Daniel S.',
+        role: 'People Operations Lead',
+        text: 'The dashboards make it easy to spot hiring bottlenecks, attendance issues, and team growth trends without chasing spreadsheets.',
+    },
+    {
+        name: 'Maya T.',
+        role: 'Operations Director',
+        text: 'What used to take days across payroll prep, onboarding, and policy tracking now takes hours with cleaner approvals and better visibility.',
+    },
 ]
 
 function Testimonials() {
@@ -272,8 +304,8 @@ function Testimonials() {
         <section className="bg-muted/40 py-24">
             <div className="mx-auto max-w-6xl px-6">
                 <div className="mb-16 text-center">
-                    <Badge variant="secondary" className="mb-4">Testimonials</Badge>
-                    <h2 className="text-4xl font-bold tracking-tight">Loved by thousands</h2>
+                    <Badge variant="secondary" className="mb-4">Customer stories</Badge>
+                    <h2 className="text-4xl font-bold tracking-tight">Trusted by growing HR teams</h2>
                 </div>
                 <div className="grid gap-6 sm:grid-cols-3">
                     {testimonials.map((t) => (
@@ -296,22 +328,26 @@ function Testimonials() {
     )
 }
 
-// ── CTA ───────────────────────────────────────────────────────────────────────
 function CTA() {
     return (
         <section className="mx-auto max-w-6xl px-6 py-24">
             <div className="from-primary to-violet-600 relative overflow-hidden rounded-3xl bg-gradient-to-br p-12 text-center text-white">
-                <div className="absolute inset-0 -z-10 opacity-20"
-                    style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }}
+                <div
+                    className="absolute inset-0 -z-10 opacity-20"
+                    style={{
+                        backgroundImage:
+                            'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)',
+                        backgroundSize: '40px 40px',
+                    }}
                 />
                 <Zap className="mx-auto mb-4 h-10 w-10 opacity-90" />
-                <h2 className="mb-4 text-4xl font-extrabold tracking-tight">Ready to level up your career?</h2>
-                <p className="mx-auto mb-8 max-w-xl text-lg opacity-90">
-                    Join thousands of professionals who found their next opportunity with us. Start for free today.
+                <h2 className="mb-4 text-4xl font-extrabold tracking-tight">Ready to modernize your HR system?</h2>
+                <p className="mx-auto mb-8 max-w-2xl text-lg opacity-90">
+                    Bring hiring, employee management, leave, payroll readiness, and reporting into one streamlined platform.
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-4">
                     <Button size="lg" variant="secondary" className="h-12 px-8 text-base font-semibold" asChild>
-                        <Link href={SIGNUP_URL}>Create free account <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                        <Link href={SIGNUP_URL}>Get started <ArrowRight className="ml-2 h-4 w-4" /></Link>
                     </Button>
                     <Button size="lg" variant="outline" className="h-12 border-white/40 px-8 text-base text-white hover:bg-white/10 hover:text-white" asChild>
                         <Link href={SIGNIN_URL}>Sign in</Link>
@@ -322,8 +358,7 @@ function CTA() {
     )
 }
 
-// ── Footer ────────────────────────────────────────────────────────────────────
-function Footer() {
+function Footer({ siteName }: { siteName: string }) {
     return (
         <footer className="border-border border-t py-10">
             <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
@@ -331,9 +366,9 @@ function Footer() {
                     <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
                         <GalleryVerticalEnd className="size-3.5" />
                     </div>
-                    Acme Inc.
+                    {siteName}
                 </Link>
-                <p className="text-muted-foreground text-sm">© {new Date().getFullYear()} Acme Inc. All rights reserved.</p>
+                <p className="text-muted-foreground text-sm">© {new Date().getFullYear()} {siteName}. All rights reserved.</p>
                 <div className="flex gap-4 text-sm">
                     <Link href={SIGNIN_URL} className="text-muted-foreground hover:text-foreground transition-colors">Sign in</Link>
                     <Link href={SIGNUP_URL} className="text-muted-foreground hover:text-foreground transition-colors">Register</Link>
@@ -342,8 +377,6 @@ function Footer() {
         </footer>
     )
 }
-
-// ── Page data ─────────────────────────────────────────────────────────────────
 
 interface SiteData {
     themeCss: string
@@ -354,15 +387,22 @@ interface SiteData {
 }
 
 async function getSiteData(): Promise<SiteData> {
-    const base = process.env.BACKEND_URL ?? ''
+    const base = process.env.BACKEND_URL
+
+    if (!base) {
+        return {
+            themeCss: '',
+            maintenanceMode: false,
+            maintenanceMessage: null,
+            siteName: 'HR System',
+            logoUrl: null,
+        }
+    }
 
     const [themeRes, settingsRes] = await Promise.allSettled([
         fetch(`${base}/themes/active`, { next: { revalidate: 60 } }),
         fetch(`${base}/site-settings`, { cache: 'no-store' }),
     ])
-
-    console.log('[getSiteData] base:', base)
-    console.log('[getSiteData] settingsRes status:', settingsRes.status, settingsRes.status === 'fulfilled' ? settingsRes.value.status : (settingsRes as any).reason)
 
     let themeCss = ''
     if (themeRes.status === 'fulfilled' && themeRes.value.ok) {
@@ -370,29 +410,27 @@ async function getSiteData(): Promise<SiteData> {
             const json = await themeRes.value.json()
             const config = json?.data?.config
             if (config) themeCss = buildThemeCss(config)
-        } catch (e) { console.error('[getSiteData] theme parse error:', e) }
+        } catch {}
     }
 
     let maintenanceMode = false
     let maintenanceMessage: string | null = null
-    let siteName = 'Acme Inc.'
+    let siteName = 'HR System'
     let logoUrl: string | null = null
 
     if (settingsRes.status === 'fulfilled' && settingsRes.value.ok) {
         try {
             const json = await settingsRes.value.json()
-            console.log('[getSiteData] settings json:', JSON.stringify(json?.data).slice(0, 200))
             const s = json?.data
             if (s) {
                 maintenanceMode = s.maintenanceMode ?? false
                 maintenanceMessage = s.maintenanceMessage ?? null
-                siteName = s.siteName ?? 'Acme Inc.'
+                siteName = s.siteName ?? 'HR System'
                 logoUrl = s.logoUrl ?? null
             }
-        } catch (e) { console.error('[getSiteData] settings parse error:', e) }
+        } catch {}
     }
 
-    console.log('[getSiteData] maintenanceMode:', maintenanceMode)
     return { themeCss, maintenanceMode, maintenanceMessage, siteName, logoUrl }
 }
 
@@ -413,14 +451,14 @@ export default async function LandingPage() {
     return (
         <div className="min-h-screen">
             {themeCss && <style dangerouslySetInnerHTML={{ __html: themeCss }} />}
-            <Navbar />
-            <Hero />
+            <Navbar siteName={siteName} />
+            <Hero siteName={siteName} />
             <Features />
             <HowItWorks />
             <Stats />
             <Testimonials />
             <CTA />
-            <Footer />
+            <Footer siteName={siteName} />
         </div>
     )
 }

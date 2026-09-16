@@ -5,20 +5,23 @@ import { eq } from 'drizzle-orm'
 import * as bcrypt from 'bcrypt'
 
 import * as schema from './schema'
-import { roles } from './schema/roles.schema'
-import { permissions } from './schema/permissions.schema'
-import { rolePermissions } from './schema/role-permissions.schema'
-import { users } from './schema/users.schema'
-import { userRoles } from './schema/user-roles.schema'
+import { roles } from './schema/rbac/roles.schema'
+import { permissions } from './schema/rbac/permissions.schema'
+import { rolePermissions } from './schema/rbac/role-permissions.schema'
+import { users } from './schema/auth/users.schema'
+import { userRoles } from './schema/rbac/user-roles.schema'
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 const db = drizzle(pool, { schema })
 
 const ROLES = [
-    { name: 'admin', description: 'Full system access' },
-    { name: 'company', description: 'Company account access' },
-    { name: 'jobseeker', description: 'Jobseeker account access' },
-    { name: 'user', description: 'Default user role' },
+    { name: 'admin', label: 'Admin', description: 'Full system access' },
+    { name: 'participant', label: 'Participant', description: 'Participant account access' },
+    { name: 'instructure', label: 'Instructor', description: 'Instructor account access' },
+    { name: 'project_owner', label: 'Project Owner', description: 'Project owner account access' },
+    { name: 'project_member', label: 'Project Member', description: 'Project member account access' },
+    { name: 'project_mentor', label: 'Project Mentor', description: 'Project mentor account access' },
+    { name: 'investor', label: 'Investor', description: 'Investor account access' },
 ]
 
 const PERMISSIONS = [
@@ -27,32 +30,19 @@ const PERMISSIONS = [
     { name: 'user:update', description: 'Update user data' },
     { name: 'user:delete', description: 'Delete users' },
     { name: 'role:manage', description: 'Manage roles and permissions' },
-    { name: 'job:read', description: 'Read job listings' },
-    { name: 'job:create', description: 'Create job listings' },
-    { name: 'job:update', description: 'Update job listings' },
-    { name: 'job:delete', description: 'Delete job listings' },
-    { name: 'application:read', description: 'Read job applications' },
-    { name: 'application:create', description: 'Submit job applications' },
-    { name: 'application:update', description: 'Update job applications' },
 ]
 
 const ROLE_PERMISSIONS: Record<string, string[]> = {
     admin: [
         'user:read', 'user:create', 'user:update', 'user:delete',
         'role:manage',
-        'job:read', 'job:create', 'job:update', 'job:delete',
-        'application:read', 'application:create', 'application:update',
     ],
-    company: [
-        'user:read',
-        'job:read', 'job:create', 'job:update', 'job:delete',
-        'application:read', 'application:update',
-    ],
-    jobseeker: [
-        'user:read',
-        'job:read',
-        'application:read', 'application:create',
-    ],
+    participant: ['user:read'],
+    instructure: ['user:read'],
+    project_owner: ['user:read'],
+    project_member: ['user:read'],
+    project_mentor: ['user:read'],
+    investor: ['user:read'],
 }
 
 async function seedRoles(): Promise<Map<string, string>> {
@@ -108,10 +98,13 @@ async function assignPermissions(roleMap: Map<string, string>, permMap: Map<stri
 }
 
 const USERS = [
-    { email: 'admin@example.com',    firstName: 'Alice',  lastName: 'Admin',    role: 'admin' },
-    { email: 'company@example.com',  firstName: 'Bob',    lastName: 'Company',  role: 'company' },
-    { email: 'jobseeker@example.com',firstName: 'Carol',  lastName: 'Seeker',   role: 'jobseeker' },
-    { email: 'user@example.com',     firstName: 'Dave',   lastName: 'User',     role: 'user' },
+    { email: 'admin@example.com',         firstName: 'Alice',  lastName: 'Admin',       role: 'admin' },
+    { email: 'participant@example.com',   firstName: 'Pat',    lastName: 'Participant', role: 'participant' },
+    { email: 'instructure@example.com',   firstName: 'Indy',   lastName: 'Instructor',  role: 'instructure' },
+    { email: 'projectowner@example.com',  firstName: 'Olivia', lastName: 'Owner',       role: 'project_owner' },
+    { email: 'projectmember@example.com', firstName: 'Mason',  lastName: 'Member',      role: 'project_member' },
+    { email: 'projectmentor@example.com', firstName: 'Mira',   lastName: 'Mentor',      role: 'project_mentor' },
+    { email: 'investor@example.com',      firstName: 'Ivy',    lastName: 'Investor',    role: 'investor' },
 ]
 
 async function seedUsers(roleMap: Map<string, string>) {

@@ -2,12 +2,12 @@
 
 import { useQuery } from '@tanstack/react-query'
 
-import { userService } from '@/features/user/services/user-service'
+import { accountService } from '@/features/admin/account/services/AccountService'
 
 const useAuth = () => {
     return useQuery({
         queryKey: ['user'],
-        queryFn: userService.getMe,
+        queryFn: accountService.getMe,
         staleTime: 5 * 60 * 1000,
         retry: 0,
     })

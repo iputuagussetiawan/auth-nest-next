@@ -4,7 +4,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
 import { DRIZZLE } from '../../database/drizzle.provider'
 import * as schema from '../../database/schema'
-import { siteSettings } from '../../database/schema/site-settings.schema'
+import { siteSettings } from '../../database/schema/site-settings/site-settings.schema'
 import { UpdateSiteSettingsDto } from './dto/update-site-settings.dto'
 
 const DEFAULTS = {

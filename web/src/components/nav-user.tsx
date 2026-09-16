@@ -3,7 +3,7 @@
 import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
-import type { IUserProfile } from '@/features/user/types/user-type'
+import type { IUserProfile } from '@/features/admin/account/types/AccountTypes'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -35,7 +35,7 @@ export function NavUser({ user }: { user: IUserProfile | null }) {
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="lg"
-                            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                            className="rounded-2xl border border-sidebar-border/50 bg-sidebar-accent/40 px-3 py-2 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:hidden"
                         >
                             <UserAvatar
                                 name={`${user.firstName} ${user.lastName}`}
