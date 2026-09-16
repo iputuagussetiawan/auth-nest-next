@@ -26,7 +26,9 @@ import { ResetPasswordDto } from './dto/reset-password.dto'
 const ACCESS_MAX_AGE = 24 * 60 * 60 * 1000       // 1 day
 const REFRESH_MAX_AGE = 30 * 24 * 60 * 60 * 1000  // 30 days
 const IS_PROD = process.env.NODE_ENV === 'production'
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:3000'
+const FRONTEND_ORIGIN = (process.env.FRONTEND_ORIGIN || 'http://localhost:3000')
+    .split(',')[0]
+    .trim()
 
 function setAuthCookies(res: Response, accessToken: string, refreshToken: string) {
     res.cookie('accessToken', accessToken, { httpOnly: true, secure: IS_PROD, sameSite: 'strict', maxAge: ACCESS_MAX_AGE })
@@ -89,6 +91,7 @@ export class AuthController {
                 email: user.email,
                 profilePicture: user.profilePicture,
                 isActive: user.isActive,
+                isOnboardingCompleted: user.isOnboardingCompleted,
             },
             access_token: accessToken,
         })
@@ -166,7 +169,8 @@ export class AuthController {
             const refreshToken = this.authService.signRefreshToken({ sessionId: session.id })
 
             setAuthCookies(res, accessToken, refreshToken)
-            return res.redirect(`${FRONTEND_ORIGIN}/dashboard`)
+            const destination = user.isOnboardingCompleted ? '/dashboard' : '/onboarding'
+            return res.redirect(`${FRONTEND_ORIGIN}${destination}`)
         } catch {
             return res.redirect(`${FRONTEND_ORIGIN}/signin?status=error`)
         }

@@ -40,6 +40,7 @@ export class UserService {
                 lastLogin: users.lastLogin,
                 createdAt: users.createdAt,
                 updatedAt: users.updatedAt,
+                isOnboardingCompleted: users.isOnboardingCompleted,
             })
             .from(users)
             .where(eq(users.id, userId))
@@ -58,6 +59,16 @@ export class UserService {
             permissions,
             sessions,
         }
+    }
+
+    async completeOnboarding(userId: string) {
+        const [updated] = await this.db
+            .update(users)
+            .set({ isOnboardingCompleted: true, updatedAt: new Date() })
+            .where(eq(users.id, userId))
+            .returning({ id: users.id, isOnboardingCompleted: users.isOnboardingCompleted })
+        if (!updated) throw new NotFoundException('User not found')
+        return updated
     }
 
     async updateProfile(userId: string, dto: UpdateProfileDto) {

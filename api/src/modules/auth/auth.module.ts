@@ -8,12 +8,14 @@ import { LocalStrategy } from './strategies/local.strategy'
 import { JwtStrategy } from './strategies/jwt.strategy'
 import { GoogleStrategy } from './strategies/google.strategy'
 import { RoleModule } from '../rbac/role/role.module'
+import { NotificationModule } from '../notification/notification.module'
 
 @Module({
     imports: [
         PassportModule,
         JwtModule.register({}),
         RoleModule,
+        NotificationModule,
     ],
     providers: [AuthService, LocalStrategy, JwtStrategy, GoogleStrategy],
     controllers: [AuthController],

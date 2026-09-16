@@ -25,6 +25,23 @@ export type SigninInputType = z.infer<typeof signinValidation>
 export type ForgotPasswordInputType = z.infer<typeof forgotPasswordValidation>
 export type ResetPasswordInputType = z.infer<typeof resetPasswordValidation>
 
+export interface ILoginResponse {
+    status: string
+    message: string
+    data: {
+        user: {
+            id: string
+            firstName: string | null
+            lastName: string | null
+            email: string
+            profilePicture: string | null
+            isActive: boolean
+            isOnboardingCompleted: boolean
+        }
+        access_token: string
+    }
+}
+
 export interface IApiResponse<T> {
     status: string
     message: string

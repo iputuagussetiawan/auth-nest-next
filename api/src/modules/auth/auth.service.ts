@@ -20,6 +20,7 @@ import {
 } from '../../common/exceptions/app-error'
 import type { RegisterDto } from './dto/register.dto'
 import type { ResetPasswordDto } from './dto/reset-password.dto'
+import { NotificationService } from '../notification/notification.service'
 
 const COOKIE_OPTS = (maxAge: number) => ({
     httpOnly: true,
@@ -35,6 +36,7 @@ export class AuthService {
         private jwtService: JwtService,
         private mailService: MailService,
         private roleService: RoleService,
+        private notificationService: NotificationService,
     ) {}
 
     signAccessToken(payload: { userId: string; sessionId: string }) {
@@ -139,6 +141,12 @@ export class AuthService {
         const userRole = await this.roleService.findByName('user')
         if (userRole) await this.roleService.assignRoleToUser(user.id, userRole.id)
 
+        try {
+            await this.notificationService.notifyNewUser({ id: user.id, email: user.email, provider: user.provider })
+        } catch (error) {
+            console.error('Failed to create new-user notification:', error)
+        }
+
         return { userId: user.id }
     }
 
@@ -198,6 +206,12 @@ export class AuthService {
 
             const userRole = await this.roleService.findByName('user')
             if (userRole) await this.roleService.assignRoleToUser(user.id, userRole.id)
+
+            try {
+                await this.notificationService.notifyNewUser({ id: user.id, email: user.email, provider: user.provider })
+            } catch (error) {
+                console.error('Failed to create new-user notification:', error)
+            }
         } else {
             await this.db
                 .update(users)

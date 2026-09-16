@@ -6,6 +6,7 @@ import type {
     ForgotPasswordInputType,
     IVerifyInputType,
     ResetPasswordInputType,
+    ILoginResponse,
     SigninInputType,
     SignupInputType,
 } from '../types/AuthType'
@@ -24,7 +25,7 @@ export const authService = {
             cache: 'no-store',
         }),
     login: (data: SigninInputType) =>
-        api.API<any>('/api/auth/login', {
+        api.API<ILoginResponse>('/api/auth/login', {
             method: 'POST',
             body: JSON.stringify(data),
             cache: 'no-store',
@@ -39,6 +40,11 @@ export const authService = {
         api.API<any>('/api/auth/password/reset', {
             method: 'POST',
             body: JSON.stringify(data),
+            cache: 'no-store',
+        }),
+    completeOnboarding: () =>
+        api.API<{ data: { id: string; isOnboardingCompleted: boolean } }>('/api/user/onboarding', {
+            method: 'PATCH',
             cache: 'no-store',
         }),
     logout: () =>
