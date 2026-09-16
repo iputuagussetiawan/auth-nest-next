@@ -10,7 +10,7 @@ import { GoogleSignInButton } from '@/components/google-sign-in'
 import { FieldGroup, FieldLabel, FieldSeparator } from '@/components/ui/field'
 import { UiButton } from '@/components/ui-custom/UiButton'
 import { UiFormInput, UiFormPassword } from '@/components/ui-custom/UiFormInput'
-import { DASHBOARD_URL, SIGNUP_URL } from '@/lib/constants'
+import { DASHBOARD_URL, ONBOARDING_URL, SIGNUP_URL } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
 import { authService } from '../services/AuthService'
@@ -33,8 +33,11 @@ export function SignInForm({ className, ...props }: React.ComponentProps<'form'>
 
     const { mutate, isPending } = useMutation({
         mutationFn: (data: SigninInputType) => authService.login(data),
-        onSuccess: () => {
-            router.push(DASHBOARD_URL)
+        onSuccess: (response) => {
+            const destination = response?.data?.user?.isOnboardingCompleted
+                ? DASHBOARD_URL
+                : ONBOARDING_URL
+            router.push(destination)
             router.refresh()
         },
         onError: (error: any) => {
@@ -70,6 +73,7 @@ export function SignInForm({ className, ...props }: React.ComponentProps<'form'>
                     id="email"
                     type="email"
                     placeholder="m@example.com"
+                    autoComplete="username"
                     isSubmitting={isPending}
                     error={errors.email}
                     {...register('email')}
@@ -89,6 +93,7 @@ export function SignInForm({ className, ...props }: React.ComponentProps<'form'>
                     <UiFormPassword
                         id="password"
                         placeholder="your password"
+                        autoComplete="current-password"
                         isSubmitting={isPending}
                         error={errors.password}
                         {...register('password')}

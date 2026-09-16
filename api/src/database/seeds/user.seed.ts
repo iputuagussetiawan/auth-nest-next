@@ -41,6 +41,7 @@ export async function runUserSeed(db: NodePgDatabase<typeof schema>, roleMap: Ma
             provider: 'email',
             providerId: u.email,
             isEmailVerified: true,
+            isOnboardingCompleted: true,
         }).returning()
 
         const roleId = roleMap.get(u.role)

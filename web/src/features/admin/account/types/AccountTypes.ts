@@ -16,6 +16,7 @@ export interface IUserProfile {
     profilePicture: string | null
     isEmailVerified: boolean
     isActive: boolean
+    isOnboardingCompleted: boolean
     provider: 'email' | 'google' | 'github' | string
     lastLogin: string | null
     createdAt: string

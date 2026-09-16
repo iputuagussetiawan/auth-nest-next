@@ -92,6 +92,7 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
                     id="email"
                     type="email"
                     placeholder="name@example.com"
+                    autoComplete="email"
                     isSubmitting={isPending}
                     error={errors.email}
                     {...register('email')}

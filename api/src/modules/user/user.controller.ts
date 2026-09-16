@@ -70,6 +70,15 @@ export class UserController {
         return successResponse('Password updated successfully')
     }
 
+    @Patch('onboarding')
+    @ApiOperation({ summary: 'Mark onboarding as completed' })
+    @ApiResponse({ status: 200, description: 'Onboarding completed' })
+    async completeOnboarding(@Req() req: Request) {
+        const user = req.user as any
+        await this.userService.completeOnboarding(user.userId)
+        return successResponse('Onboarding completed')
+    }
+
     // ── Admin endpoints ──────────────────────────────────────────────
 
     @Post('admin/users')

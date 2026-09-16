@@ -133,6 +133,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
                     id="email"
                     type="email"
                     placeholder="m@example.com"
+                    autoComplete="email"
                     isSubmitting={isPending}
                     error={errors.email}
                     {...register('email')}
@@ -142,6 +143,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
                     label="Password"
                     id="password"
                     placeholder="••••••••"
+                    autoComplete="new-password"
                     isSubmitting={isPending}
                     error={errors.password}
                     {...register('password')}
