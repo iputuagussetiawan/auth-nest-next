@@ -10,13 +10,7 @@
         "lint:fix": "next lint",
         "check-types": "tsc --noEmit",
         "format:check": "prettier --check \"src/**/*.{ts,tsx,md,json}\"",
-        "format:write": "prettier --write \"src/**/*.{ts,tsx,md,json}\"",
-        "prepare": "husky"
-    },
-    "lint-staged": {
-        "**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
-            "pnpm run format:write"
-        ]
+        "format:write": "prettier --write \"src/**/*.{ts,tsx,md,json}\""
     },
     "dependencies": {
         "@base-ui/react": "^1.2.0",
@@ -74,8 +68,6 @@
         "@types/react-dom": "^19",
         "eslint": "^9",
         "eslint-config-next": "16.1.6",
-        "husky": "^9.1.7",
-        "lint-staged": "^16.3.3",
         "prettier": "3.8.1",
         "prettier-plugin-tailwindcss": "^0.7.2",
         "shadcn": "^4.0.5",

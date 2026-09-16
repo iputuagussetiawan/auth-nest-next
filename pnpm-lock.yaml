@@ -8,6 +8,12 @@ importers:
 
   .:
     devDependencies:
+      husky:
+        specifier: ^9.1.7
+        version: 9.1.7
+      lint-staged:
+        specifier: ^16.3.3
+        version: 16.4.0
       prettier:
         specifier: 3.8.1
         version: 3.8.1
@@ -313,12 +319,6 @@ importers:
       eslint-config-next:
         specifier: 16.1.6
         version: 16.1.6(@typescript-eslint/parser@8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
-      husky:
-        specifier: ^9.1.7
-        version: 9.1.7
-      lint-staged:
-        specifier: ^16.3.3
-        version: 16.4.0
       prettier:
         specifier: 3.8.1
         version: 3.8.1
