@@ -1,10 +1,9 @@
 'use client'
 
-import { Bell } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 
 import { ThemeToggle } from '@/components/theme-toggle'
-import { Button } from '@/components/ui/button'
+import { NotificationBell } from '@/features/admin/notifications/components/NotificationBell'
 import { useAuthContext } from '@/providers/auth-provider'
 
 import {
@@ -37,14 +36,7 @@ export default function DashboardHeader() {
                 </div>
 
                 <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="border-border/60 bg-card h-9 w-9 rounded-full shadow-none sm:h-10 sm:w-10"
-                    >
-                        <Bell className="h-4 w-4" />
-                        <span className="sr-only">Notifications</span>
-                    </Button>
+                    <NotificationBell />
                     <ThemeToggle />
                     <DashboardSidebarMobileToggle />
                 </div>
