@@ -14,6 +14,7 @@ import { SessionModule } from './modules/session/session.module'
 import { ThemeModule } from './modules/theme/theme.module'
 import { AdminStatsModule } from './modules/admin-stats/admin-stats.module'
 import { SiteSettingsModule } from './modules/site-settings/site-settings.module'
+import { NotificationModule } from './modules/notification/notification.module'
 
 @Module({
     imports: [
@@ -28,6 +29,7 @@ import { SiteSettingsModule } from './modules/site-settings/site-settings.module
         ThemeModule,
         AdminStatsModule,
         SiteSettingsModule,
+        NotificationModule,
     ],
     controllers: [AppController],
     providers: [
