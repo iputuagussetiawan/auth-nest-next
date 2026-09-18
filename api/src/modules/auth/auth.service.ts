@@ -297,6 +297,8 @@ export class AuthService {
             .set({ password: hashedPassword, updatedAt: new Date() })
             .where(eq(users.id, record.userId))
 
+        // Password change invalidates every existing session for that user
+        await this.db.delete(sessions).where(eq(sessions.userId, record.userId))
         await this.db.delete(verificationCodes).where(eq(verificationCodes.id, record.id))
 
         return { message: 'Password reset successfully' }

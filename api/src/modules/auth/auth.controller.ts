@@ -37,34 +37,22 @@ const FRONTEND_ORIGIN = (process.env.FRONTEND_ORIGIN || 'http://localhost:3000')
     .split(',')[0]
     .trim()
 
+const authCookieOptions = (maxAge: number) => ({
+    httpOnly: true,
+    secure: IS_PROD,
+    sameSite: 'strict' as const,
+    path: '/',
+    maxAge,
+})
+
 function setAuthCookies(res: Response, accessToken: string, refreshToken: string) {
-    res.cookie('accessToken', accessToken, {
-        httpOnly: true,
-        secure: IS_PROD,
-        sameSite: 'strict',
-        maxAge: ACCESS_MAX_AGE,
-    })
-    res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: IS_PROD,
-        sameSite: 'strict',
-        maxAge: REFRESH_MAX_AGE,
-    })
+    res.cookie('accessToken', accessToken, authCookieOptions(ACCESS_MAX_AGE))
+    res.cookie('refreshToken', refreshToken, authCookieOptions(REFRESH_MAX_AGE))
 }
 
 function clearAuthCookies(res: Response) {
-    res.clearCookie('accessToken', {
-        httpOnly: true,
-        secure: IS_PROD,
-        sameSite: 'strict',
-        path: '/',
-    })
-    res.clearCookie('refreshToken', {
-        httpOnly: true,
-        secure: IS_PROD,
-        sameSite: 'strict',
-        path: '/',
-    })
+    res.clearCookie('accessToken', authCookieOptions(ACCESS_MAX_AGE))
+    res.clearCookie('refreshToken', authCookieOptions(REFRESH_MAX_AGE))
 }
 
 @ApiTags('auth')
@@ -73,6 +61,7 @@ export class AuthController {
     constructor(private authService: AuthService) {}
 
     @Post('register')
+    @Throttle({ default: { ttl: 60000, limit: 5 } })
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Register new user' })
     @ApiResponse({ status: 201, description: 'User created successfully' })
@@ -133,6 +122,7 @@ export class AuthController {
     }
 
     @Post('refresh')
+    @Throttle({ default: { ttl: 60000, limit: 20 } })
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Refresh access token using refresh cookie' })
     @ApiCookieAuth('accessToken')
@@ -145,18 +135,7 @@ export class AuthController {
             return
         }
         const { access_token, refresh_token } = await this.authService.refreshToken(token)
-        res.cookie('accessToken', access_token, {
-            httpOnly: true,
-            secure: IS_PROD,
-            sameSite: 'strict',
-            maxAge: ACCESS_MAX_AGE,
-        })
-        res.cookie('refreshToken', refresh_token, {
-            httpOnly: true,
-            secure: IS_PROD,
-            sameSite: 'strict',
-            maxAge: REFRESH_MAX_AGE,
-        })
+        setAuthCookies(res, access_token, refresh_token)
         return successResponse('Token refreshed successfully', { access_token })
     }
 
@@ -191,22 +170,19 @@ export class AuthController {
     @ApiResponse({ status: 400, description: 'Invalid or expired token' })
     async resetPassword(@Body() dto: ResetPasswordDto, @Res({ passthrough: true }) res: Response) {
         await this.authService.resetPassword(dto)
-        res.clearCookie('accessToken', {
-            httpOnly: true,
-            secure: IS_PROD,
-            sameSite: 'strict',
-            path: '/',
-        })
+        clearAuthCookies(res)
         return successResponse('Password reset successfully')
     }
 
     @Get('google')
+    @Throttle({ default: { ttl: 60000, limit: 10 } })
     @UseGuards(AuthGuard('google'))
     @ApiOperation({ summary: 'Initiate Google OAuth login (redirects to Google)' })
     @ApiResponse({ status: 302, description: 'Redirect to Google consent screen' })
     googleLogin() {}
 
     @Get('google/callback')
+    @Throttle({ default: { ttl: 60000, limit: 10 } })
     @UseGuards(AuthGuard('google'))
     @ApiOperation({ summary: 'Google OAuth callback (handled by Google)' })
     @ApiResponse({ status: 302, description: 'Redirect to frontend after OAuth' })

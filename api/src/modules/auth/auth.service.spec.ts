@@ -378,6 +378,8 @@ describe('AuthService', () => {
             expect(update.set).toHaveBeenCalledWith(
                 expect.objectContaining({ password: 'new-hash' }),
             )
+            // Password reset must revoke every existing session for that user
+            expect(db.delete).toHaveBeenCalledTimes(2)
         })
 
         it('rejects an invalid or expired code', async () => {
