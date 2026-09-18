@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser'
 import helmet from 'helmet'
 
 import { AppModule } from './app.module'
+import { HttpExceptionFilter } from './common/filters/http-exception.filter'
 
 async function bootstrap() {
     if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
@@ -29,6 +30,8 @@ async function bootstrap() {
             transform: true,
         }),
     )
+
+    app.useGlobalFilters(new HttpExceptionFilter())
 
     const origin = process.env.FRONTEND_ORIGIN
     if (!origin && process.env.NODE_ENV === 'production') {

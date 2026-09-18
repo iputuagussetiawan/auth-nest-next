@@ -106,8 +106,8 @@ Updated: 2026-09-16
 - [x] Theme module
 - [x] Site settings module
 - [x] Admin statistics module
-- [ ] Add comprehensive API integration tests
-- [ ] Review API error responses and logging
+- [x] Add comprehensive API integration tests
+- [x] Review API error responses and logging
 
 ### UI system
 
