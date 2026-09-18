@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { Clock, GalleryVerticalEnd, Wrench } from 'lucide-react'
 
 interface MaintenancePageProps {
@@ -28,9 +29,12 @@ export function MaintenancePage({
                 {/* Logo / brand */}
                 <div className="mb-10 flex flex-col items-center gap-3">
                     {logoUrl ? (
-                        <img
+                        <Image
                             src={logoUrl}
                             alt={siteName}
+                            width={160}
+                            height={48}
+                            unoptimized
                             className="max-h-12 max-w-[160px] object-contain"
                         />
                     ) : (

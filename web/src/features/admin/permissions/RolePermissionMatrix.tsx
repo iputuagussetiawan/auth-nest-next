@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { ChevronDown, ChevronRight, Layers, Loader2, Pencil, Search, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -341,9 +342,12 @@ export function RolePermissionMatrix({ onEdit, onDelete }: RolePermissionMatrixP
                                     <div className="flex flex-col items-center gap-1">
                                         <div className="bg-primary/10 flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border">
                                             {role.icon?.startsWith('http') ? (
-                                                <img
+                                                <Image
                                                     src={role.icon}
                                                     alt={role.name}
+                                                    width={32}
+                                                    height={32}
+                                                    unoptimized
                                                     className="h-full w-full object-cover"
                                                 />
                                             ) : (

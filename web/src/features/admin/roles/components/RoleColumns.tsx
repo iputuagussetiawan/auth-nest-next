@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { type ColumnDef } from '@tanstack/react-table'
 import { MoreHorizontal, Pencil, Trash2, Users } from 'lucide-react'
 
@@ -30,9 +31,12 @@ export function getRoleColumns(actions: Actions): ColumnDef<IRoleWithPermissions
                     <div className="flex items-center gap-2.5">
                         <div className="bg-muted flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border">
                             {isUrl ? (
-                                <img
+                                <Image
                                     src={icon!}
                                     alt={name}
+                                    width={36}
+                                    height={36}
+                                    unoptimized
                                     className="h-full w-full object-cover"
                                 />
                             ) : (

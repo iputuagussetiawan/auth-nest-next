@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import Image from 'next/image'
 import { Globe, Loader2, Trash2, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -121,10 +122,12 @@ export function ImageUploader({
             {/* Current image preview (always visible when set) */}
             {value && (
                 <div className="bg-muted/20 flex items-center gap-3 rounded-lg border px-4 py-3">
-                    {/* ponytail: remote URL trusted from admin input; swap to next/image when assets get user-facing */}
-                    <img
+                    <Image
                         src={value}
                         alt={label}
+                        width={128}
+                        height={128}
+                        unoptimized
                         className={cn('shrink-0 rounded-md object-contain', previewClassName)}
                         onError={(e) => {
                             ;(e.target as HTMLImageElement).style.display = 'none'

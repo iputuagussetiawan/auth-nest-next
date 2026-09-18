@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import Image from 'next/image'
 import { ChevronsUpDown, Plus } from 'lucide-react'
 
 import {
@@ -80,9 +81,12 @@ export function TeamSwitcher({
                         >
                             <div className="flex aspect-square size-8 items-center justify-center overflow-hidden rounded-lg">
                                 {activeItem.imageUrl ? (
-                                    <img
+                                    <Image
                                         src={activeItem.imageUrl}
                                         alt={activeItem.name}
+                                        width={32}
+                                        height={32}
+                                        unoptimized
                                         className="size-full object-contain"
                                         onError={(e) => {
                                             ;(e.target as HTMLImageElement).style.display = 'none'
@@ -134,9 +138,12 @@ export function TeamSwitcher({
                                         }`}
                                     >
                                         {item.imageUrl ? (
-                                            <img
+                                            <Image
                                                 src={item.imageUrl}
                                                 alt={item.name}
+                                                width={24}
+                                                height={24}
+                                                unoptimized
                                                 className="size-full object-contain"
                                             />
                                         ) : ItemIcon ? (
