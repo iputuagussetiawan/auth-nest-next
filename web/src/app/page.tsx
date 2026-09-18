@@ -1,9 +1,8 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import {
     ArrowRight,
-    BarChart3,
     Briefcase,
-    Building2,
     CalendarClock,
     CheckCircle2,
     FileUser,
@@ -12,7 +11,6 @@ import {
     Sparkles,
     Star,
     TrendingUp,
-    UserPlus,
     Users,
     Wallet,
     Zap,
@@ -28,14 +26,44 @@ import { MaintenancePage } from './maintenance-page'
 
 export const dynamic = 'force-dynamic'
 
-function Navbar({ siteName }: { siteName: string }) {
+function SiteLogo({
+    logoUrl,
+    siteName,
+    size,
+}: {
+    logoUrl: string | null
+    siteName: string
+    size: 'lg' | 'sm'
+}) {
+    if (logoUrl) {
+        return (
+            <Image
+                src={logoUrl}
+                alt={siteName}
+                width={size === 'lg' ? 140 : 110}
+                height={size === 'lg' ? 32 : 24}
+                sizes={size === 'lg' ? '140px' : '110px'}
+                className={size === 'lg' ? 'h-8 w-auto max-w-[140px]' : 'h-6 w-auto max-w-[110px]'}
+            />
+        )
+    }
+    return (
+        <div
+            className={`bg-primary text-primary-foreground flex shrink-0 items-center justify-center rounded-md ${
+                size === 'lg' ? 'size-7' : 'size-6'
+            }`}
+        >
+            <GalleryVerticalEnd className={size === 'lg' ? 'size-4' : 'size-3.5'} />
+        </div>
+    )
+}
+
+function Navbar({ siteName, logoUrl }: { siteName: string; logoUrl: string | null }) {
     return (
         <header className="border-border/50 bg-background/80 fixed top-0 z-50 w-full border-b backdrop-blur-md">
             <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
                 <Link href="/" className="flex items-center gap-2 font-semibold">
-                    <div className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-lg">
-                        <GalleryVerticalEnd className="size-4" />
-                    </div>
+                    <SiteLogo logoUrl={logoUrl} siteName={siteName} size="lg" />
                     <span className="text-lg">{siteName}</span>
                 </Link>
                 <nav className="hidden items-center gap-6 text-sm md:flex">
@@ -421,14 +449,12 @@ function CTA() {
     )
 }
 
-function Footer({ siteName }: { siteName: string }) {
+function Footer({ siteName, logoUrl }: { siteName: string; logoUrl: string | null }) {
     return (
         <footer className="border-border border-t py-10">
             <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
                 <Link href="/" className="flex items-center gap-2 font-semibold">
-                    <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-                        <GalleryVerticalEnd className="size-3.5" />
-                    </div>
+                    <SiteLogo logoUrl={logoUrl} siteName={siteName} size="sm" />
                     {siteName}
                 </Link>
                 <p className="text-muted-foreground text-sm">
@@ -526,14 +552,14 @@ export default async function LandingPage() {
     return (
         <div className="min-h-screen">
             {themeCss && <style dangerouslySetInnerHTML={{ __html: themeCss }} />}
-            <Navbar siteName={siteName} />
+            <Navbar siteName={siteName} logoUrl={logoUrl} />
             <Hero siteName={siteName} />
             <Features />
             <HowItWorks />
             <Stats />
             <Testimonials />
             <CTA />
-            <Footer siteName={siteName} />
+            <Footer siteName={siteName} logoUrl={logoUrl} />
         </div>
     )
 }
