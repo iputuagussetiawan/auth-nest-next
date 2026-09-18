@@ -57,8 +57,8 @@ export function TeamSwitcher({
                 if (preferred) return preferred
             }
 
-            if (current && items.some((item) => item.key === current.key)) return current
-            return items[0]
+            const currentByKey = current && items.find((item) => item.key === current.key)
+            return currentByKey ?? items[0]
         })
     }, [items, initialActiveKey])
 
