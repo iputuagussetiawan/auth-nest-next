@@ -61,8 +61,8 @@ export function UserFormDialog({
         reset,
         formState: { errors },
     } = useForm<FormValues>({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        resolver: zodResolver(isEdit ? editSchema : createSchema) as any,
+        // editSchema's fields are a subset of FormValues; resolver type narrows accordingly
+        resolver: zodResolver(isEdit ? editSchema : createSchema) as never,
         defaultValues: {
             email: '',
             password: '',
