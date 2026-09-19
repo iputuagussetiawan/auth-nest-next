@@ -16,7 +16,7 @@
         "db:push": "turbo run db:push --filter=api",
         "db:seed": "turbo run db:seed --filter=api",
         "db:studio": "turbo run db:studio --filter=api",
-        "prepare": "husky"
+        "prepare": "husky || true"
     },
     "devDependencies": {
         "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
