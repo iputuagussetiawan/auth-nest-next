@@ -42,4 +42,5 @@ ENV NODE_ENV=production
 
 EXPOSE 4001
 
-CMD ["node", "api/dist/main.js"]
+CMD ["node", "api/dist/src/main.js"]
+
