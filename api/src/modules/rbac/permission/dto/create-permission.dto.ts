@@ -5,7 +5,7 @@ export class CreatePermissionDto {
     @MinLength(2)
     @MaxLength(100)
     @Matches(/^[a-z0-9_:]+$/, { message: 'name must be lowercase alphanumeric with : or _' })
-    name: string
+    name!: string
 
     @IsOptional()
     @IsString()

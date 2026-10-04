@@ -1,3 +1,5 @@
+import type { ApiResponse, Paginated } from '@nest-auth/shared'
+
 export interface IAdminUser {
     id: string
     email: string
@@ -12,13 +14,4 @@ export interface IAdminUser {
     role: string | null
 }
 
-export interface IAdminUsersResponse {
-    status: string
-    message: string
-    data: {
-        data: IAdminUser[]
-        total: number
-        page: number
-        limit: number
-    }
-}
+export type IAdminUsersResponse = ApiResponse<Paginated<IAdminUser>>

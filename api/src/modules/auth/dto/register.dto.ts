@@ -1,21 +1,27 @@
+import {
+    NAME_MAX_LENGTH,
+    NAME_MIN_LENGTH,
+    PASSWORD_MAX_LENGTH,
+    PASSWORD_MIN_LENGTH,
+} from '@nest-auth/shared'
 import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator'
 
 export class RegisterDto {
     @IsString()
-    @MinLength(1)
-    @MaxLength(50)
-    firstName: string
+    @MinLength(NAME_MIN_LENGTH)
+    @MaxLength(NAME_MAX_LENGTH)
+    firstName!: string
 
     @IsString()
-    @MinLength(1)
-    @MaxLength(50)
-    lastName: string
+    @MinLength(NAME_MIN_LENGTH)
+    @MaxLength(NAME_MAX_LENGTH)
+    lastName!: string
 
     @IsEmail()
-    email: string
+    email!: string
 
     @IsString()
-    @MinLength(8)
-    @MaxLength(72)
-    password: string
+    @MinLength(PASSWORD_MIN_LENGTH)
+    @MaxLength(PASSWORD_MAX_LENGTH)
+    password!: string
 }

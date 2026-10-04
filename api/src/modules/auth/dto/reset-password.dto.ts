@@ -1,13 +1,18 @@
+import {
+    PASSWORD_MAX_LENGTH,
+    PASSWORD_MIN_LENGTH,
+    VERIFICATION_CODE_MAX_LENGTH,
+} from '@nest-auth/shared'
 import { IsString, MaxLength, MinLength } from 'class-validator'
 
 export class ResetPasswordDto {
     @IsString()
-    @MinLength(8)
-    @MaxLength(72)
-    password: string
+    @MinLength(PASSWORD_MIN_LENGTH)
+    @MaxLength(PASSWORD_MAX_LENGTH)
+    password!: string
 
     @IsString()
     @MinLength(1)
-    @MaxLength(64)
-    verificationCode: string
+    @MaxLength(VERIFICATION_CODE_MAX_LENGTH)
+    verificationCode!: string
 }

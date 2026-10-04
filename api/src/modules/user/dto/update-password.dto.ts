@@ -1,14 +1,17 @@
-import { IsString, MinLength } from 'class-validator'
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@nest-auth/shared'
+import { IsString, MaxLength, MinLength } from 'class-validator'
 
 export class UpdatePasswordDto {
     @IsString()
-    currentPassword: string
+    currentPassword!: string
 
     @IsString()
-    @MinLength(8)
-    newPassword: string
+    @MinLength(PASSWORD_MIN_LENGTH)
+    @MaxLength(PASSWORD_MAX_LENGTH)
+    newPassword!: string
 
     @IsString()
-    @MinLength(8)
-    confirmPassword: string
+    @MinLength(PASSWORD_MIN_LENGTH)
+    @MaxLength(PASSWORD_MAX_LENGTH)
+    confirmPassword!: string
 }

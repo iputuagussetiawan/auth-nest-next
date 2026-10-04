@@ -1,6 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@nest-auth/shared'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
@@ -16,7 +17,10 @@ import { accountService } from '../../services/AccountService'
 const schema = z
     .object({
         currentPassword: z.string().min(1, 'Required'),
-        newPassword: z.string().min(8, 'Min 8 characters'),
+        newPassword: z
+            .string()
+            .min(PASSWORD_MIN_LENGTH, `Min ${PASSWORD_MIN_LENGTH} characters`)
+            .max(PASSWORD_MAX_LENGTH, `Max ${PASSWORD_MAX_LENGTH} characters`),
         confirmPassword: z.string().min(1, 'Required'),
     })
     .refine((d) => d.newPassword === d.confirmPassword, {

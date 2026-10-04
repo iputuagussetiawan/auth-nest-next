@@ -34,7 +34,7 @@ const ALLOWED_MIME = [
 ]
 
 class DeleteAssetDto {
-    @IsString() url: string
+    @IsString() url!: string
 }
 
 @ApiTags('site-settings')

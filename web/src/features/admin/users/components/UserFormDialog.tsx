@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@nest-auth/shared'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -28,7 +29,10 @@ const editSchema = z.object({
 
 const createSchema = editSchema.extend({
     email: z.email('Valid email required'),
-    password: z.string().min(8, 'Min 8 characters'),
+    password: z
+        .string()
+        .min(PASSWORD_MIN_LENGTH, `Min ${PASSWORD_MIN_LENGTH} characters`)
+        .max(PASSWORD_MAX_LENGTH, `Max ${PASSWORD_MAX_LENGTH} characters`),
 })
 
 type EditValues = z.infer<typeof editSchema>
