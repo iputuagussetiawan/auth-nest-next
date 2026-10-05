@@ -1,4 +1,5 @@
 import type { IThemeConfig } from '@/features/admin/themes/types/ThemeTypes'
+import { isSafeThemeConfig } from '@/lib/theme-utils'
 
 const API_BASE_URL = process.env.BACKEND_URL || 'http://localhost:8000/api'
 
@@ -63,7 +64,7 @@ function cssBlock(selector: string, vars: IThemeConfig['light'], radius: string)
 }
 
 export function getActiveThemeStyle(config: IThemeConfig | null) {
-    if (!config?.light || !config.dark) return ''
+    if (!config?.light || !config.dark || !isSafeThemeConfig(config)) return ''
     return (
         cssBlock(':root', config.light, config.radius) +
         cssBlock('.dark', config.dark, config.radius)

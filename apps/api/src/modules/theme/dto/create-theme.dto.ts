@@ -49,8 +49,9 @@ export class ThemeVarsDto {
 export class ThemeConfigDto {
     @IsObject() @ValidateNested() @Type(() => ThemeVarsDto) light!: ThemeVarsDto
     @IsObject() @ValidateNested() @Type(() => ThemeVarsDto) dark!: ThemeVarsDto
-    @IsString() radius!: string
-    @IsString() @MaxLength(100) fontFamily!: string
+    // Both values are written into a <style> tag on every page, so keep them to safe characters
+    @IsString() @Matches(/^\d{1,2}(\.\d{1,4})?$/) radius!: string
+    @IsString() @Matches(/^[A-Za-z0-9 -]+$/) @MaxLength(100) fontFamily!: string
     @IsIn(['centered', 'fullwidth']) heroVariant!: 'centered' | 'fullwidth'
     @IsIn(['gradient', 'solid', 'mesh']) heroBackground!: 'gradient' | 'solid' | 'mesh'
 }

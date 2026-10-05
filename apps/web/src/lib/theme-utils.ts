@@ -39,7 +39,30 @@ interface ThemeConfig {
     fontFamily?: string
 }
 
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/
+const RADIUS = /^\d{1,2}(\.\d{1,4})?$/
+const FONT_FAMILY = /^[A-Za-z0-9 -]{1,100}$/
+
+/**
+ * Theme values end up inside a raw <style> tag, so refuse anything that is not a plain
+ * hex color, number or font name. The API validates the same rules; this guards old rows.
+ */
+export function isSafeThemeConfig(config: {
+    light: object
+    dark: object
+    radius?: string
+    fontFamily?: string
+}): boolean {
+    const colorsOk = [config.light, config.dark].every((vars) =>
+        Object.values(vars).every((v) => typeof v === 'string' && HEX_COLOR.test(v)),
+    )
+    const radiusOk = config.radius == null || RADIUS.test(config.radius)
+    const fontOk = !config.fontFamily || FONT_FAMILY.test(config.fontFamily)
+    return colorsOk && radiusOk && fontOk
+}
+
 export function buildThemeCss(config: ThemeConfig): string {
+    if (!isSafeThemeConfig(config)) return ''
     const l = config.light
     const d = config.dark
     const radius = config.radius ? `${config.radius}rem` : undefined
