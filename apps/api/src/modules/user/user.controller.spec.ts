@@ -79,19 +79,24 @@ describe('UserController', () => {
             message: 'Users fetched',
             data: { data: [], total: 0, page: 1, limit: 20 },
         })
-        await expect(controller.adminUpdateUser('user-id', {} as never)).resolves.toEqual({
+        await expect(
+            controller.adminUpdateUser(req as never, 'other-id', {} as never),
+        ).resolves.toEqual({
             status: 'success',
             message: 'User updated',
             data: { id: 'user-id' },
         })
-        await expect(controller.adminDeleteUser('user-id')).resolves.toEqual({
+        await expect(controller.adminDeleteUser(req as never, 'other-id')).resolves.toEqual({
             status: 'success',
             message: 'User deleted',
             data: null,
         })
-        await expect(controller.adminAssignRole('user-id', { roleId: 'role-id' })).resolves.toEqual(
-            { status: 'success', message: 'Role assigned', data: null },
-        )
+        await expect(
+            controller.adminAssignRole(req as never, 'other-id', {
+                roleId: 'role-id',
+            }),
+        ).resolves.toEqual({ status: 'success', message: 'Role assigned', data: null })
+        expect(service.adminDeleteUser).toHaveBeenCalledWith('other-id', 'user-id')
     })
 
     it('rejects avatar requests without a file', async () => {

@@ -148,12 +148,33 @@ describe('UserService', () => {
         ).resolves.toEqual(created)
         expect(roleService.assignRoleToUser).toHaveBeenCalledWith('user-id', 'role-id')
         await expect(
-            instance.adminUpdateUser('user-id', { firstName: 'Updated' } as never),
+            instance.adminUpdateUser('user-id', { firstName: 'Updated' } as never, 'admin-id'),
         ).resolves.toEqual(created)
-        await expect(instance.adminDeleteUser('user-id')).resolves.toEqual({
+        await expect(instance.adminDeleteUser('user-id', 'admin-id')).resolves.toEqual({
             message: 'User deleted',
         })
-        await expect(instance.adminAssignRole('user-id', 'role-id')).resolves.toBeUndefined()
+        await expect(
+            instance.adminAssignRole('user-id', 'role-id', 'admin-id'),
+        ).resolves.toBeUndefined()
+    })
+
+    it('stops admins from deleting, deactivating or demoting themselves', async () => {
+        const db = { select: jest.fn(), update: jest.fn(), delete: jest.fn() }
+        const roleService = { assignRoleToUser: jest.fn() }
+        const instance = service(db, { roleService })
+
+        await expect(instance.adminDeleteUser('admin-id', 'admin-id')).rejects.toBeInstanceOf(
+            BadRequestException,
+        )
+        await expect(
+            instance.adminUpdateUser('admin-id', { isActive: false } as never, 'admin-id'),
+        ).rejects.toBeInstanceOf(BadRequestException)
+        await expect(
+            instance.adminAssignRole('admin-id', 'role-id', 'admin-id'),
+        ).rejects.toBeInstanceOf(BadRequestException)
+        expect(db.delete).not.toHaveBeenCalled()
+        expect(db.update).not.toHaveBeenCalled()
+        expect(roleService.assignRoleToUser).not.toHaveBeenCalled()
     })
 
     it('rejects duplicate admin users and validates password changes', async () => {

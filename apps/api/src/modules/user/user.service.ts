@@ -213,7 +213,11 @@ export class UserService {
         return created
     }
 
-    async adminUpdateUser(id: string, dto: AdminUpdateUserDto) {
+    // Only admins reach these endpoints, so blocking self-removal always leaves one active admin
+    async adminUpdateUser(id: string, dto: AdminUpdateUserDto, actorId: string) {
+        if (id === actorId && dto.isActive === false) {
+            throw new BadRequestException('You cannot deactivate your own account')
+        }
         const [user] = await this.db
             .select({ id: users.id })
             .from(users)
@@ -236,7 +240,8 @@ export class UserService {
         return updated
     }
 
-    async adminDeleteUser(id: string) {
+    async adminDeleteUser(id: string, actorId: string) {
+        if (id === actorId) throw new BadRequestException('You cannot delete your own account')
         const [user] = await this.db
             .select({ id: users.id })
             .from(users)
@@ -247,7 +252,8 @@ export class UserService {
         return { message: 'User deleted' }
     }
 
-    async adminAssignRole(userId: string, roleId: string) {
+    async adminAssignRole(userId: string, roleId: string, actorId: string) {
+        if (userId === actorId) throw new BadRequestException('You cannot change your own role')
         return this.roleService.assignRoleToUser(userId, roleId)
     }
 

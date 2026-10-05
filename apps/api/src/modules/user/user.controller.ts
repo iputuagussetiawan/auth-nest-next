@@ -118,8 +118,13 @@ export class UserController {
     @UseGuards(RolesGuard)
     @Roles('admin')
     @ApiOperation({ summary: 'Update user (admin)' })
-    async adminUpdateUser(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AdminUpdateUserDto) {
-        const user = await this.userService.adminUpdateUser(id, dto)
+    async adminUpdateUser(
+        @Req() req: Request,
+        @Param('id', ParseUUIDPipe) id: string,
+        @Body() dto: AdminUpdateUserDto,
+    ) {
+        const actor = req.user as any
+        const user = await this.userService.adminUpdateUser(id, dto, actor.userId)
         return successResponse('User updated', user)
     }
 
@@ -127,8 +132,9 @@ export class UserController {
     @UseGuards(RolesGuard)
     @Roles('admin')
     @ApiOperation({ summary: 'Delete user (admin)' })
-    async adminDeleteUser(@Param('id', ParseUUIDPipe) id: string) {
-        const result = await this.userService.adminDeleteUser(id)
+    async adminDeleteUser(@Req() req: Request, @Param('id', ParseUUIDPipe) id: string) {
+        const actor = req.user as any
+        const result = await this.userService.adminDeleteUser(id, actor.userId)
         return successResponse(result.message)
     }
 
@@ -136,8 +142,13 @@ export class UserController {
     @UseGuards(RolesGuard)
     @Roles('admin')
     @ApiOperation({ summary: 'Assign role to user (admin)' })
-    async adminAssignRole(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AdminAssignRoleDto) {
-        const result = await this.userService.adminAssignRole(id, dto.roleId)
+    async adminAssignRole(
+        @Req() req: Request,
+        @Param('id', ParseUUIDPipe) id: string,
+        @Body() dto: AdminAssignRoleDto,
+    ) {
+        const actor = req.user as any
+        const result = await this.userService.adminAssignRole(id, dto.roleId, actor.userId)
         return successResponse(result.message)
     }
 
