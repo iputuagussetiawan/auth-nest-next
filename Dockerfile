@@ -34,14 +34,17 @@ COPY api/package.json ./api/
 COPY web/package.json ./web/
 COPY packages/shared/package.json ./packages/shared/
 
-# Install production dependencies only
-RUN pnpm install --frozen-lockfile --prod
+# Install production dependencies for the api and its workspace deps only (skips web/Next.js)
+RUN pnpm install --frozen-lockfile --prod --filter "api..."
 
 # Copy compiled output from the build stage
 COPY --from=builder /app/api/dist ./api/dist
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 
 ENV NODE_ENV=production
+
+# Drop root privileges for the running process
+USER node
 
 EXPOSE 4001
 

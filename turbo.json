@@ -1,10 +1,13 @@
 {
     "$schema": "https://turbo.build/schema.json",
     "ui": "tui",
+    "globalDependencies": [".nvmrc"],
+    "globalEnv": ["NODE_ENV"],
     "tasks": {
         "build": {
             "dependsOn": ["^build"],
-            "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+            "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+            "env": ["NEXT_PUBLIC_*", "BACKEND_URL"]
         },
         "dev": {
             "dependsOn": ["^build"],
@@ -15,9 +18,7 @@
             "cache": false,
             "persistent": true
         },
-        "lint": {
-            "dependsOn": ["^lint"]
-        },
+        "lint": {},
         "check-types": {
             "dependsOn": ["^build"]
         },

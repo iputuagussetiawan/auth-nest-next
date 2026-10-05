@@ -1,0 +1,19 @@
+# Keep the build context small and free of secrets / host-built binaries
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+**/coverage
+**/*.tsbuildinfo
+**/.env
+**/.env.*
+!**/.env.example
+.git
+.github
+.husky
+.vscode
+.idea
+.claude
+my-auth-mobile
+plan
+*.md
