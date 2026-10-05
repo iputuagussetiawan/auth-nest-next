@@ -4,5 +4,5 @@ build
 .next
 coverage
 pnpm-lock.yaml
-my-auth-mobile
-api/drizzle
+apps/my-auth-mobile
+apps/api/drizzle

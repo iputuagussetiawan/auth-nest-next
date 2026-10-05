@@ -8,8 +8,8 @@ WORKDIR /app
 
 # Copy workspace manifests and lockfile first for better layer caching
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY api/package.json ./api/
-COPY web/package.json ./web/
+COPY apps/api/package.json ./apps/api/
+COPY apps/web/package.json ./apps/web/
 COPY packages/shared/package.json ./packages/shared/
 
 # Install all workspace dependencies
@@ -18,7 +18,7 @@ RUN pnpm install --frozen-lockfile
 # Copy the rest of the source
 COPY . .
 
-# Build the api and its workspace dependencies (api outputs to api/dist/src/ because drizzle.config.ts sits at the api root)
+# Build the api and its workspace dependencies (api outputs to apps/api/dist/src/ because drizzle.config.ts sits at the api root)
 RUN pnpm turbo run build --filter=api
 
 # ── Runtime stage ─────────────────────────────────────────────────────────────
@@ -30,15 +30,15 @@ WORKDIR /app
 
 # Copy workspace manifests so pnpm can resolve the dependency graph
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY api/package.json ./api/
-COPY web/package.json ./web/
+COPY apps/api/package.json ./apps/api/
+COPY apps/web/package.json ./apps/web/
 COPY packages/shared/package.json ./packages/shared/
 
 # Install production dependencies for the api and its workspace deps only (skips web/Next.js)
 RUN pnpm install --frozen-lockfile --prod --filter "api..."
 
 # Copy compiled output from the build stage
-COPY --from=builder /app/api/dist ./api/dist
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 
 ENV NODE_ENV=production
@@ -48,4 +48,4 @@ USER node
 
 EXPOSE 4001
 
-CMD ["node", "api/dist/src/main.js"]
+CMD ["node", "apps/api/dist/src/main.js"]
