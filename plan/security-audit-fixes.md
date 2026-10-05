@@ -7,7 +7,7 @@ Goal: fix the issues found in the 2026-10-05 audit of `apps/api`, `apps/web` and
 - [x] Phase 1 — Vulnerable dependencies (critical)
 - [x] Phase 2 — Session revocation and per-device sessions (high)
 - [x] Phase 3 — Theme CSS injection and admin user list (medium)
-- [ ] Phase 4 — Hardening (low)
+- [x] Phase 4 — Hardening (low)
 
 ## Phase 1 — Upgrade vulnerable dependencies 🔴
 
@@ -78,11 +78,17 @@ Problem in `user.service.ts` `getAllUsers`:
 
 ## Phase 4 — Hardening 🟢
 
-- [ ] Refresh token rotation with reuse detection: store a `refreshTokenHash` / version on the session; a reused old refresh token revokes the session.
-- [ ] Maintenance mode applied to all public routes (e.g. in `apps/web/src/proxy.ts` or a shared public layout), not only `page.tsx`. Admins still allowed through.
-- [ ] Google login: only link to an existing account when `profile.emails[0].verified === true`; otherwise reject.
-- [ ] `adminDeleteUser` / `adminUpdateUser`: block deleting or deactivating yourself and the last remaining admin.
-- [ ] Swagger title still says "AI Finance API v2" in `apps/api/src/main.ts`, so rename it.
+- [x] Refresh token rotation with reuse detection
+    - `sessions` gets `refresh_token_id`, `previous_refresh_token_id`, `refresh_rotated_at` (migration `0002_refresh_token_rotation.sql`, additive/nullable).
+    - Each refresh swaps the id with a conditional update (parallel refreshes can't both win); the just-replaced id is accepted for 30s so a page firing several requests at once doesn't log itself out.
+    - Replaying an older refresh token deletes the session (`401`).
+    - Sessions/tokens from before the migration (no id) are upgraded on their first refresh.
+- [x] Maintenance mode blocks new accounts: `AuthService.register` and new Google accounts return `503`; `/signup` shows "Registration paused". Sign in, forgot/reset password stay open so admins and existing users can get in. `/` already shows the maintenance page.
+- [x] Google login rejects profiles whose email is not verified (`GoogleStrategy.validate`).
+- [x] Admins cannot delete, deactivate or change the role of their own account. Only admins reach these endpoints, so this also guarantees at least one active admin remains.
+- [x] Swagger title renamed to "Nest Auth API".
+- [ ] Apply migration `0002` in each environment (`pnpm db:migrate`; Railway's release command does this on deploy).
+- [ ] Google errors (unverified email, signup closed) currently come back as a JSON error on the API callback URL; redirect them to `/signin?status=error` instead.
 
 ## Verification
 
@@ -93,6 +99,8 @@ Problem in `user.service.ts` `getAllUsers`:
     - [ ] Revoke session from another device → that device gets `401` on next request.
     - [ ] Password reset → old access and refresh tokens rejected.
     - [ ] Two devices, same browser → two separate sessions; logging out one keeps the other.
+    - [ ] Reusing an old refresh cookie (copied before a refresh) → `401` and the session disappears from the session list.
+    - [ ] Maintenance on → `/signup` shows "Registration paused", `POST /api/auth/register` → `503`, admin can still sign in.
 4. Theme editor: saving a malicious `radius` / `fontFamily` returns `400`; normal themes still save and render.
 5. Admin users: search pagination total correct; multi-role user shown once.
 6. Update `status.md` checklist (Authentication: "Rate limiting and abuse protection reviewed", "Refresh-token/session behavior fully verified").
