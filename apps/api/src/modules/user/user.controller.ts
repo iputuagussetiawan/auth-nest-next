@@ -74,7 +74,7 @@ export class UserController {
     @ApiResponse({ status: 400, description: 'Wrong current password or OAuth account' })
     async updatePassword(@Req() req: Request, @Body() dto: UpdatePasswordDto) {
         const user = req.user as any
-        await this.userService.updatePassword(user.userId, dto)
+        await this.userService.updatePassword(user.userId, dto, user.sessionId)
         return successResponse('Password updated successfully')
     }
 

@@ -1,11 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common'
 import * as bcrypt from 'bcrypt'
-import { eq, ilike, or, sql } from 'drizzle-orm'
+import { and, asc, eq, ilike, ne, or, sql } from 'drizzle-orm'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
 import { BadRequestException, NotFoundException } from '../../common/exceptions/app-error'
 import { DRIZZLE } from '../../database/drizzle.provider'
 import * as schema from '../../database/schema'
+import { sessions } from '../../database/schema/auth/sessions.schema'
 import { users } from '../../database/schema/auth/users.schema'
 import { roles } from '../../database/schema/rbac/roles.schema'
 import { userRoles } from '../../database/schema/rbac/user-roles.schema'
@@ -128,45 +129,52 @@ export class UserService {
     }
 
     async getAllUsers(search?: string, page = 1, limit = 20) {
-        const offset = (page - 1) * limit
+        const safePage = Math.max(1, page)
+        const safeLimit = Math.min(Math.max(1, limit), 100)
+        const offset = (safePage - 1) * safeLimit
 
-        const query = this.db
-            .select({
-                id: users.id,
-                email: users.email,
-                firstName: users.firstName,
-                lastName: users.lastName,
-                profilePicture: users.profilePicture,
-                isEmailVerified: users.isEmailVerified,
-                isActive: users.isActive,
-                provider: users.provider,
-                lastLogin: users.lastLogin,
-                createdAt: users.createdAt,
-                role: roles.name,
-            })
-            .from(users)
-            .leftJoin(userRoles as any, eq(userRoles.userId, users.id))
-            .leftJoin(roles as any, eq(userRoles.roleId, roles.id))
-
-        const filtered = search
-            ? query.where(
-                  or(
-                      ilike(users.email, `%${search}%`),
-                      ilike(users.firstName, `%${search}%`),
-                      ilike(users.lastName, `%${search}%`),
-                  ),
+        // Escape LIKE wildcards so a search for "_" or "%" is literal
+        const term = search?.trim().replace(/[\\%_]/g, (c) => `\\${c}`)
+        const where = term
+            ? or(
+                  ilike(users.email, `%${term}%`),
+                  ilike(users.firstName, `%${term}%`),
+                  ilike(users.lastName, `%${term}%`),
               )
-            : query
+            : undefined
 
         const [data, countResult] = await Promise.all([
-            filtered.limit(limit).offset(offset),
+            this.db
+                .select({
+                    id: users.id,
+                    email: users.email,
+                    firstName: users.firstName,
+                    lastName: users.lastName,
+                    profilePicture: users.profilePicture,
+                    isEmailVerified: users.isEmailVerified,
+                    isActive: users.isActive,
+                    provider: users.provider,
+                    lastLogin: users.lastLogin,
+                    createdAt: users.createdAt,
+                    // Group per user so a stray extra user_roles row can't duplicate them
+                    role: sql<string | null>`min(${roles.name})`,
+                })
+                .from(users)
+                .leftJoin(userRoles as any, eq(userRoles.userId, users.id))
+                .leftJoin(roles as any, eq(userRoles.roleId, roles.id))
+                .where(where)
+                .groupBy(users.id)
+                .orderBy(asc(users.createdAt))
+                .limit(safeLimit)
+                .offset(offset),
             this.db
                 .select({ count: sql<number>`count(*)::int` })
                 .from(users)
+                .where(where)
                 .then((r) => r[0]?.count ?? 0),
         ])
 
-        return { data, total: countResult, page, limit }
+        return { data, total: countResult, page: safePage, limit: safeLimit }
     }
 
     async adminCreateUser(dto: AdminCreateUserDto) {
@@ -243,7 +251,7 @@ export class UserService {
         return this.roleService.assignRoleToUser(userId, roleId)
     }
 
-    async updatePassword(userId: string, dto: UpdatePasswordDto) {
+    async updatePassword(userId: string, dto: UpdatePasswordDto, currentSessionId: string) {
         if (dto.newPassword !== dto.confirmPassword) {
             throw new BadRequestException('Passwords do not match')
         }
@@ -269,6 +277,11 @@ export class UserService {
             .update(users)
             .set({ password: hashed, updatedAt: new Date() })
             .where(eq(users.id, userId))
+
+        // Sign out every other device; keep the session that made the change
+        await this.db
+            .delete(sessions)
+            .where(and(eq(sessions.userId, userId), ne(sessions.id, currentSessionId)))
 
         return { message: 'Password updated successfully' }
     }

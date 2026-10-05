@@ -174,19 +174,74 @@ describe('UserService', () => {
             update: jest.fn().mockReturnValue(updateQuery()),
         })
         await expect(
-            instance.updatePassword('user-id', {
-                currentPassword: 'a',
-                newPassword: 'b',
-                confirmPassword: 'c',
-            } as never),
+            instance.updatePassword(
+                'user-id',
+                { currentPassword: 'a', newPassword: 'b', confirmPassword: 'c' } as never,
+                'session-id',
+            ),
         ).rejects.toBeInstanceOf(BadRequestException)
         ;(bcrypt.compare as jest.Mock).mockResolvedValue(false)
         await expect(
-            instance.updatePassword('user-id', {
-                currentPassword: 'a',
-                newPassword: 'b',
-                confirmPassword: 'b',
-            } as never),
+            instance.updatePassword(
+                'user-id',
+                { currentPassword: 'a', newPassword: 'b', confirmPassword: 'b' } as never,
+                'session-id',
+            ),
         ).rejects.toBeInstanceOf(BadRequestException)
+    })
+
+    it('signs out other sessions after a password change', async () => {
+        ;(bcrypt.compare as jest.Mock).mockResolvedValue(true)
+        ;(bcrypt.hash as jest.Mock).mockResolvedValue('new-hash')
+        const deleteWhere = jest.fn().mockResolvedValue(undefined)
+        const db = {
+            select: jest
+                .fn()
+                .mockReturnValue(query([{ id: 'user-id', password: 'old', provider: 'email' }])),
+            update: jest.fn().mockReturnValue(updateQuery()),
+            delete: jest.fn().mockReturnValue({ where: deleteWhere }),
+        }
+        await expect(
+            service(db).updatePassword(
+                'user-id',
+                { currentPassword: 'a', newPassword: 'b', confirmPassword: 'b' } as never,
+                'session-id',
+            ),
+        ).resolves.toEqual({ message: 'Password updated successfully' })
+        expect(db.delete).toHaveBeenCalledTimes(1)
+        expect(deleteWhere).toHaveBeenCalledTimes(1)
+    })
+
+    describe('getAllUsers', () => {
+        function listDb(rows: unknown[], total: number) {
+            const list = {
+                from: jest.fn().mockReturnThis(),
+                leftJoin: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                groupBy: jest.fn().mockReturnThis(),
+                orderBy: jest.fn().mockReturnThis(),
+                limit: jest.fn().mockReturnThis(),
+                offset: jest.fn().mockResolvedValue(rows),
+            }
+            const count = query([{ count: total }])
+            const select = jest.fn().mockReturnValueOnce(list).mockReturnValueOnce(count)
+            return { db: { select }, list, count }
+        }
+
+        it('caps limit and page, and groups rows per user', async () => {
+            const { db, list } = listDb([{ id: 'u1' }], 1)
+            const result = await service(db).getAllUsers(undefined, 0, 5000)
+            expect(list.groupBy).toHaveBeenCalled()
+            expect(list.limit).toHaveBeenCalledWith(100)
+            expect(list.offset).toHaveBeenCalledWith(0)
+            expect(result).toEqual({ data: [{ id: 'u1' }], total: 1, page: 1, limit: 100 })
+        })
+
+        it('applies the search filter to the total count too', async () => {
+            const { db, list, count } = listDb([], 0)
+            await service(db).getAllUsers('ann', 1, 20)
+            expect(list.where.mock.calls[0][0]).toBeDefined()
+            expect(count.where.mock.calls[0][0]).toBe(list.where.mock.calls[0][0])
+        })
     })
 })
