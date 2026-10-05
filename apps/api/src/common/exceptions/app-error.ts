@@ -24,6 +24,12 @@ export class TooManyRequestsException extends HttpException {
     }
 }
 
+export class ServiceUnavailableException extends HttpException {
+    constructor(message: string) {
+        super(message, HttpStatus.SERVICE_UNAVAILABLE)
+    }
+}
+
 export class ForbiddenException extends HttpException {
     constructor(message: string) {
         super(message, HttpStatus.FORBIDDEN)

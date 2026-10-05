@@ -2,12 +2,13 @@ import * as crypto from 'crypto'
 import { Inject, Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import * as bcrypt from 'bcrypt'
-import { and, count, eq, gt, lt } from 'drizzle-orm'
+import { and, count, eq, gt, isNull, lt } from 'drizzle-orm'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
 import {
     BadRequestException,
     NotFoundException,
+    ServiceUnavailableException,
     TooManyRequestsException,
     UnauthorizedException,
 } from '../../common/exceptions/app-error'
@@ -22,8 +23,13 @@ import {
 import { MailService } from '../../shared/mail/mail.service'
 import { NotificationService } from '../notification/notification.service'
 import { RoleService } from '../rbac/role/role.service'
+import { SiteSettingsService } from '../site-settings/site-settings.service'
 import type { RegisterDto } from './dto/register.dto'
 import type { ResetPasswordDto } from './dto/reset-password.dto'
+
+const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000
+// Parallel requests may all refresh with the same token; accept the one just replaced for a moment
+const REFRESH_REUSE_GRACE_MS = 30 * 1000
 
 const COOKIE_OPTS = (maxAge: number) => ({
     httpOnly: true,
@@ -40,7 +46,16 @@ export class AuthService {
         private mailService: MailService,
         private roleService: RoleService,
         private notificationService: NotificationService,
+        private siteSettings: SiteSettingsService,
     ) {}
+
+    /** New accounts are closed while the site is in maintenance; existing users can still sign in */
+    private async assertSignupOpen() {
+        const { maintenanceMode } = await this.siteSettings.get()
+        if (maintenanceMode) {
+            throw new ServiceUnavailableException('Registration is closed during maintenance')
+        }
+    }
 
     signAccessToken(payload: { userId: string; sessionId: string }) {
         return this.jwtService.sign(payload, {
@@ -49,7 +64,7 @@ export class AuthService {
         })
     }
 
-    signRefreshToken(payload: { sessionId: string }) {
+    signRefreshToken(payload: { sessionId: string; tokenId: string }) {
         return this.jwtService.sign(payload, {
             secret: process.env.JWT_REFRESH_SECRET,
             expiresIn: '30d',
@@ -57,7 +72,7 @@ export class AuthService {
     }
 
     async createSession(userId: string, userAgent: string | undefined, ipAddress?: string) {
-        const expiredAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        const expiredAt = new Date(Date.now() + SESSION_TTL_MS)
 
         // One session per login so devices sharing a user agent don't share (and revoke) each other
         await this.db
@@ -66,9 +81,15 @@ export class AuthService {
 
         const [created] = await this.db
             .insert(sessions)
-            .values({ userId, userAgent, ipAddress, expiredAt })
+            .values({
+                userId,
+                userAgent,
+                ipAddress,
+                expiredAt,
+                refreshTokenId: crypto.randomUUID(),
+            })
             .returning()
-        return created
+        return created as typeof created & { refreshTokenId: string }
     }
 
     async validateUser(email: string, password: string) {
@@ -98,6 +119,8 @@ export class AuthService {
             .limit(1)
 
         if (existing) throw new BadRequestException('Email already in use')
+
+        await this.assertSignupOpen()
 
         const hashedPassword = await bcrypt.hash(dto.password, 10)
 
@@ -184,6 +207,8 @@ export class AuthService {
             : []
 
         if (!user) {
+            await this.assertSignupOpen()
+
             const [created] = await this.db
                 .insert(users)
                 .values({
@@ -291,7 +316,7 @@ export class AuthService {
     }
 
     async refreshToken(token: string) {
-        let payload: { sessionId: string }
+        let payload: { sessionId: string; tokenId?: string }
         try {
             payload = this.jwtService.verify(token, {
                 secret: process.env.JWT_REFRESH_SECRET,
@@ -300,25 +325,73 @@ export class AuthService {
             throw new UnauthorizedException('Invalid or expired refresh token')
         }
 
+        let session = await this.findLiveSession(payload.sessionId)
+        // Tokens issued before rotation existed carry no tokenId and match a session with none
+        const presented = payload.tokenId ?? null
+
+        if (presented === session.refreshTokenId) {
+            const tokenId = await this.rotateRefreshToken(session.id, presented)
+            if (tokenId) return this.issueTokens(session.userId, session.id, tokenId)
+            // Another request rotated this token first; judge it against the latest row
+            session = await this.findLiveSession(payload.sessionId)
+        }
+
+        const justRotated =
+            !!presented &&
+            presented === session.previousRefreshTokenId &&
+            !!session.refreshTokenId &&
+            !!session.refreshRotatedAt &&
+            Date.now() - session.refreshRotatedAt.getTime() < REFRESH_REUSE_GRACE_MS
+        if (justRotated)
+            return this.issueTokens(session.userId, session.id, session.refreshTokenId!)
+
+        // An already-replaced refresh token was replayed: treat it as stolen and end the session
+        await this.deleteSession(session.id)
+        throw new UnauthorizedException('Refresh token reuse detected, please sign in again')
+    }
+
+    private async findLiveSession(sessionId: string) {
         const [session] = await this.db
             .select()
             .from(sessions)
-            .where(eq(sessions.id, payload.sessionId))
+            .where(eq(sessions.id, sessionId))
             .limit(1)
-
         if (!session || session.expiredAt < new Date()) {
             throw new UnauthorizedException('Session expired or revoked')
         }
+        return session
+    }
 
-        const newExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        await this.db
+    /** Swaps the session's refresh token id only if it still matches, so parallel refreshes can't both win */
+    private async rotateRefreshToken(sessionId: string, currentTokenId: string | null) {
+        const tokenId = crypto.randomUUID()
+        const now = new Date()
+        const [rotated] = await this.db
             .update(sessions)
-            .set({ updatedAt: new Date(), expiredAt: newExpiry })
-            .where(eq(sessions.id, session.id))
+            .set({
+                refreshTokenId: tokenId,
+                previousRefreshTokenId: currentTokenId,
+                refreshRotatedAt: now,
+                expiredAt: new Date(now.getTime() + SESSION_TTL_MS),
+                updatedAt: now,
+            })
+            .where(
+                and(
+                    eq(sessions.id, sessionId),
+                    currentTokenId
+                        ? eq(sessions.refreshTokenId, currentTokenId)
+                        : isNull(sessions.refreshTokenId),
+                ),
+            )
+            .returning({ id: sessions.id })
+        return rotated ? tokenId : null
+    }
 
-        const access_token = this.signAccessToken({ userId: session.userId, sessionId: session.id })
-        const refresh_token = this.signRefreshToken({ sessionId: session.id })
-        return { access_token, refresh_token }
+    private issueTokens(userId: string, sessionId: string, tokenId: string) {
+        return {
+            access_token: this.signAccessToken({ userId, sessionId }),
+            refresh_token: this.signRefreshToken({ sessionId, tokenId }),
+        }
     }
 
     async deleteSession(sessionId: string) {

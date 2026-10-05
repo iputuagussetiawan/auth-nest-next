@@ -103,7 +103,10 @@ export class AuthController {
             userId: user.id,
             sessionId: session.id,
         })
-        const refreshToken = this.authService.signRefreshToken({ sessionId: session.id })
+        const refreshToken = this.authService.signRefreshToken({
+            sessionId: session.id,
+            tokenId: session.refreshTokenId,
+        })
 
         setAuthCookies(res, accessToken, refreshToken)
 
@@ -199,7 +202,10 @@ export class AuthController {
                 userId: user.id,
                 sessionId: session.id,
             })
-            const refreshToken = this.authService.signRefreshToken({ sessionId: session.id })
+            const refreshToken = this.authService.signRefreshToken({
+                sessionId: session.id,
+                tokenId: session.refreshTokenId,
+            })
 
             setAuthCookies(res, accessToken, refreshToken)
             const destination = user.isOnboardingCompleted ? '/dashboard' : '/onboarding'

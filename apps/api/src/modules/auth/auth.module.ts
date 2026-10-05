@@ -4,6 +4,7 @@ import { PassportModule } from '@nestjs/passport'
 
 import { NotificationModule } from '../notification/notification.module'
 import { RoleModule } from '../rbac/role/role.module'
+import { SiteSettingsModule } from '../site-settings/site-settings.module'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { GoogleStrategy } from './strategies/google.strategy'
@@ -11,7 +12,13 @@ import { JwtStrategy } from './strategies/jwt.strategy'
 import { LocalStrategy } from './strategies/local.strategy'
 
 @Module({
-    imports: [PassportModule, JwtModule.register({}), RoleModule, NotificationModule],
+    imports: [
+        PassportModule,
+        JwtModule.register({}),
+        RoleModule,
+        NotificationModule,
+        SiteSettingsModule,
+    ],
     providers: [AuthService, LocalStrategy, JwtStrategy, GoogleStrategy],
     controllers: [AuthController],
     exports: [AuthService],

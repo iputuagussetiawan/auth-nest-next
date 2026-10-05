@@ -50,6 +50,7 @@ function createService(
     overrides: {
         roleService?: Record<string, unknown>
         notificationService?: Record<string, unknown>
+        maintenanceMode?: boolean
     } = {},
 ) {
     return new AuthService(
@@ -64,6 +65,11 @@ function createService(
         {
             notifyNewUser: jest.fn().mockResolvedValue({}),
             ...(overrides.notificationService ?? {}),
+        } as never,
+        {
+            get: jest
+                .fn()
+                .mockResolvedValue({ maintenanceMode: overrides.maintenanceMode ?? false }),
         } as never,
     )
 }
@@ -232,6 +238,56 @@ describe('AuthService', () => {
         })
     })
 
+    describe('maintenance mode', () => {
+        it('rejects new registrations', async () => {
+            const db = {
+                select: jest.fn().mockReturnValue(createSelectChain([])),
+                insert: jest.fn(),
+            }
+            await expect(
+                createService(db, { maintenanceMode: true }).register({
+                    firstName: 'A',
+                    lastName: 'B',
+                    email: 'new@example.com',
+                    password: 'Password123!',
+                }),
+            ).rejects.toMatchObject({ status: 503 })
+            expect(db.insert).not.toHaveBeenCalled()
+        })
+
+        it('rejects new Google accounts but lets existing ones sign in', async () => {
+            const blocked = {
+                select: jest.fn().mockReturnValue(createSelectChain([])),
+                insert: jest.fn(),
+            }
+            await expect(
+                createService(blocked, { maintenanceMode: true }).loginOrCreateAccount({
+                    provider: 'google',
+                    providerId: 'g-1',
+                    firstName: 'A',
+                    lastName: 'B',
+                    email: 'new@example.com',
+                }),
+            ).rejects.toMatchObject({ status: 503 })
+            expect(blocked.insert).not.toHaveBeenCalled()
+
+            const existing = { id: 'user-id', email: 'old@example.com' }
+            const allowed = {
+                select: jest.fn().mockReturnValue(createSelectChain([existing])),
+                update: jest.fn().mockReturnValue(createUpdateChain()),
+            }
+            await expect(
+                createService(allowed, { maintenanceMode: true }).loginOrCreateAccount({
+                    provider: 'google',
+                    providerId: 'g-2',
+                    firstName: 'A',
+                    lastName: 'B',
+                    email: 'old@example.com',
+                }),
+            ).resolves.toEqual(existing)
+        })
+    })
+
     describe('verifyEmail', () => {
         it('verifies the email and deletes the code', async () => {
             const record = { id: 'code-id', userId: 'user-id' }
@@ -396,39 +452,142 @@ describe('AuthService', () => {
     })
 
     describe('refreshToken', () => {
-        function createTokenService(verifyResult: unknown) {
-            return {
-                sign: jest.fn().mockReturnValue('token'),
-                verify: jest.fn().mockReturnValue(verifyResult),
-            }
-        }
+        const future = () => new Date(Date.now() + 60_000)
 
-        it('rotates tokens for a valid session', async () => {
-            const session = {
-                id: 'session-id',
-                userId: 'user-id',
-                expiredAt: new Date(Date.now() + 60_000),
+        function setup(
+            sessions: Record<string, unknown>[],
+            rotatedRows: unknown[] = [{ id: 'session-id' }],
+        ) {
+            const select = jest.fn()
+            sessions.forEach((row) => select.mockReturnValueOnce(createSelectChain([row])))
+            const update = {
+                set: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                returning: jest.fn().mockResolvedValue(rotatedRows),
             }
-            const update = createUpdateChain()
+            const deleteChain = createDeleteChain()
             const db = {
-                select: jest.fn().mockReturnValue(createSelectChain([session])),
+                select,
                 update: jest.fn().mockReturnValue(update),
+                delete: jest.fn().mockReturnValue(deleteChain),
             }
-            const jwt = createTokenService({ sessionId: 'session-id' })
+            const jwt = {
+                sign: jest.fn((p: Record<string, unknown>) => `signed:${p.tokenId ?? 'access'}`),
+                verify: jest.fn(),
+            }
             const service = new AuthService(
                 db as never,
                 jwt as never,
                 {} as never,
                 {} as never,
                 {} as never,
+                {} as never,
             )
+            const refresh = (payload: Record<string, unknown>) => {
+                jwt.verify.mockReturnValue({ sessionId: 'session-id', ...payload })
+                return service.refreshToken('refresh-token')
+            }
+            return { db, update, refresh }
+        }
 
-            const result = await service.refreshToken('refresh-token')
+        it('rotates the current refresh token', async () => {
+            const { update, refresh } = setup([
+                { id: 'session-id', userId: 'user-id', expiredAt: future(), refreshTokenId: 't1' },
+            ])
 
-            expect(result).toEqual({ access_token: 'token', refresh_token: 'token' })
-            expect(update.set).toHaveBeenCalledWith(
-                expect.objectContaining({ expiredAt: expect.any(Date) }),
+            const result = await refresh({ tokenId: 't1' })
+
+            const { refreshTokenId, previousRefreshTokenId } = update.set.mock.calls[0][0]
+            expect(previousRefreshTokenId).toBe('t1')
+            expect(refreshTokenId).not.toBe('t1')
+            expect(result).toEqual({
+                access_token: 'signed:access',
+                refresh_token: `signed:${refreshTokenId}`,
+            })
+        })
+
+        it('upgrades a session created before rotation existed', async () => {
+            const { update, refresh } = setup([
+                { id: 'session-id', userId: 'user-id', expiredAt: future(), refreshTokenId: null },
+            ])
+            await expect(refresh({})).resolves.toHaveProperty('refresh_token')
+            expect(update.set.mock.calls[0][0].previousRefreshTokenId).toBeNull()
+        })
+
+        it('lets a parallel request that just lost the rotation reuse the previous token', async () => {
+            const { db, refresh } = setup([
+                {
+                    id: 'session-id',
+                    userId: 'user-id',
+                    expiredAt: future(),
+                    refreshTokenId: 't2',
+                    previousRefreshTokenId: 't1',
+                    refreshRotatedAt: new Date(),
+                },
+            ])
+            await expect(refresh({ tokenId: 't1' })).resolves.toEqual({
+                access_token: 'signed:access',
+                refresh_token: 'signed:t2',
+            })
+            expect(db.update).not.toHaveBeenCalled()
+            expect(db.delete).not.toHaveBeenCalled()
+        })
+
+        it('falls back to the latest row when a concurrent refresh rotated first', async () => {
+            const { db, refresh } = setup(
+                [
+                    {
+                        id: 'session-id',
+                        userId: 'user-id',
+                        expiredAt: future(),
+                        refreshTokenId: 't1',
+                    },
+                    {
+                        id: 'session-id',
+                        userId: 'user-id',
+                        expiredAt: future(),
+                        refreshTokenId: 't2',
+                        previousRefreshTokenId: 't1',
+                        refreshRotatedAt: new Date(),
+                    },
+                ],
+                [],
             )
+            await expect(refresh({ tokenId: 't1' })).resolves.toHaveProperty(
+                'refresh_token',
+                'signed:t2',
+            )
+            expect(db.delete).not.toHaveBeenCalled()
+        })
+
+        it('revokes the session when an old refresh token is replayed', async () => {
+            const { db, refresh } = setup([
+                {
+                    id: 'session-id',
+                    userId: 'user-id',
+                    expiredAt: future(),
+                    refreshTokenId: 't3',
+                    previousRefreshTokenId: 't2',
+                    refreshRotatedAt: new Date(),
+                },
+            ])
+            await expect(refresh({ tokenId: 't1' })).rejects.toBeInstanceOf(UnauthorizedException)
+            expect(db.delete).toHaveBeenCalledTimes(1)
+        })
+
+        it('revokes the session when the previous token comes back after the grace window', async () => {
+            const { db, refresh } = setup([
+                {
+                    id: 'session-id',
+                    userId: 'user-id',
+                    expiredAt: future(),
+                    refreshTokenId: 't2',
+                    previousRefreshTokenId: 't1',
+                    refreshRotatedAt: new Date(Date.now() - 60_000),
+                },
+            ])
+            await expect(refresh({ tokenId: 't1' })).rejects.toBeInstanceOf(UnauthorizedException)
+            expect(db.delete).toHaveBeenCalledTimes(1)
         })
 
         it('rejects an invalid refresh token', async () => {
@@ -444,30 +603,23 @@ describe('AuthService', () => {
                 {} as never,
                 {} as never,
                 {} as never,
+                {} as never,
             )
 
             await expect(service.refreshToken('bad')).rejects.toBeInstanceOf(UnauthorizedException)
         })
 
         it('rejects an expired session', async () => {
-            const session = {
-                id: 'session-id',
-                userId: 'user-id',
-                expiredAt: new Date(Date.now() - 60_000),
-            }
-            const db = { select: jest.fn().mockReturnValue(createSelectChain([session])) }
-            const jwt = createTokenService({ sessionId: 'session-id' })
-            const service = new AuthService(
-                db as never,
-                jwt as never,
-                {} as never,
-                {} as never,
-                {} as never,
-            )
-
-            await expect(service.refreshToken('refresh-token')).rejects.toBeInstanceOf(
-                UnauthorizedException,
-            )
+            const { db, refresh } = setup([
+                {
+                    id: 'session-id',
+                    userId: 'user-id',
+                    expiredAt: new Date(Date.now() - 60_000),
+                    refreshTokenId: 't1',
+                },
+            ])
+            await expect(refresh({ tokenId: 't1' })).rejects.toBeInstanceOf(UnauthorizedException)
+            expect(db.update).not.toHaveBeenCalled()
         })
     })
 
@@ -485,6 +637,7 @@ describe('AuthService', () => {
             await expect(
                 createService(db).createSession('user-id', 'Chrome', '1.2.3.4'),
             ).resolves.toEqual(session)
+            expect(insertChain.values.mock.calls[0][0].refreshTokenId).toEqual(expect.any(String))
             expect(db.select).not.toHaveBeenCalled()
             expect(deleteChain.where).toHaveBeenCalledTimes(1)
             expect(insertChain.values).toHaveBeenCalledWith(
