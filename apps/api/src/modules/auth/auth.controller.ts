@@ -98,7 +98,7 @@ export class AuthController {
     async login(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
         const user = req.user as any
         const ip = req.ip ?? req.socket.remoteAddress
-        const session = await this.authService.upsertSession(user.id, req.headers['user-agent'], ip)
+        const session = await this.authService.createSession(user.id, req.headers['user-agent'], ip)
         const accessToken = this.authService.signAccessToken({
             userId: user.id,
             sessionId: session.id,
@@ -190,7 +190,7 @@ export class AuthController {
         try {
             const user = req.user as any
             const ip = req.ip ?? req.socket.remoteAddress
-            const session = await this.authService.upsertSession(
+            const session = await this.authService.createSession(
                 user.id,
                 req.headers['user-agent'],
                 ip,

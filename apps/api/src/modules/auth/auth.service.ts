@@ -2,7 +2,7 @@ import * as crypto from 'crypto'
 import { Inject, Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import * as bcrypt from 'bcrypt'
-import { and, count, eq, gt } from 'drizzle-orm'
+import { and, count, eq, gt, lt } from 'drizzle-orm'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
 import {
@@ -56,27 +56,13 @@ export class AuthService {
         })
     }
 
-    async upsertSession(userId: string, userAgent: string | undefined, ipAddress?: string) {
+    async createSession(userId: string, userAgent: string | undefined, ipAddress?: string) {
         const expiredAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
 
-        const existing = await this.db
-            .select()
-            .from(sessions)
-            .where(and(eq(sessions.userId, userId), eq(sessions.userAgent, userAgent ?? '')))
-            .limit(1)
-
-        if (existing.length) {
-            const [updated] = await this.db
-                .update(sessions)
-                .set({
-                    updatedAt: new Date(),
-                    expiredAt,
-                    ipAddress: ipAddress ?? existing[0].ipAddress,
-                })
-                .where(eq(sessions.id, existing[0].id))
-                .returning()
-            return updated
-        }
+        // One session per login so devices sharing a user agent don't share (and revoke) each other
+        await this.db
+            .delete(sessions)
+            .where(and(eq(sessions.userId, userId), lt(sessions.expiredAt, new Date())))
 
         const [created] = await this.db
             .insert(sessions)
