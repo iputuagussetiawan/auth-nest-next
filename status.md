@@ -79,7 +79,7 @@ Updated: 2026-10-04
 - [x] Theme preference support
 - [x] Theme creation/editing
 - [x] Theme live preview
-- [x] Emerald Forest default schema
+- [x] Monochrome default schema (replaced Emerald Forest)
 - [x] Legacy `default` theme migration logic
 - [x] Verify existing database rows after migration (`pnpm --filter api db:verify-themes`)
 - [x] Verify no theme flash during initial load (server-injected active theme CSS)

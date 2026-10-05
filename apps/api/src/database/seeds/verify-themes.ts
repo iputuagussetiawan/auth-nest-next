@@ -67,11 +67,11 @@ async function main() {
     const rows = await db.select().from(themes)
     const errors: string[] = []
     const active = rows.filter((theme) => theme.isActive)
-    const emerald = rows.find((theme) => theme.slug === 'emerald-forest')
+    const defaultTheme = rows.find((theme) => theme.slug === 'monochrome')
 
     if (active.length !== 1)
         errors.push(`expected exactly one active theme, found ${active.length}`)
-    if (!emerald) errors.push('missing emerald-forest theme')
+    if (!defaultTheme) errors.push('missing monochrome theme')
     if (rows.some((theme) => theme.slug === 'default'))
         errors.push('legacy default theme slug still exists')
 
