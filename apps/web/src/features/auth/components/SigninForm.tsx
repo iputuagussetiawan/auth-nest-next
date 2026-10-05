@@ -1,14 +1,16 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
+import { CircleAlert } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 
 import { GoogleSignInButton } from '@/components/google-sign-in'
 import { UiButton } from '@/components/ui-custom/UiButton'
 import { UiFormInput, UiFormPassword } from '@/components/ui-custom/UiFormInput'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { FieldGroup, FieldLabel, FieldSeparator } from '@/components/ui/field'
 import { DASHBOARD_URL, ONBOARDING_URL, SIGNUP_URL } from '@/lib/constants'
 import { cn } from '@/lib/utils'
@@ -16,8 +18,19 @@ import { cn } from '@/lib/utils'
 import { authService } from '../services/AuthService'
 import { signinValidation, type SigninInputType } from '../types/AuthType'
 
+// Reasons the API's Google callback can send back as ?status=
+const GOOGLE_SIGNIN_ERRORS: Record<string, string> = {
+    signup_closed:
+        'New accounts are paused during maintenance. Existing accounts can still sign in.',
+    email_unverified: 'Your Google account email is not verified, so it cannot be used to sign in.',
+    account_disabled: 'This account has been disabled. Contact an administrator for help.',
+    error: 'Google sign-in failed. Please try again.',
+}
+
 export function SignInForm({ className, ...props }: React.ComponentProps<'form'>) {
     const router = useRouter()
+    const status = useSearchParams().get('status')
+    const googleError = status ? GOOGLE_SIGNIN_ERRORS[status] : undefined
     const {
         register,
         handleSubmit,
@@ -66,6 +79,13 @@ export function SignInForm({ className, ...props }: React.ComponentProps<'form'>
                         Enter your credentials to access your account
                     </p>
                 </div>
+
+                {googleError && (
+                    <Alert variant="destructive">
+                        <CircleAlert />
+                        <AlertDescription>{googleError}</AlertDescription>
+                    </Alert>
+                )}
 
                 {/* Email */}
                 <UiFormInput

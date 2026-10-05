@@ -88,7 +88,7 @@ Problem in `user.service.ts` `getAllUsers`:
 - [x] Admins cannot delete, deactivate or change the role of their own account. Only admins reach these endpoints, so this also guarantees at least one active admin remains.
 - [x] Swagger title renamed to "Nest Auth API".
 - [ ] Apply migration `0002` in each environment (`pnpm db:migrate`; Railway's release command does this on deploy).
-- [ ] Google errors (unverified email, signup closed) currently come back as a JSON error on the API callback URL; redirect them to `/signin?status=error` instead.
+- [x] Google sign-in failures redirect to `/signin?status=signup_closed|email_unverified|account_disabled|error` (`GoogleCallbackGuard`) and the sign-in page shows the matching message. Disabled accounts no longer get a session through Google.
 
 ## Verification
 

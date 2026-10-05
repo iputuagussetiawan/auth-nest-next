@@ -27,6 +27,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto'
 import { RegisterDto } from './dto/register.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
 import { VerifyEmailDto } from './dto/verify-email.dto'
+import { GoogleCallbackGuard, type GoogleAuthErrorReason } from './guards/google-callback.guard'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { LocalAuthGuard } from './guards/local-auth.guard'
 
@@ -186,12 +187,19 @@ export class AuthController {
 
     @Get('google/callback')
     @Throttle({ default: { ttl: 60000, limit: 10 } })
-    @UseGuards(AuthGuard('google'))
+    @UseGuards(GoogleCallbackGuard)
     @ApiOperation({ summary: 'Google OAuth callback (handled by Google)' })
     @ApiResponse({ status: 302, description: 'Redirect to frontend after OAuth' })
     async googleCallback(@Req() req: Request, @Res() res: Response) {
+        const signinWith = (status: string) =>
+            res.redirect(`${FRONTEND_ORIGIN}/signin?status=${status}`)
+        const authError = (req as any).googleAuthError as GoogleAuthErrorReason | undefined
+        if (authError) return signinWith(authError)
+
         try {
             const user = req.user as any
+            if (!user.isActive) return signinWith('account_disabled')
+
             const ip = req.ip ?? req.socket.remoteAddress
             const session = await this.authService.createSession(
                 user.id,
@@ -211,7 +219,7 @@ export class AuthController {
             const destination = user.isOnboardingCompleted ? '/dashboard' : '/onboarding'
             return res.redirect(`${FRONTEND_ORIGIN}${destination}`)
         } catch {
-            return res.redirect(`${FRONTEND_ORIGIN}/signin?status=error`)
+            return signinWith('error')
         }
     }
 }

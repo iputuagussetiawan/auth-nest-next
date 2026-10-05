@@ -79,4 +79,46 @@ describe('AuthController security behavior', () => {
         expect(authService.deleteSession).toHaveBeenCalledWith('session-id')
         expect(response.clearCookie).toHaveBeenCalledTimes(2)
     })
+
+    describe('googleCallback', () => {
+        function callback(req: Record<string, unknown>) {
+            const authService = {
+                createSession: jest.fn().mockResolvedValue({ id: 's1', refreshTokenId: 't1' }),
+                signAccessToken: jest.fn().mockReturnValue('access'),
+                signRefreshToken: jest.fn().mockReturnValue('refresh'),
+            }
+            const response = { ...createResponse(), redirect: jest.fn() }
+            const request = { headers: {}, socket: {}, ...req }
+            return new AuthController(authService as never)
+                .googleCallback(request as never, response as never)
+                .then(() => ({ response, authService }))
+        }
+
+        it('sends a failed Google sign-in back to /signin with the reason', async () => {
+            const { response, authService } = await callback({ googleAuthError: 'signup_closed' })
+            expect(response.redirect).toHaveBeenCalledWith(
+                expect.stringMatching(/\/signin\?status=signup_closed$/),
+            )
+            expect(authService.createSession).not.toHaveBeenCalled()
+        })
+
+        it('does not create a session for a disabled account', async () => {
+            const { response, authService } = await callback({
+                user: { id: 'u1', isActive: false },
+            })
+            expect(response.redirect).toHaveBeenCalledWith(
+                expect.stringMatching(/\/signin\?status=account_disabled$/),
+            )
+            expect(authService.createSession).not.toHaveBeenCalled()
+            expect(response.cookie).not.toHaveBeenCalled()
+        })
+
+        it('signs in an active user and redirects to the dashboard', async () => {
+            const { response } = await callback({
+                user: { id: 'u1', isActive: true, isOnboardingCompleted: true },
+            })
+            expect(response.cookie).toHaveBeenCalledTimes(2)
+            expect(response.redirect).toHaveBeenCalledWith(expect.stringMatching(/\/dashboard$/))
+        })
+    })
 })
