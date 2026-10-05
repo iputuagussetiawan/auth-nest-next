@@ -45,9 +45,9 @@ async function bootstrap() {
 
     if (process.env.NODE_ENV !== 'production') {
         const config = new DocumentBuilder()
-            .setTitle('AI Finance API v2')
-            .setDescription('REST API for AI Finance application')
-            .setVersion('2.0')
+            .setTitle('Nest Auth API')
+            .setDescription('REST API for the Nest Auth app')
+            .setVersion('1.0')
             .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'access-token')
             .addCookieAuth('accessToken')
             .build()
@@ -60,7 +60,7 @@ async function bootstrap() {
 
     const port = process.env.PORT || 4001
     await app.listen(port)
-    console.log(`api-v2 running on http://localhost:${port}/api`)
+    console.log(`api running on http://localhost:${port}/api`)
 }
 
 bootstrap()
