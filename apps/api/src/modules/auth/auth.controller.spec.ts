@@ -118,7 +118,9 @@ describe('AuthController security behavior', () => {
                 user: { id: 'u1', isActive: true, isOnboardingCompleted: true },
             })
             expect(response.cookie).toHaveBeenCalledTimes(2)
-            expect(response.redirect).toHaveBeenCalledWith(expect.stringMatching(/\/dashboard$/))
+            expect(response.redirect).toHaveBeenCalledWith(
+                expect.stringMatching(/\/auth\/complete\?next=\/dashboard$/),
+            )
         })
     })
 })

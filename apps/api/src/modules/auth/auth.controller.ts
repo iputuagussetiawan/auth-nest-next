@@ -217,7 +217,10 @@ export class AuthController {
 
             setAuthCookies(res, accessToken, refreshToken)
             const destination = user.isOnboardingCompleted ? '/dashboard' : '/onboarding'
-            return res.redirect(`${FRONTEND_ORIGIN}${destination}`)
+            // Land on a frontend hop page instead of the destination: this redirect chain started on
+            // Google, so browsers (Firefox) withhold our SameSite=Strict cookies from it, and the
+            // dashboard would see no session. The hop page's own navigation is same-site.
+            return res.redirect(`${FRONTEND_ORIGIN}/auth/complete?next=${destination}`)
         } catch {
             return signinWith('error')
         }
