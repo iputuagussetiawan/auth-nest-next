@@ -1,6 +1,8 @@
 packages:
-    - 'api'
-    - 'web'
+    - 'apps/*'
+    - 'packages/*'
+    # Expo app keeps its own lockfile for now
+    - '!apps/my-auth-mobile'
 
 ignoredBuiltDependencies:
     - sharp

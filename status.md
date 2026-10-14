@@ -1,6 +1,6 @@
 # Project Status
 
-Updated: 2026-09-16
+Updated: 2026-10-04
 
 ## Checklist
 
@@ -79,7 +79,7 @@ Updated: 2026-09-16
 - [x] Theme preference support
 - [x] Theme creation/editing
 - [x] Theme live preview
-- [x] Emerald Forest default schema
+- [x] Monochrome default schema (replaced Emerald Forest)
 - [x] Legacy `default` theme migration logic
 - [x] Verify existing database rows after migration (`pnpm --filter api db:verify-themes`)
 - [x] Verify no theme flash during initial load (server-injected active theme CSS)
@@ -127,12 +127,12 @@ Updated: 2026-09-16
 
 ### Quality checks
 
-- [ ] `pnpm check-types`
-- [ ] `pnpm lint`
-- [ ] `pnpm format:check`
-- [ ] `pnpm build`
-- [ ] Run API tests
-- [ ] Run web tests
+- [x] `pnpm check-types`
+- [x] `pnpm lint` (0 errors; 83 warnings remain, mostly `no-explicit-any` and `set-state-in-effect` in web)
+- [x] `pnpm format:check`
+- [x] `pnpm build`
+- [x] Run API tests (19 suites, 95 tests)
+- [ ] Run web tests (web has no test script yet)
 - [ ] Validate CI workflow on GitHub
 - [ ] Test mobile layout at approximately 400px width
 - [ ] Test desktop layout at approximately 1280px width
@@ -155,7 +155,6 @@ Do not use these credentials in production.
 
 ## Main remaining work
 
-1. Run and fix type, lint, formatting, and build checks.
-2. Verify Emerald Forest theme migration against an existing database.
-3. Configure production deployment and secrets.
-4. Add automated integration and UI regression tests.
+1. Validate the CI workflow on GitHub and reduce the remaining web lint warnings.
+2. Configure production deployment and secrets.
+3. Add web tests and automated integration and UI regression tests.

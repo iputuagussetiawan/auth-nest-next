@@ -1,0 +1,228 @@
+import {
+    Body,
+    Controller,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Post,
+    Req,
+    Res,
+    UseGuards,
+} from '@nestjs/common'
+import { AuthGuard } from '@nestjs/passport'
+import {
+    ApiBearerAuth,
+    ApiBody,
+    ApiCookieAuth,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger'
+import { Throttle } from '@nestjs/throttler'
+import { Request, Response } from 'express'
+
+import { successResponse } from '../../common/helpers/response.helper'
+import { AuthService } from './auth.service'
+import { ForgotPasswordDto } from './dto/forgot-password.dto'
+import { RegisterDto } from './dto/register.dto'
+import { ResetPasswordDto } from './dto/reset-password.dto'
+import { VerifyEmailDto } from './dto/verify-email.dto'
+import { GoogleCallbackGuard, type GoogleAuthErrorReason } from './guards/google-callback.guard'
+import { JwtAuthGuard } from './guards/jwt-auth.guard'
+import { LocalAuthGuard } from './guards/local-auth.guard'
+
+const ACCESS_MAX_AGE = 24 * 60 * 60 * 1000 // 1 day
+const REFRESH_MAX_AGE = 30 * 24 * 60 * 60 * 1000 // 30 days
+const IS_PROD = process.env.NODE_ENV === 'production'
+const FRONTEND_ORIGIN = (process.env.FRONTEND_ORIGIN || 'http://localhost:3000')
+    .split(',')[0]
+    .trim()
+
+const authCookieOptions = (maxAge: number) => ({
+    httpOnly: true,
+    secure: IS_PROD,
+    sameSite: 'strict' as const,
+    path: '/',
+    maxAge,
+})
+
+function setAuthCookies(res: Response, accessToken: string, refreshToken: string) {
+    res.cookie('accessToken', accessToken, authCookieOptions(ACCESS_MAX_AGE))
+    res.cookie('refreshToken', refreshToken, authCookieOptions(REFRESH_MAX_AGE))
+}
+
+function clearAuthCookies(res: Response) {
+    res.clearCookie('accessToken', authCookieOptions(ACCESS_MAX_AGE))
+    res.clearCookie('refreshToken', authCookieOptions(REFRESH_MAX_AGE))
+}
+
+@ApiTags('auth')
+@Controller('auth')
+export class AuthController {
+    constructor(private authService: AuthService) {}
+
+    @Post('register')
+    @Throttle({ default: { ttl: 60000, limit: 5 } })
+    @HttpCode(HttpStatus.CREATED)
+    @ApiOperation({ summary: 'Register new user' })
+    @ApiResponse({ status: 201, description: 'User created successfully' })
+    @ApiResponse({ status: 400, description: 'Validation error or email already exists' })
+    async register(@Body() dto: RegisterDto) {
+        await this.authService.register(dto)
+        return successResponse('User created successfully')
+    }
+
+    @Post('verify/email')
+    @Throttle({ default: { ttl: 60000, limit: 5 } })
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Verify email with OTP code' })
+    @ApiResponse({ status: 200, description: 'Email verified' })
+    @ApiResponse({ status: 400, description: 'Invalid or expired code' })
+    async verifyEmail(@Body() dto: VerifyEmailDto) {
+        await this.authService.verifyEmail(dto.code)
+        return successResponse('Email verified successfully')
+    }
+
+    @Post('login')
+    @Throttle({ default: { ttl: 60000, limit: 10 } })
+    @UseGuards(LocalAuthGuard)
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Login with email and password' })
+    @ApiBody({
+        schema: {
+            properties: { email: { type: 'string' }, password: { type: 'string' } },
+            required: ['email', 'password'],
+        },
+    })
+    @ApiResponse({ status: 200, description: 'Logged in, sets httpOnly cookies' })
+    @ApiResponse({ status: 401, description: 'Invalid credentials' })
+    async login(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+        const user = req.user as any
+        const ip = req.ip ?? req.socket.remoteAddress
+        const session = await this.authService.createSession(user.id, req.headers['user-agent'], ip)
+        const accessToken = this.authService.signAccessToken({
+            userId: user.id,
+            sessionId: session.id,
+        })
+        const refreshToken = this.authService.signRefreshToken({
+            sessionId: session.id,
+            tokenId: session.refreshTokenId,
+        })
+
+        setAuthCookies(res, accessToken, refreshToken)
+
+        return successResponse('Logged in successfully', {
+            user: {
+                id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                profilePicture: user.profilePicture,
+                isActive: user.isActive,
+                isOnboardingCompleted: user.isOnboardingCompleted,
+            },
+            access_token: accessToken,
+        })
+    }
+
+    @Post('refresh')
+    @Throttle({ default: { ttl: 60000, limit: 20 } })
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Refresh access token using refresh cookie' })
+    @ApiCookieAuth('accessToken')
+    @ApiResponse({ status: 200, description: 'New access token issued' })
+    @ApiResponse({ status: 401, description: 'Refresh token missing or invalid' })
+    async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+        const token: string | undefined = req.cookies?.refreshToken
+        if (!token) {
+            res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Refresh token missing' })
+            return
+        }
+        const { access_token, refresh_token } = await this.authService.refreshToken(token)
+        setAuthCookies(res, access_token, refresh_token)
+        return successResponse('Token refreshed successfully', { access_token })
+    }
+
+    @Post('logout')
+    @UseGuards(JwtAuthGuard)
+    @HttpCode(HttpStatus.OK)
+    @ApiBearerAuth('access-token')
+    @ApiOperation({ summary: 'Logout and clear auth cookies' })
+    @ApiResponse({ status: 200, description: 'Logged out' })
+    async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+        const user = req.user as any
+        if (user?.sessionId) await this.authService.deleteSession(user.sessionId)
+        clearAuthCookies(res)
+        return successResponse('Logged out successfully')
+    }
+
+    @Post('password/forgot')
+    @Throttle({ default: { ttl: 60000, limit: 5 } })
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Send password reset email' })
+    @ApiResponse({ status: 200, description: 'Reset email sent if account exists' })
+    async forgotPassword(@Body() dto: ForgotPasswordDto) {
+        await this.authService.forgotPassword(dto.email)
+        return successResponse('Password reset email sent')
+    }
+
+    @Post('password/reset')
+    @Throttle({ default: { ttl: 60000, limit: 5 } })
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Reset password with token' })
+    @ApiResponse({ status: 200, description: 'Password reset successful' })
+    @ApiResponse({ status: 400, description: 'Invalid or expired token' })
+    async resetPassword(@Body() dto: ResetPasswordDto, @Res({ passthrough: true }) res: Response) {
+        await this.authService.resetPassword(dto)
+        clearAuthCookies(res)
+        return successResponse('Password reset successfully')
+    }
+
+    @Get('google')
+    @Throttle({ default: { ttl: 60000, limit: 10 } })
+    @UseGuards(AuthGuard('google'))
+    @ApiOperation({ summary: 'Initiate Google OAuth login (redirects to Google)' })
+    @ApiResponse({ status: 302, description: 'Redirect to Google consent screen' })
+    googleLogin() {}
+
+    @Get('google/callback')
+    @Throttle({ default: { ttl: 60000, limit: 10 } })
+    @UseGuards(GoogleCallbackGuard)
+    @ApiOperation({ summary: 'Google OAuth callback (handled by Google)' })
+    @ApiResponse({ status: 302, description: 'Redirect to frontend after OAuth' })
+    async googleCallback(@Req() req: Request, @Res() res: Response) {
+        const signinWith = (status: string) =>
+            res.redirect(`${FRONTEND_ORIGIN}/signin?status=${status}`)
+        const authError = (req as any).googleAuthError as GoogleAuthErrorReason | undefined
+        if (authError) return signinWith(authError)
+
+        try {
+            const user = req.user as any
+            if (!user.isActive) return signinWith('account_disabled')
+
+            const ip = req.ip ?? req.socket.remoteAddress
+            const session = await this.authService.createSession(
+                user.id,
+                req.headers['user-agent'],
+                ip,
+            )
+            const accessToken = this.authService.signAccessToken({
+                userId: user.id,
+                sessionId: session.id,
+            })
+            const refreshToken = this.authService.signRefreshToken({
+                sessionId: session.id,
+                tokenId: session.refreshTokenId,
+            })
+
+            setAuthCookies(res, accessToken, refreshToken)
+            const destination = user.isOnboardingCompleted ? '/dashboard' : '/onboarding'
+            // Land on a frontend hop page instead of the destination: this redirect chain started on
+            // Google, so browsers (Firefox) withhold our SameSite=Strict cookies from it, and the
+            // dashboard would see no session. The hop page's own navigation is same-site.
+            return res.redirect(`${FRONTEND_ORIGIN}/auth/complete?next=${destination}`)
+        } catch {
+            return signinWith('error')
+        }
+    }
+}

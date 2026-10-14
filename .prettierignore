@@ -1,5 +1,8 @@
 node_modules
 dist
+build
 .next
 coverage
 pnpm-lock.yaml
+apps/my-auth-mobile
+apps/api/drizzle

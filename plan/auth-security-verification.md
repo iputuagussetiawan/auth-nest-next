@@ -9,7 +9,7 @@ Fill in after running each check against staging/production. No tokens, password
 - Commit/build:
 - `NODE_ENV`:
 - Reverse proxy in front (yes/no, hop count):
-- `trust proxy` value in `api/src/main.ts`:
+- `trust proxy` value in `apps/api/src/main.ts`:
 
 ## Refresh / session matrix
 

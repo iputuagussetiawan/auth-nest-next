@@ -19,7 +19,7 @@ Built with NestJS, Next.js, PostgreSQL, Drizzle ORM, React Query, React Hook For
 - Role-permission matrix
 - Site settings management
 - Theme management with light/dark/system modes
-- Emerald Forest default theme
+- Monochrome (Vercel-style) default theme
 - Responsive admin sidebar and dashboard layout
 - Responsive account and settings navigation
 - Search, filtering, multi-role filtering, and table/grid views
@@ -30,24 +30,29 @@ Built with NestJS, Next.js, PostgreSQL, Drizzle ORM, React Query, React Hook For
 
 ```text
 .
-├── api/                         # NestJS API
-│   └── src/
-│       ├── database/            # Drizzle schema, migrations, seeds
-│       ├── modules/
-│       │   ├── auth/
-│       │   ├── user/
-│       │   ├── rbac/
-│       │   ├── session/
-│       │   ├── theme/
-│       │   ├── site-settings/
-│       │   └── admin-stats/
-│       └── main.ts
-├── web/                         # Next.js frontend
-│   └── src/
-│       ├── app/                 # App Router routes and layouts
-│       ├── components/          # Shared UI and layout components
-│       ├── features/            # Feature-specific pages and services
-│       └── providers/           # Auth, theme, and query providers
+├── apps/
+│   ├── api/                     # NestJS API
+│   │   ├── drizzle/             # SQL migrations
+│   │   └── src/
+│   │       ├── database/        # Drizzle schema, seeds
+│   │       ├── modules/
+│   │       │   ├── auth/
+│   │       │   ├── user/
+│   │       │   ├── rbac/
+│   │       │   ├── session/
+│   │       │   ├── theme/
+│   │       │   ├── site-settings/
+│   │       │   └── admin-stats/
+│   │       └── main.ts
+│   ├── web/                     # Next.js frontend
+│   │   └── src/
+│   │       ├── app/             # App Router routes and layouts
+│   │       ├── components/      # Shared UI and layout components
+│   │       ├── features/        # Feature-specific pages and services
+│   │       └── providers/       # Auth, theme, and query providers
+│   └── my-auth-mobile/          # Expo app (own lockfile, not in pnpm workspace)
+├── packages/
+│   └── shared/                  # Shared constants and types (@nest-auth/shared)
 ├── .github/workflows/           # CI workflows
 ├── status.md                    # Project checklist
 ├── package.json                 # Workspace scripts
@@ -78,23 +83,23 @@ pnpm install
 Create the API environment file:
 
 ```bash
-cp api/.env.example api/.env
+cp apps/api/.env.example apps/api/.env
 ```
 
 On Windows PowerShell:
 
 ```powershell
-Copy-Item api/.env.example api/.env
+Copy-Item apps/api/.env.example apps/api/.env
 ```
 
-Update `api/.env` with a valid PostgreSQL connection and JWT secrets.
+Update `apps/api/.env` with a valid PostgreSQL connection and JWT secrets.
 
 ## Environment variables
 
 The API example file is:
 
 ```text
-api/.env.example
+apps/api/.env.example
 ```
 
 Important variables:
@@ -253,7 +258,7 @@ The CI workflow runs on pushes and pull requests targeting `main`:
 
 ## API scripts
 
-From the project root, use the workspace commands above. From `api/`:
+From the project root, use the workspace commands above. From `apps/api/`:
 
 ```bash
 pnpm dev
@@ -268,7 +273,7 @@ pnpm db:studio
 
 ## Web scripts
 
-From `web/`:
+From `apps/web/`:
 
 ```bash
 pnpm dev
@@ -310,25 +315,25 @@ Protected dashboard routes:
 
 ### Server and client layouts
 
-`web/src/app/(protected)/(admin)/layout.tsx` remains a server layout so it can export route metadata.
+`apps/web/src/app/(protected)/(admin)/layout.tsx` remains a server layout so it can export route metadata.
 
-`web/src/app/(protected)/(admin)/dashboard/layout-client.tsx` contains the client-side dashboard shell. It controls responsive sidebar state and renders the shared sidebar, header, and nested dashboard page.
+`apps/web/src/app/(protected)/(admin)/dashboard/layout-client.tsx` contains the client-side dashboard shell. It controls responsive sidebar state and renders the shared sidebar, header, and nested dashboard page.
 
 Interactive pieces are separated into reusable components under:
 
 ```text
-web/src/components/layouts/backend/
+apps/web/src/components/layouts/backend/
 ```
 
 ### Theme system
 
-The default theme is Emerald Forest. Theme values are defined across:
+The default theme is Monochrome. Theme values are defined across:
 
 ```text
-web/src/app/globals.css
-api/src/modules/theme/theme.service.ts
-api/src/database/seeds/theme.seed.ts
-web/src/features/admin/themes/ThemeEditor.tsx
+apps/web/src/app/globals.css
+apps/api/src/modules/theme/theme.service.ts
+apps/api/src/database/seeds/theme.seed.ts
+apps/web/src/features/admin/themes/ThemeEditor.tsx
 ```
 
 The database-backed theme provider can override CSS defaults after the active theme loads.
@@ -338,7 +343,7 @@ The database-backed theme provider can override CSS defaults after the active th
 Reusable controls live under:
 
 ```text
-web/src/components/ui-custom/
+apps/web/src/components/ui-custom/
 ```
 
 Prefer these components for new application forms, including:
