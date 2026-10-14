@@ -272,6 +272,20 @@ export class AuthService {
                 lastLogin: new Date(),
                 updatedAt: new Date(),
             }
+            if (!user.isEmailVerified) {
+                // Anyone can sign up with an address they don't own and never verify it. Google has
+                // now proven who owns it, so drop whatever the unverified signup left behind: its
+                // password (else that person could sign in once the owner verifies), its sessions,
+                // and its pending verification and reset links.
+                Object.assign(changes, {
+                    isEmailVerified: true,
+                    password: null,
+                    provider,
+                    providerId,
+                })
+                await this.db.delete(sessions).where(eq(sessions.userId, user.id))
+                await this.db.delete(verificationCodes).where(eq(verificationCodes.userId, user.id))
+            }
             // Accounts created before photos were copied still point at Google's CDN; move them over
             if (user.profilePicture?.includes('googleusercontent.com')) {
                 const imported = await this.importProfilePicture(picture ?? user.profilePicture)
