@@ -12,9 +12,11 @@ export const GoogleSignInButton = () => {
 
     const handleGoogleSignIn = () => {
         setIsLoading(true)
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api'
-        const authUrl = `${apiBaseUrl}/auth/google`
-        window.location.assign(authUrl)
+        // Go through our own /api proxy so the auth cookies the callback sets land on this
+        // domain; navigating to the API's domain would set them where the web app can't read them.
+        // A full page load is needed (it's an API route that redirects to Google), not router.push.
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+        window.location.assign('/api/auth/google')
     }
 
     return (

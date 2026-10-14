@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { AUTH_COOKIE_NAME } from '@/lib/constants'
 
-// Public because the Google sign-in button navigates to it, but browser code must still call the
-// API through this /api proxy: direct calls to the API don't carry the auth cookies.
+// Browser code must call the API through this /api proxy: direct calls to the API don't carry the
+// auth cookies, which live on the web app's domain.
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api'
 
 function isAuthPath(path: string) {
@@ -64,6 +64,8 @@ async function proxyRequest(request: NextRequest) {
             headers,
             body: body && body.byteLength > 0 ? body : undefined,
             cache: 'no-store',
+            // Pass redirects (the Google OAuth hops) to the browser instead of following them here
+            redirect: 'manual',
         })
 
         if (response.status === 401 && !isAuthPath(path)) {
