@@ -1,293 +1,128 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import {
     ArrowRight,
-    Briefcase,
+    Building2,
     CalendarClock,
-    CheckCircle2,
+    Check,
     FileUser,
     GalleryVerticalEnd,
-    ShieldCheck,
     Sparkles,
-    Star,
-    TrendingUp,
-    Users,
-    Wallet,
     Zap,
 } from 'lucide-react'
 
+import { HomeLink } from '@/components/home-link'
+import { LandingFeatures } from '@/components/landing-features'
+import { LandingHero } from '@/components/landing-hero'
+import { LandingNav } from '@/components/landing-nav'
+import {
+    CountUp,
+    Float,
+    MotionRoot,
+    Reveal,
+    RevealGroup,
+    RevealItem,
+    StrikeThrough,
+} from '@/components/motion-reveal'
+import { TestimonialsCarousel, type Testimonial } from '@/components/testimonials-carousel'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { UiImage } from '@/components/ui-custom/UiImage'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { SIGNIN_URL, SIGNUP_URL } from '@/lib/constants'
+import { features } from '@/lib/landing-features'
 import { buildThemeCss } from '@/lib/theme-utils'
 
 import { MaintenancePage } from './maintenance-page'
 
 export const dynamic = 'force-dynamic'
 
-function SiteLogo({
-    logoUrl,
-    siteName,
-    size,
-}: {
-    logoUrl: string | null
-    siteName: string
-    size: 'lg' | 'sm'
-}) {
-    if (logoUrl) {
-        return (
-            <Image
-                src={logoUrl}
-                alt={siteName}
-                width={size === 'lg' ? 140 : 110}
-                height={size === 'lg' ? 32 : 24}
-                sizes={size === 'lg' ? '140px' : '110px'}
-                className={size === 'lg' ? 'h-8 w-auto max-w-[140px]' : 'h-6 w-auto max-w-[110px]'}
-            />
-        )
-    }
-    return (
-        <div
-            className={`bg-primary text-primary-foreground flex shrink-0 items-center justify-center rounded-md ${
-                size === 'lg' ? 'size-7' : 'size-6'
-            }`}
-        >
-            <GalleryVerticalEnd className={size === 'lg' ? 'size-4' : 'size-3.5'} />
-        </div>
-    )
-}
-
 function Navbar({ siteName, logoUrl }: { siteName: string; logoUrl: string | null }) {
     return (
         <header className="border-border/50 bg-background/80 fixed top-0 z-50 w-full border-b backdrop-blur-md">
             <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-                <Link href="/" className="flex items-center gap-2 font-semibold">
-                    <SiteLogo logoUrl={logoUrl} siteName={siteName} size="lg" />
-                    <span className="text-lg">{siteName}</span>
-                </Link>
-                <nav className="hidden items-center gap-6 text-sm md:flex">
-                    <Link
-                        href="#features"
-                        className="text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                        Modules
-                    </Link>
-                    <Link
-                        href="#workflow"
-                        className="text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                        Workflow
-                    </Link>
-                    <Link
-                        href="#results"
-                        className="text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                        Results
-                    </Link>
-                </nav>
+                <HomeLink className="group flex items-center gap-2 font-semibold">
+                    {logoUrl ? (
+                        <UiImage
+                            src={logoUrl}
+                            alt={siteName}
+                            width={28}
+                            height={28}
+                            className="size-7 rounded-lg object-contain transition-transform duration-300 ease-out group-hover:scale-110 group-hover:-rotate-12 motion-reduce:transition-none"
+                        />
+                    ) : (
+                        <div className="bg-primary text-primary-foreground group-hover:shadow-primary/40 flex size-7 items-center justify-center rounded-lg transition-[transform,box-shadow] duration-300 ease-out group-hover:scale-110 group-hover:-rotate-12 group-hover:shadow-md motion-reduce:transition-none">
+                            <GalleryVerticalEnd className="size-4" />
+                        </div>
+                    )}
+                    <span className="group-hover:text-primary text-lg transition-colors duration-300">
+                        {siteName}
+                    </span>
+                </HomeLink>
+                <LandingNav />
                 <div className="flex items-center gap-3">
-                    <ThemeToggle />
                     <Button variant="ghost" size="sm" asChild>
                         <Link href={SIGNIN_URL}>Sign in</Link>
                     </Button>
-                    <Button size="sm" asChild>
-                        <Link href={SIGNUP_URL}>
-                            Request demo <ArrowRight className="ml-1 h-3.5 w-3.5" />
-                        </Link>
-                    </Button>
+                    <ThemeToggle />
                 </div>
             </div>
         </header>
     )
 }
 
-function Hero({ siteName }: { siteName: string }) {
+function SectionHeading({ badge, title, desc }: { badge: string; title: string; desc?: string }) {
     return (
-        <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 pt-16 text-center">
-            <div className="bg-primary/10 absolute top-1/3 left-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" />
-            <div className="absolute top-1/2 right-1/4 -z-10 h-[300px] w-[300px] rounded-full bg-violet-500/10 blur-3xl" />
-
-            <Badge variant="secondary" className="mb-6 gap-1.5 px-3 py-1">
-                <Sparkles className="h-3.5 w-3.5" />
-                Built for modern HR teams
-            </Badge>
-
-            <h1 className="max-w-5xl text-5xl leading-tight font-extrabold tracking-tight sm:text-6xl lg:text-7xl">
-                Run hiring, people ops, and performance in{' '}
-                <span className="from-primary bg-gradient-to-r to-violet-500 bg-clip-text text-transparent">
-                    one HR system
-                </span>
-            </h1>
-
-            <p className="text-muted-foreground mt-6 max-w-3xl text-lg leading-relaxed sm:text-xl">
-                {siteName} helps HR teams centralize employee data, automate leave and attendance,
-                manage recruitment, and gain real-time visibility across the workforce.
-            </p>
-
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-                <Button size="lg" className="h-12 px-8 text-base" asChild>
-                    <Link href={SIGNUP_URL}>
-                        Start with your team
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                </Button>
-                <Button size="lg" variant="outline" className="h-12 px-8 text-base" asChild>
-                    <Link href={SIGNIN_URL}>Sign in</Link>
-                </Button>
-            </div>
-
-            <div className="text-muted-foreground mt-8 flex flex-wrap items-center justify-center gap-6 text-sm">
-                {[
-                    'Employee records',
-                    'Leave & attendance',
-                    'Recruitment pipeline',
-                    'Role-based access',
-                ].map((t) => (
-                    <span key={t} className="flex items-center gap-1.5">
-                        <CheckCircle2 className="text-primary h-4 w-4" />
-                        {t}
-                    </span>
-                ))}
-            </div>
-
-            <div className="border-border bg-card relative mt-16 w-full max-w-5xl overflow-hidden rounded-2xl border shadow-2xl">
-                <div className="bg-muted/50 border-border flex items-center gap-1.5 border-b px-4 py-3">
-                    {['bg-red-400', 'bg-yellow-400', 'bg-green-400'].map((c, i) => (
-                        <div key={i} className={`h-3 w-3 rounded-full ${c}`} />
-                    ))}
-                    <div className="bg-background mx-auto w-64 rounded-md px-3 py-1 text-center text-xs text-gray-400">
-                        hr.{siteName.toLowerCase().replace(/\s+/g, '-')}.com
-                    </div>
-                </div>
-                <div className="grid grid-cols-2 gap-0 divide-x divide-y sm:grid-cols-4">
-                    {[
-                        { label: 'Employees', value: '248', color: 'text-blue-500' },
-                        { label: 'Open Roles', value: '12', color: 'text-violet-500' },
-                        { label: 'Leave Requests', value: '18', color: 'text-emerald-500' },
-                        { label: 'Payroll Ready', value: '99%', color: 'text-orange-500' },
-                    ].map((s) => (
-                        <div key={s.label} className="bg-card p-6 text-center">
-                            <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
-                            <p className="text-muted-foreground mt-1 text-xs">{s.label}</p>
-                        </div>
-                    ))}
-                </div>
-                <div className="bg-card grid grid-cols-2 gap-3 p-6 sm:grid-cols-4">
-                    {[
-                        { title: 'Employee Hub', meta: 'Profiles · Documents', icon: Users },
-                        { title: 'Attendance', meta: 'Shifts · Time logs', icon: CalendarClock },
-                        { title: 'Recruitment', meta: 'Jobs · Candidates', icon: Briefcase },
-                        { title: 'Payroll', meta: 'Salary · Benefits', icon: Wallet },
-                    ].map((item) => (
-                        <div key={item.title} className="bg-muted rounded-lg p-3 text-left text-xs">
-                            <div className="bg-primary/10 mb-2 flex h-7 w-7 items-center justify-center rounded-md">
-                                <item.icon className="text-primary h-3.5 w-3.5" />
-                            </div>
-                            <p className="font-medium">{item.title}</p>
-                            <p className="text-muted-foreground mt-0.5">{item.meta}</p>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </section>
-    )
-}
-
-const features = [
-    {
-        icon: FileUser,
-        title: 'Employee Records',
-        desc: 'Store employee profiles, contracts, documents, and organizational data in one secure workspace.',
-        color: 'bg-blue-500/10 text-blue-500',
-    },
-    {
-        icon: CalendarClock,
-        title: 'Attendance & Leave',
-        desc: 'Track attendance, shift schedules, time-off balances, and approval workflows without spreadsheets.',
-        color: 'bg-violet-500/10 text-violet-500',
-    },
-    {
-        icon: Wallet,
-        title: 'Payroll Readiness',
-        desc: 'Keep compensation, deductions, and HR records aligned so payroll preparation is faster and cleaner.',
-        color: 'bg-emerald-500/10 text-emerald-500',
-    },
-    {
-        icon: Briefcase,
-        title: 'Recruitment Pipeline',
-        desc: 'Manage job openings, candidate stages, interview coordination, and hiring decisions in one flow.',
-        color: 'bg-orange-500/10 text-orange-500',
-    },
-    {
-        icon: TrendingUp,
-        title: 'Performance Insights',
-        desc: 'Monitor headcount, engagement, productivity, and team growth with clear HR analytics.',
-        color: 'bg-pink-500/10 text-pink-500',
-    },
-    {
-        icon: ShieldCheck,
-        title: 'Access & Compliance',
-        desc: 'Protect sensitive HR data with role-based permissions, audit-friendly workflows, and admin controls.',
-        color: 'bg-cyan-500/10 text-cyan-500',
-    },
-]
-
-function Features() {
-    return (
-        <section id="features" className="mx-auto max-w-6xl px-6 py-24">
-            <div className="mb-16 text-center">
+        <RevealGroup className="mb-16 text-center" amount={0.5}>
+            <RevealItem>
                 <Badge variant="secondary" className="mb-4">
-                    Core modules
+                    {badge}
                 </Badge>
-                <h2 className="text-4xl font-bold tracking-tight">
-                    Everything HR needs in one place
-                </h2>
-                <p className="text-muted-foreground mx-auto mt-4 max-w-2xl">
-                    Replace scattered spreadsheets and disconnected tools with one platform for
-                    people operations.
-                </p>
-            </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {features.map((f) => (
-                    <div
-                        key={f.title}
-                        className="bg-card border-border group rounded-2xl border p-6 transition-shadow hover:shadow-lg"
-                    >
-                        <div
-                            className={`mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl ${f.color}`}
-                        >
-                            <f.icon className="h-5 w-5" />
-                        </div>
-                        <h3 className="mb-2 font-semibold">{f.title}</h3>
-                        <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>
-                    </div>
-                ))}
-            </div>
-        </section>
+            </RevealItem>
+            <RevealItem as="h2" className="text-4xl font-bold tracking-tight">
+                {title}
+            </RevealItem>
+            {desc && (
+                <RevealItem as="p" className="text-muted-foreground mx-auto mt-4 max-w-2xl">
+                    {desc}
+                </RevealItem>
+            )}
+        </RevealGroup>
     )
 }
 
 const steps = [
     {
         step: '01',
+        icon: Building2,
         title: 'Set up your company',
-        desc: 'Configure teams, roles, locations, policies, and permissions for your HR workflow.',
+        desc: 'Configure departments, roles, work locations, and permissions for your HR team.',
+        modules: ['Employee Records'],
     },
     {
         step: '02',
+        icon: FileUser,
         title: 'Centralize people data',
-        desc: 'Import employees, contracts, leave balances, and historical HR records into one source of truth.',
+        desc: 'Bring employee profiles, contracts, and documents into one source of truth.',
+        modules: ['Employee Records'],
     },
     {
         step: '03',
-        title: 'Automate daily operations',
-        desc: 'Run onboarding, attendance, leave approvals, recruitment, and admin tasks with less manual effort.',
+        icon: CalendarClock,
+        title: 'Run attendance & leave',
+        desc: 'Employees clock in, follow shift schedules, and request time off while managers approve in a click.',
+        modules: ['Attendance & Leave'],
     },
     {
         step: '04',
-        title: 'Track workforce results',
-        desc: 'Use live dashboards to monitor headcount, hiring velocity, compliance, and people performance.',
+        icon: Sparkles,
+        title: 'Expand as you grow',
+        desc: 'Unlock payroll, recruitment, performance, and compliance modules as they roll out.',
+        modules: [
+            'Payroll Readiness',
+            'Recruitment Pipeline',
+            'Performance Insights',
+            'Access & Compliance',
+        ],
     },
 ]
 
@@ -295,30 +130,86 @@ function HowItWorks() {
     return (
         <section id="workflow" className="bg-muted/40 py-24">
             <div className="mx-auto max-w-6xl px-6">
-                <div className="mb-16 text-center">
-                    <Badge variant="secondary" className="mb-4">
-                        Workflow
-                    </Badge>
-                    <h2 className="text-4xl font-bold tracking-tight">
-                        Launch a stronger HR operation in 4 steps
-                    </h2>
-                </div>
-                <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-                    {steps.map((s, i) => (
-                        <div key={s.step} className="relative">
-                            {i < steps.length - 1 && (
-                                <div className="bg-border absolute top-6 left-full hidden h-px w-full lg:block" />
-                            )}
-                            <div className="bg-primary text-primary-foreground mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold">
-                                {s.step}
-                            </div>
-                            <h3 className="mb-2 font-semibold">{s.title}</h3>
-                            <p className="text-muted-foreground text-sm leading-relaxed">
-                                {s.desc}
-                            </p>
-                        </div>
-                    ))}
-                </div>
+                <SectionHeading
+                    badge="Workflow"
+                    title="Launch a stronger HR operation in 4 steps"
+                    desc="Start with the modules available today and grow into the rest of the platform."
+                />
+                <RevealGroup className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4" stagger={0.18}>
+                    {steps.map((s, i) => {
+                        const modules = s.modules
+                            .map((title) => features.find((f) => f.title === title))
+                            .filter((f) => f !== undefined)
+                        const highlighted = modules.some((m) => m.highlighted)
+                        const upcoming = modules.every((m) => m.upcoming)
+
+                        return (
+                            <RevealItem
+                                key={s.step}
+                                y={40}
+                                scale={0.95}
+                                hoverLift
+                                className={`relative flex flex-col rounded-2xl border p-6 transition-shadow hover:shadow-lg ${
+                                    highlighted
+                                        ? 'to-card border-violet-500/60 bg-gradient-to-br from-violet-500/10 ring-1 ring-violet-500/30'
+                                        : upcoming
+                                          ? 'bg-card/60 border-border border-dashed'
+                                          : 'bg-card border-border'
+                                }`}
+                            >
+                                {i < steps.length - 1 && (
+                                    <div className="bg-border absolute top-1/2 -right-6 hidden h-px w-6 lg:block" />
+                                )}
+                                <div className="mb-4 flex items-center justify-between">
+                                    <div
+                                        className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${
+                                            modules.length === 1
+                                                ? modules[0].color
+                                                : 'bg-primary/10 text-primary'
+                                        }`}
+                                    >
+                                        <s.icon className="h-5 w-5" />
+                                    </div>
+                                    <CountUp
+                                        value={s.step}
+                                        delay={0.2 + i * 0.18}
+                                        duration={0.8}
+                                        once={false}
+                                        className="text-muted-foreground/40 text-3xl font-bold"
+                                    />
+                                </div>
+                                <h3 className="mb-2 font-semibold">{s.title}</h3>
+                                <p className="text-muted-foreground mb-5 text-sm leading-relaxed">
+                                    {s.desc}
+                                </p>
+                                <div className="mt-auto flex flex-wrap gap-1.5">
+                                    {modules.map((m) => (
+                                        <span
+                                            key={m.title}
+                                            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium ${m.color}`}
+                                        >
+                                            <m.icon className="h-3 w-3" />
+                                            {m.title}
+                                        </span>
+                                    ))}
+                                    {upcoming && (
+                                        <Badge
+                                            variant="outline"
+                                            className="text-muted-foreground px-2 py-0 text-[10px] font-medium"
+                                        >
+                                            Next Plan
+                                        </Badge>
+                                    )}
+                                    {highlighted && (
+                                        <Badge className="bg-violet-500 px-2 py-0 text-[10px] text-white hover:bg-violet-500">
+                                            New
+                                        </Badge>
+                                    )}
+                                </div>
+                            </RevealItem>
+                        )
+                    })}
+                </RevealGroup>
             </div>
         </section>
     )
@@ -334,72 +225,256 @@ const stats = [
 function Stats() {
     return (
         <section id="results" className="mx-auto max-w-6xl px-6 py-24">
-            <div className="from-primary/5 grid gap-8 rounded-3xl bg-gradient-to-br to-violet-500/5 p-12 sm:grid-cols-2 lg:grid-cols-4">
-                {stats.map((s) => (
-                    <div key={s.label} className="text-center">
-                        <p className="from-primary bg-gradient-to-r to-violet-500 bg-clip-text text-5xl font-extrabold text-transparent">
-                            {s.value}
-                        </p>
-                        <p className="text-muted-foreground mt-2 text-sm">{s.label}</p>
-                    </div>
-                ))}
-            </div>
+            <Reveal scale={0.96} amount={0.4}>
+                <RevealGroup
+                    className="from-primary/5 grid gap-8 rounded-3xl bg-gradient-to-br to-violet-500/5 p-12 sm:grid-cols-2 lg:grid-cols-4"
+                    stagger={0.12}
+                    delay={0.2}
+                    amount={0.4}
+                >
+                    {stats.map((s, i) => (
+                        <RevealItem key={s.label} y={16} scale={0.85} className="text-center">
+                            <p className="from-primary bg-gradient-to-r to-violet-500 bg-clip-text text-5xl font-extrabold text-transparent">
+                                <CountUp value={s.value} delay={0.3 + i * 0.12} once={false} />
+                            </p>
+                            <p className="text-muted-foreground mt-2 text-sm">{s.label}</p>
+                        </RevealItem>
+                    ))}
+                </RevealGroup>
+            </Reveal>
         </section>
     )
 }
 
-const testimonials = [
+const testimonials: Testimonial[] = [
     {
-        name: 'Alicia R.',
+        name: 'Alicia Ramos',
         role: 'HR Manager',
-        text: 'We moved employee data, leave approvals, and recruitment into one workflow. Our HR team finally works from a single source of truth.',
+        company: 'Northwind Retail',
+        photo: 'https://randomuser.me/api/portraits/women/44.jpg',
+        text: 'Leave requests used to live in chat threads and spreadsheets. Now employees submit them in seconds and managers approve with full context of balances and schedules.',
     },
     {
-        name: 'Daniel S.',
+        name: 'Daniel Smith',
         role: 'People Operations Lead',
-        text: 'The dashboards make it easy to spot hiring bottlenecks, attendance issues, and team growth trends without chasing spreadsheets.',
+        company: 'Brightpath Logistics',
+        photo: 'https://randomuser.me/api/portraits/men/32.jpg',
+        text: 'Clock-in with location checks solved our biggest attendance headache across three warehouses. Late arrivals and missed shifts show up the same day, not at month end.',
     },
     {
-        name: 'Maya T.',
+        name: 'Maya Tanaka',
         role: 'Operations Director',
-        text: 'What used to take days across payroll prep, onboarding, and policy tracking now takes hours with cleaner approvals and better visibility.',
+        company: 'Kumo Studio',
+        photo: 'https://randomuser.me/api/portraits/women/68.jpg',
+        text: 'Having every employee profile, contract, and document in one place made onboarding new hires noticeably faster. Nobody asks where the latest file is anymore.',
+    },
+    {
+        name: 'Rizky Pratama',
+        role: 'HR Generalist',
+        company: 'Lumbung Foods',
+        photo: 'https://randomuser.me/api/portraits/men/75.jpg',
+        text: 'Shift schedules and time-off balances finally agree with each other. Our team spends far less time reconciling attendance before cut-off.',
+    },
+    {
+        name: 'Sofia Laurent',
+        role: 'Head of People',
+        company: 'Atelier Nine',
+        photo: 'https://randomuser.me/api/portraits/women/12.jpg',
+        text: 'Role-based access means managers see their team and nothing more. It gave our leadership the confidence to move all HR records onto one platform.',
+    },
+    {
+        name: 'Marcus Lee',
+        role: 'Office Manager',
+        company: 'Pinecrest Clinic',
+        photo: 'https://randomuser.me/api/portraits/men/46.jpg',
+        text: 'Setup took an afternoon. Departments, roles, and work locations were configured before lunch, and staff were clocking in the next morning.',
     },
 ]
 
 function Testimonials() {
     return (
-        <section className="bg-muted/40 py-24">
+        <section className="bg-muted/40 overflow-hidden py-24">
             <div className="mx-auto max-w-6xl px-6">
-                <div className="mb-16 text-center">
-                    <Badge variant="secondary" className="mb-4">
-                        Customer stories
-                    </Badge>
-                    <h2 className="text-4xl font-bold tracking-tight">
-                        Trusted by growing HR teams
-                    </h2>
-                </div>
-                <div className="grid gap-6 sm:grid-cols-3">
-                    {testimonials.map((t) => (
-                        <div key={t.name} className="bg-card border-border rounded-2xl border p-6">
-                            <div className="mb-4 flex gap-1">
-                                {Array.from({ length: 5 }).map((_, i) => (
-                                    <Star
-                                        key={i}
-                                        className="h-4 w-4 fill-yellow-400 text-yellow-400"
-                                    />
-                                ))}
-                            </div>
-                            <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
-                                "{t.text}"
-                            </p>
-                            <div>
-                                <p className="text-sm font-semibold">{t.name}</p>
-                                <p className="text-muted-foreground text-xs">{t.role}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                <SectionHeading
+                    badge="Customer stories"
+                    title="Trusted by growing HR teams"
+                    desc="See how HR teams run attendance, leave, and employee records without the spreadsheet chaos."
+                />
+                <Reveal y={40} delay={0.1}>
+                    <TestimonialsCarousel testimonials={testimonials} />
+                </Reveal>
             </div>
+        </section>
+    )
+}
+
+const plans = [
+    {
+        name: 'Free',
+        desc: 'For individuals and tiny teams exploring HR basics.',
+        price: 'Free',
+        period: '',
+        cta: 'Get started',
+        featured: false,
+        features: [
+            'Up to 5 employees',
+            'Employee records & profiles',
+            'Basic leave tracking',
+            'Community support',
+        ],
+    },
+    {
+        name: 'Professional',
+        desc: 'For growing companies that need full HR capabilities.',
+        price: 'Rp 600K',
+        period: '/month',
+        originalPrice: 'Rp 1.2jt',
+        discount: '50% off',
+        cta: 'Start free trial',
+        featured: true,
+        features: [
+            'Up to 250 employees',
+            'Everything in Starter',
+            'Recruitment pipeline & jobs',
+            'Performance insights',
+            'Role-based access control',
+            'Priority chat & email support',
+            'API access',
+        ],
+    },
+    {
+        name: 'Enterprise',
+        desc: 'For large organizations with advanced HR requirements.',
+        price: 'Custom',
+        period: '',
+        cta: 'Contact sales',
+        featured: false,
+        features: [
+            'Unlimited employees',
+            'Everything in Professional',
+            'Custom integrations & SSO',
+            'Dedicated account manager',
+            'Custom onboarding & training',
+            'SLA & 24/7 support',
+            'Advanced analytics & exports',
+        ],
+    },
+]
+
+function Pricing() {
+    return (
+        <section id="pricing" className="mx-auto max-w-6xl px-6 py-24">
+            <SectionHeading
+                badge="Pricing"
+                title="Simple, transparent pricing"
+                desc="Choose the plan that fits your team size and HR needs. Upgrade anytime as you grow."
+            />
+            <RevealGroup className="grid gap-6 lg:grid-cols-3" stagger={0.15} amount={0.15}>
+                {plans.map((plan) => (
+                    <RevealItem
+                        key={plan.name}
+                        y={48}
+                        scale={plan.featured ? 0.9 : 0.95}
+                        hoverLift
+                        className={`bg-card border-border relative flex flex-col rounded-2xl border p-6 transition-shadow hover:shadow-lg ${
+                            plan.featured ? 'ring-primary shadow-md ring-2' : ''
+                        }`}
+                    >
+                        {plan.featured && (
+                            <div className="bg-primary text-primary-foreground absolute -top-3 left-1/2 -translate-x-1/2 overflow-hidden rounded-full px-4 py-1 text-xs font-semibold shadow-md">
+                                <span
+                                    aria-hidden
+                                    className="animate-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                                />
+                                <span className="relative">Most popular</span>
+                            </div>
+                        )}
+                        <div className="mb-6">
+                            <RevealItem as="h3" y={12} delay={0.15} className="text-xl font-bold">
+                                {plan.name}
+                            </RevealItem>
+                            <RevealItem
+                                as="p"
+                                y={12}
+                                delay={0.22}
+                                className="text-muted-foreground mt-1 text-sm"
+                            >
+                                {plan.desc}
+                            </RevealItem>
+                        </div>
+                        <div className="mb-6">
+                            <RevealItem
+                                y={16}
+                                scale={0.9}
+                                delay={0.3}
+                                className="flex items-baseline gap-2"
+                            >
+                                <span
+                                    className={`text-5xl font-extrabold tracking-tight ${
+                                        plan.featured
+                                            ? 'from-primary bg-gradient-to-r to-violet-500 bg-clip-text text-transparent'
+                                            : ''
+                                    }`}
+                                >
+                                    <CountUp
+                                        value={plan.price}
+                                        delay={0.35}
+                                        duration={1.2}
+                                        once={false}
+                                    />
+                                </span>
+                                {plan.period && (
+                                    <span className="text-muted-foreground text-sm">
+                                        {plan.period}
+                                    </span>
+                                )}
+                            </RevealItem>
+                            {'originalPrice' in plan && plan.originalPrice && (
+                                <div className="mt-1 flex items-center gap-2">
+                                    <StrikeThrough
+                                        delay={0.9}
+                                        className="text-muted-foreground text-sm"
+                                    >
+                                        {plan.originalPrice}
+                                    </StrikeThrough>
+                                    <RevealItem as="span" y={0} scale={0.5} delay={1.1}>
+                                        <Badge className="border-0 bg-emerald-500/10 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                                            {plan.discount}
+                                        </Badge>
+                                    </RevealItem>
+                                </div>
+                            )}
+                        </div>
+                        <Button
+                            className="mb-8 w-full"
+                            variant={plan.featured ? 'default' : 'outline'}
+                            asChild
+                        >
+                            <Link href={SIGNUP_URL}>{plan.cta}</Link>
+                        </Button>
+                        <RevealGroup as="ul" className="space-y-3" stagger={0.07} delay={0.45}>
+                            {plan.features.map((f) => (
+                                <RevealItem
+                                    as="li"
+                                    key={f}
+                                    y={8}
+                                    className="flex items-start gap-2.5 text-sm"
+                                >
+                                    <RevealItem
+                                        as="span"
+                                        y={0}
+                                        scale={0.3}
+                                        className="mt-0.5 shrink-0"
+                                    >
+                                        <Check className="text-primary h-4 w-4" />
+                                    </RevealItem>
+                                    <span className="text-muted-foreground">{f}</span>
+                                </RevealItem>
+                            ))}
+                        </RevealGroup>
+                    </RevealItem>
+                ))}
+            </RevealGroup>
         </section>
     )
 }
@@ -407,44 +482,56 @@ function Testimonials() {
 function CTA() {
     return (
         <section className="mx-auto max-w-6xl px-6 py-24">
-            <div className="from-primary relative overflow-hidden rounded-3xl bg-gradient-to-br to-violet-600 p-12 text-center text-white">
+            <Reveal
+                y={40}
+                scale={0.94}
+                amount={0.4}
+                className="from-primary relative isolate overflow-hidden rounded-3xl bg-gradient-to-br to-violet-600 p-12 text-center text-white"
+            >
                 <div
-                    className="absolute inset-0 -z-10 opacity-20"
+                    aria-hidden
+                    className="animate-dots-drift pointer-events-none absolute inset-0 -z-10 opacity-20"
                     style={{
                         backgroundImage:
                             'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)',
                         backgroundSize: '40px 40px',
                     }}
                 />
-                <Zap className="mx-auto mb-4 h-10 w-10 opacity-90" />
-                <h2 className="mb-4 text-4xl font-extrabold tracking-tight">
-                    Ready to modernize your HR system?
-                </h2>
-                <p className="mx-auto mb-8 max-w-2xl text-lg opacity-90">
-                    Bring hiring, employee management, leave, payroll readiness, and reporting into
-                    one streamlined platform.
-                </p>
-                <div className="flex flex-wrap items-center justify-center gap-4">
-                    <Button
-                        size="lg"
-                        variant="secondary"
-                        className="h-12 px-8 text-base font-semibold"
-                        asChild
-                    >
-                        <Link href={SIGNUP_URL}>
-                            Get started <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
-                    </Button>
-                    <Button
-                        size="lg"
-                        variant="outline"
-                        className="h-12 border-white/40 px-8 text-base text-white hover:bg-white/10 hover:text-white"
-                        asChild
-                    >
-                        <Link href={SIGNIN_URL}>Sign in</Link>
-                    </Button>
-                </div>
-            </div>
+                <RevealGroup stagger={0.12} delay={0.25} amount={0.4}>
+                    <RevealItem scale={0.6}>
+                        <Float className="mx-auto mb-4 w-fit">
+                            <Zap className="h-10 w-10 opacity-90" />
+                        </Float>
+                    </RevealItem>
+                    <RevealItem as="h2" className="mb-4 text-4xl font-extrabold tracking-tight">
+                        Ready to modernize your HR system?
+                    </RevealItem>
+                    <RevealItem as="p" className="mx-auto mb-8 max-w-2xl text-lg opacity-90">
+                        Bring hiring, employee management, leave, payroll readiness, and reporting
+                        into one streamlined platform.
+                    </RevealItem>
+                    <RevealItem className="flex flex-wrap items-center justify-center gap-4">
+                        <Button
+                            size="lg"
+                            variant="secondary"
+                            className="h-12 px-8 text-base font-semibold"
+                            asChild
+                        >
+                            <Link href={SIGNUP_URL}>
+                                Get started <ArrowRight className="ml-2 h-4 w-4" />
+                            </Link>
+                        </Button>
+                        <Button
+                            size="lg"
+                            variant="outline"
+                            className="h-12 border-white/50 bg-white/10 px-8 text-base text-white backdrop-blur-sm hover:border-white/70 hover:bg-white/20 hover:text-white dark:border-white/50 dark:bg-white/10 dark:hover:bg-white/20"
+                            asChild
+                        >
+                            <Link href={SIGNIN_URL}>Sign in</Link>
+                        </Button>
+                    </RevealItem>
+                </RevealGroup>
+            </Reveal>
         </section>
     )
 }
@@ -452,11 +539,27 @@ function CTA() {
 function Footer({ siteName, logoUrl }: { siteName: string; logoUrl: string | null }) {
     return (
         <footer className="border-border border-t py-10">
-            <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
-                <Link href="/" className="flex items-center gap-2 font-semibold">
-                    <SiteLogo logoUrl={logoUrl} siteName={siteName} size="sm" />
+            <Reveal
+                y={16}
+                amount={0.5}
+                className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row"
+            >
+                <HomeLink className="flex items-center gap-2 font-semibold">
+                    {logoUrl ? (
+                        <UiImage
+                            src={logoUrl}
+                            alt={siteName}
+                            width={24}
+                            height={24}
+                            className="size-6 rounded-md object-contain"
+                        />
+                    ) : (
+                        <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
+                            <GalleryVerticalEnd className="size-3.5" />
+                        </div>
+                    )}
                     {siteName}
-                </Link>
+                </HomeLink>
                 <p className="text-muted-foreground text-sm">
                     © {new Date().getFullYear()} {siteName}. All rights reserved.
                 </p>
@@ -474,7 +577,7 @@ function Footer({ siteName, logoUrl }: { siteName: string; logoUrl: string | nul
                         Register
                     </Link>
                 </div>
-            </div>
+            </Reveal>
         </footer>
     )
 }
@@ -550,16 +653,19 @@ export default async function LandingPage() {
     }
 
     return (
-        <div className="min-h-screen">
-            {themeCss && <style dangerouslySetInnerHTML={{ __html: themeCss }} />}
-            <Navbar siteName={siteName} logoUrl={logoUrl} />
-            <Hero siteName={siteName} />
-            <Features />
-            <HowItWorks />
-            <Stats />
-            <Testimonials />
-            <CTA />
-            <Footer siteName={siteName} logoUrl={logoUrl} />
-        </div>
+        <MotionRoot>
+            <div className="min-h-screen">
+                {themeCss && <style dangerouslySetInnerHTML={{ __html: themeCss }} />}
+                <Navbar siteName={siteName} logoUrl={logoUrl} />
+                <LandingHero siteName={siteName} />
+                <LandingFeatures />
+                <HowItWorks />
+                <Stats />
+                <Testimonials />
+                <Pricing />
+                <CTA />
+                <Footer siteName={siteName} logoUrl={logoUrl} />
+            </div>
+        </MotionRoot>
     )
 }
