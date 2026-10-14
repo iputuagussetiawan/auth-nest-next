@@ -37,6 +37,10 @@ async function bootstrap() {
     if (!origin && process.env.NODE_ENV === 'production') {
         throw new Error('FRONTEND_ORIGIN must be set in production')
     }
+    if (!process.env.PROXY_SECRET && process.env.NODE_ENV === 'production') {
+        // Not fatal: the API still works, but every web app visitor shares the proxy's rate limit
+        console.warn('PROXY_SECRET is not set; rate limits will apply per proxy, not per visitor')
+    }
 
     app.enableCors({
         origin: origin || 'http://localhost:3000',

@@ -22,6 +22,7 @@ import {
 import { Throttle } from '@nestjs/throttler'
 import { Request, Response } from 'express'
 
+import { getClientIp } from '../../common/helpers/client-ip'
 import { successResponse } from '../../common/helpers/response.helper'
 import { AuthService } from './auth.service'
 import { ForgotPasswordDto } from './dto/forgot-password.dto'
@@ -120,7 +121,7 @@ export class AuthController {
     @ApiResponse({ status: 401, description: 'Invalid credentials' })
     async login(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
         const user = req.user as any
-        const ip = req.ip ?? req.socket.remoteAddress
+        const ip = getClientIp(req)
         const session = await this.authService.createSession(
             user.id,
             req.headers['user-agent'],
@@ -227,7 +228,7 @@ export class AuthController {
             const user = req.user as any
             if (!user.isActive) return signinWith('account_disabled')
 
-            const ip = req.ip ?? req.socket.remoteAddress
+            const ip = getClientIp(req)
             const session = await this.authService.createSession(
                 user.id,
                 req.headers['user-agent'],

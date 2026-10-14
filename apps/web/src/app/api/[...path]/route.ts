@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+import { CLIENT_IP_HEADER, clientIpHeaders, PROXY_SECRET_HEADER } from '@/lib/client-ip'
 import { AUTH_COOKIE_NAME } from '@/lib/constants'
 
 // Browser code must call the API through this /api proxy: direct calls to the API don't carry the
@@ -46,12 +47,17 @@ async function proxyRequest(request: NextRequest) {
     const path = request.nextUrl.pathname.replace(/^\/api\//, '')
     const targetUrl = `${API_BASE_URL}/${path}${request.nextUrl.search}`
 
+    const clientHeaders = clientIpHeaders(request.headers)
     const headers = new Headers(request.headers)
     headers.delete('host')
     headers.delete('x-forwarded-for')
     headers.delete('x-real-ip')
     headers.delete('x-forwarded-host')
     headers.delete('x-forwarded-proto')
+    // Never pass through a browser-supplied copy of the headers the API trusts
+    headers.delete(CLIENT_IP_HEADER)
+    headers.delete(PROXY_SECRET_HEADER)
+    Object.entries(clientHeaders).forEach(([key, value]) => headers.set(key, value))
 
     const body =
         request.method !== 'GET' && request.method !== 'HEAD'
@@ -71,7 +77,7 @@ async function proxyRequest(request: NextRequest) {
         if (response.status === 401 && !isAuthPath(path)) {
             const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
                 method: 'POST',
-                headers: { cookie: request.headers.get('cookie') ?? '' },
+                headers: { cookie: request.headers.get('cookie') ?? '', ...clientHeaders },
                 cache: 'no-store',
                 redirect: 'manual',
             })

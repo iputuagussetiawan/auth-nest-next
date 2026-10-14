@@ -1,4 +1,5 @@
 import type { IThemeConfig } from '@/features/admin/themes/types/ThemeTypes'
+import { currentClientIpHeaders } from '@/lib/client-ip'
 import { isSafeThemeConfig } from '@/lib/theme-utils'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api'
@@ -6,6 +7,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8
 export async function getActiveThemeConfig(): Promise<IThemeConfig | null> {
     try {
         const response = await fetch(`${API_BASE_URL}/themes/active`, {
+            headers: await currentClientIpHeaders(),
             cache: 'no-store',
             signal: AbortSignal.timeout(5000),
         })
