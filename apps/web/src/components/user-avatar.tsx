@@ -21,7 +21,12 @@ export function UserAvatar({ name, image, className, fallbackClassName }: UserAv
 
     return (
         <Avatar className={cn('h-8 w-8 rounded-lg', className)}>
-            <AvatarImage src={image ?? undefined} alt={name ?? 'User avatar'} />
+            {/* Google's avatar CDN rate-limits (429) hotlinked requests that carry a Referer */}
+            <AvatarImage
+                src={image ?? undefined}
+                alt={name ?? 'User avatar'}
+                referrerPolicy="no-referrer"
+            />
             <AvatarFallback
                 className={cn(
                     'bg-primary/10 text-primary rounded-lg font-medium',
