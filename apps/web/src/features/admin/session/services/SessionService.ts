@@ -13,4 +13,9 @@ export const sessionService = {
             method: 'DELETE',
             cache: 'no-store',
         }),
+    revokeOthers: () =>
+        api.API<ISessionDeleteResponse>('/api/sessions/others', {
+            method: 'DELETE',
+            cache: 'no-store',
+        }),
 }

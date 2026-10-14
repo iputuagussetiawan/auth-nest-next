@@ -1,8 +1,19 @@
 'use client'
 
 import React from 'react'
-import { Globe, Loader2, Trash2 } from 'lucide-react'
+import { Globe, Loader2, LogOut } from 'lucide-react'
 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils' // Standard utility for tailwind class merging
 
@@ -10,6 +21,7 @@ interface SessionItemProps {
     session: {
         id: string
         isCurrent: boolean
+        ipAddress?: string | null
     }
     parsedDetails: {
         Icon: React.ElementType // For dynamic components
@@ -18,7 +30,7 @@ interface SessionItemProps {
     }
     timeAgo: string
     loading?: boolean
-    onDelete: (id: string) => void
+    onRevoke?: (id: string) => void
 }
 
 export default function SessionItem({
@@ -26,9 +38,10 @@ export default function SessionItem({
     parsedDetails,
     timeAgo,
     loading,
-    onDelete,
+    onRevoke,
 }: SessionItemProps) {
     const IconComponent = parsedDetails.Icon
+    const deviceLabel = `${parsedDetails.browser} on ${parsedDetails.os}`
 
     return (
         <div className="group flex w-full items-center py-3">
@@ -46,10 +59,10 @@ export default function SessionItem({
             <div className="flex flex-1 items-center justify-between gap-4">
                 <div className="min-w-0 flex-1">
                     <h5 className="text-foreground flex items-center gap-2 truncate text-sm leading-tight font-bold">
-                        {parsedDetails.browser} on {parsedDetails.os}
+                        {deviceLabel}
                     </h5>
 
-                    <div className="mt-1.5 flex items-center gap-2">
+                    <div className="mt-1.5 flex flex-wrap items-center gap-2">
                         {/* Conditional Rendering for "This Device" tag */}
                         {session.isCurrent && (
                             <div className="inline-flex items-center rounded-md border border-green-500/20 bg-green-500/10 px-2 py-0.5 text-[10px] font-black tracking-tighter text-green-600 uppercase dark:text-green-400">
@@ -61,25 +74,53 @@ export default function SessionItem({
                             <Globe className="size-3" />
                             {timeAgo}
                         </span>
+
+                        {session.ipAddress && (
+                            <span className="text-muted-foreground text-xs">
+                                · {session.ipAddress}
+                            </span>
+                        )}
                     </div>
                 </div>
 
-                {/* Delete Button - Only shown if not current session */}
-                {/* {!session.isCurrent && (
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive size-9 rounded-full transition-colors"
-                        disabled={loading}
-                        onClick={() => onDelete(session.id)}
-                    >
-                        {loading ? (
-                            <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                            <Trash2 className="size-4" />
-                        )}
-                    </Button>
-                )} */}
+                {/* Revoke Button - The API refuses to revoke the current session, so it's hidden there */}
+                {!session.isCurrent && onRevoke && (
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label={`Sign out ${deviceLabel}`}
+                                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive size-9 rounded-full transition-colors"
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <Loader2 className="size-4 animate-spin" />
+                                ) : (
+                                    <LogOut className="size-4" />
+                                )}
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Sign out this session?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    {deviceLabel} will be signed out immediately and will need to
+                                    log in again.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                    variant="destructive"
+                                    onClick={() => onRevoke(session.id)}
+                                >
+                                    Sign out
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                )}
             </div>
         </div>
     )
