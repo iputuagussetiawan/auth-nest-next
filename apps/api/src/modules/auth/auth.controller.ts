@@ -1,3 +1,4 @@
+import * as crypto from 'crypto'
 import {
     Body,
     Controller,
@@ -56,6 +57,27 @@ function clearAuthCookies(res: Response) {
     res.clearCookie('refreshToken', authCookieOptions(REFRESH_MAX_AGE))
 }
 
+const DEVICE_ID_MAX_AGE = 365 * 24 * 60 * 60 * 1000 // 1 year
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/**
+ * Identifies this browser across logins so re-logging in replaces its session instead of adding one.
+ * Survives logout on purpose. Lax, not Strict, so it is sent on the Google OAuth callback navigation.
+ */
+function getOrSetDeviceId(req: Request, res: Response): string {
+    const existing: unknown = req.cookies?.deviceId
+    const deviceId =
+        typeof existing === 'string' && UUID_RE.test(existing) ? existing : crypto.randomUUID()
+    res.cookie('deviceId', deviceId, {
+        httpOnly: true,
+        secure: IS_PROD,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: DEVICE_ID_MAX_AGE,
+    })
+    return deviceId
+}
+
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -99,7 +121,12 @@ export class AuthController {
     async login(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
         const user = req.user as any
         const ip = req.ip ?? req.socket.remoteAddress
-        const session = await this.authService.createSession(user.id, req.headers['user-agent'], ip)
+        const session = await this.authService.createSession(
+            user.id,
+            req.headers['user-agent'],
+            ip,
+            getOrSetDeviceId(req, res),
+        )
         const accessToken = this.authService.signAccessToken({
             userId: user.id,
             sessionId: session.id,
@@ -205,6 +232,7 @@ export class AuthController {
                 user.id,
                 req.headers['user-agent'],
                 ip,
+                getOrSetDeviceId(req, res),
             )
             const accessToken = this.authService.signAccessToken({
                 userId: user.id,

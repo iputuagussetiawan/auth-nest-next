@@ -2,7 +2,7 @@ import * as crypto from 'crypto'
 import { Inject, Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import * as bcrypt from 'bcrypt'
-import { and, count, eq, gt, isNull, lt } from 'drizzle-orm'
+import { and, count, eq, gt, isNull, lt, or } from 'drizzle-orm'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
 import {
@@ -91,18 +91,30 @@ export class AuthService {
         })
     }
 
-    async createSession(userId: string, userAgent: string | undefined, ipAddress?: string) {
+    async createSession(
+        userId: string,
+        userAgent: string | undefined,
+        ipAddress: string | undefined,
+        deviceId: string,
+    ) {
         const expiredAt = new Date(Date.now() + SESSION_TTL_MS)
 
-        // One session per login so devices sharing a user agent don't share (and revoke) each other
+        // Replace this browser's previous session (matched by device id, not user agent, so different
+        // devices with the same browser don't revoke each other) and prune expired ones
         await this.db
             .delete(sessions)
-            .where(and(eq(sessions.userId, userId), lt(sessions.expiredAt, new Date())))
+            .where(
+                and(
+                    eq(sessions.userId, userId),
+                    or(lt(sessions.expiredAt, new Date()), eq(sessions.deviceId, deviceId)),
+                ),
+            )
 
         const [created] = await this.db
             .insert(sessions)
             .values({
                 userId,
+                deviceId,
                 userAgent,
                 ipAddress,
                 expiredAt,

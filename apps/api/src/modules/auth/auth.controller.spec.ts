@@ -117,10 +117,39 @@ describe('AuthController security behavior', () => {
             const { response } = await callback({
                 user: { id: 'u1', isActive: true, isOnboardingCompleted: true },
             })
-            expect(response.cookie).toHaveBeenCalledTimes(2)
+            expect(response.cookie).toHaveBeenCalledTimes(3)
             expect(response.redirect).toHaveBeenCalledWith(
                 expect.stringMatching(/\/auth\/complete\?next=\/dashboard$/),
             )
+        })
+
+        it("reuses the browser's device id so its previous session is replaced", async () => {
+            const deviceId = '11111111-2222-4333-8444-555555555555'
+            const { response, authService } = await callback({
+                user: { id: 'u1', isActive: true, isOnboardingCompleted: true },
+                cookies: { deviceId },
+            })
+            expect(authService.createSession).toHaveBeenCalledWith(
+                'u1',
+                undefined,
+                undefined,
+                deviceId,
+            )
+            expect(response.cookie).toHaveBeenCalledWith(
+                'deviceId',
+                deviceId,
+                expect.objectContaining({ httpOnly: true, sameSite: 'lax' }),
+            )
+        })
+
+        it('issues a fresh device id when the cookie is missing or malformed', async () => {
+            const { authService } = await callback({
+                user: { id: 'u1', isActive: true, isOnboardingCompleted: true },
+                cookies: { deviceId: 'not-a-uuid' },
+            })
+            const deviceId = authService.createSession.mock.calls[0][3]
+            expect(deviceId).toMatch(/^[0-9a-f-]{36}$/)
+            expect(deviceId).not.toBe('not-a-uuid')
         })
     })
 })

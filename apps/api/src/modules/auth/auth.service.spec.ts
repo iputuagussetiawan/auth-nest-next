@@ -723,7 +723,7 @@ describe('AuthService', () => {
     })
 
     describe('createSession', () => {
-        it('always inserts a new session and prunes expired ones', async () => {
+        it("inserts a new session, replacing this device's old one and pruning expired ones", async () => {
             const session = { id: 'session-id', userId: 'user-id' }
             const deleteChain = createDeleteChain()
             const insertChain = createInsertChain([session])
@@ -734,13 +734,17 @@ describe('AuthService', () => {
             }
 
             await expect(
-                createService(db).createSession('user-id', 'Chrome', '1.2.3.4'),
+                createService(db).createSession('user-id', 'Chrome', '1.2.3.4', 'device-id'),
             ).resolves.toEqual(session)
             expect(insertChain.values.mock.calls[0][0].refreshTokenId).toEqual(expect.any(String))
             expect(db.select).not.toHaveBeenCalled()
             expect(deleteChain.where).toHaveBeenCalledTimes(1)
             expect(insertChain.values).toHaveBeenCalledWith(
-                expect.objectContaining({ userId: 'user-id', userAgent: 'Chrome' }),
+                expect.objectContaining({
+                    userId: 'user-id',
+                    deviceId: 'device-id',
+                    userAgent: 'Chrome',
+                }),
             )
         })
     })

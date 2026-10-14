@@ -7,6 +7,8 @@ export const sessions = pgTable('sessions', {
     userId: uuid('user_id')
         .notNull()
         .references(() => users.id, { onDelete: 'cascade' }),
+    // Random per-browser id from the deviceId cookie; a new login from the same browser replaces its old session
+    deviceId: uuid('device_id'),
     userAgent: text('user_agent'),
     ipAddress: text('ip_address'),
     expiredAt: timestamp('expired_at').notNull(),
