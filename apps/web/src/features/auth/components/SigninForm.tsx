@@ -18,19 +18,21 @@ import { cn } from '@/lib/utils'
 import { authService } from '../services/AuthService'
 import { signinValidation, type SigninInputType } from '../types/AuthType'
 
-// Reasons the API's Google callback can send back as ?status=
-const GOOGLE_SIGNIN_ERRORS: Record<string, string> = {
+// Reasons sent back as ?status= by the API's Google callback or by /session-expired
+const SIGNIN_STATUS_MESSAGES: Record<string, string> = {
     signup_closed:
         'New accounts are paused during maintenance. Existing accounts can still sign in.',
     email_unverified: 'Your Google account email is not verified, so it cannot be used to sign in.',
     account_disabled: 'This account has been disabled. Contact an administrator for help.',
     error: 'Google sign-in failed. Please try again.',
+    session_expired:
+        'Your session has ended or was signed out from another device. Please sign in again.',
 }
 
 export function SignInForm({ className, ...props }: React.ComponentProps<'form'>) {
     const router = useRouter()
     const status = useSearchParams().get('status')
-    const googleError = status ? GOOGLE_SIGNIN_ERRORS[status] : undefined
+    const statusMessage = status ? SIGNIN_STATUS_MESSAGES[status] : undefined
     const {
         register,
         handleSubmit,
@@ -80,10 +82,10 @@ export function SignInForm({ className, ...props }: React.ComponentProps<'form'>
                     </p>
                 </div>
 
-                {googleError && (
+                {statusMessage && (
                     <Alert variant="destructive">
                         <CircleAlert />
-                        <AlertDescription>{googleError}</AlertDescription>
+                        <AlertDescription>{statusMessage}</AlertDescription>
                     </Alert>
                 )}
 

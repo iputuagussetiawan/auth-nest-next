@@ -1,4 +1,4 @@
-import { AUTH_COOKIE_NAME, SIGNIN_URL } from './constants'
+import { AUTH_COOKIE_NAME, SESSION_EXPIRED_URL } from './constants'
 
 type ApiOptions = RequestInit & {
     next?: NextFetchRequestConfig
@@ -66,7 +66,7 @@ class FetchFactory {
 
         if (!response.ok) {
             if (response.status === 401 && typeof window !== 'undefined') {
-                window.location.href = SIGNIN_URL
+                window.location.href = SESSION_EXPIRED_URL
             }
             const errorData = await response.json().catch(() => ({}))
             throw new Error(errorData.message || `API Error ${response.status}`)
