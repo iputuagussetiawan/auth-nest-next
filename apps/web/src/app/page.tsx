@@ -28,6 +28,7 @@ import { ThemeToggle } from '@/components/theme-toggle'
 import { UiImage } from '@/components/ui-custom/UiImage'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { currentClientIpHeaders } from '@/lib/client-ip'
 import { SIGNIN_URL, SIGNUP_URL } from '@/lib/constants'
 import { features } from '@/lib/landing-features'
 import { buildThemeCss } from '@/lib/theme-utils'
@@ -605,7 +606,10 @@ async function getSiteData(): Promise<SiteData> {
 
     const [themeRes, settingsRes] = await Promise.allSettled([
         fetch(`${base}/themes/active`, { next: { revalidate: 60 } }),
-        fetch(`${base}/site-settings`, { cache: 'no-store' }),
+        fetch(`${base}/site-settings`, {
+            headers: await currentClientIpHeaders(),
+            cache: 'no-store',
+        }),
     ])
 
     let themeCss = ''

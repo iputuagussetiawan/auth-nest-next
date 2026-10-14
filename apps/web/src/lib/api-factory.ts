@@ -19,6 +19,9 @@ class FetchFactory {
 
             if (token) headers['Authorization'] = `Bearer ${token}`
             headers['Cookie'] = cookieStore.toString()
+
+            const { currentClientIpHeaders } = await import('./client-ip')
+            Object.assign(headers, await currentClientIpHeaders())
         }
 
         return headers

@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { APP_GUARD } from '@nestjs/core'
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
+import { ThrottlerModule } from '@nestjs/throttler'
 
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
+import { ClientIpThrottlerGuard } from './common/guards/client-ip-throttler.guard'
 import { DatabaseModule } from './database/database.module'
 import { AdminStatsModule } from './modules/admin-stats/admin-stats.module'
 import { AuthModule } from './modules/auth/auth.module'
@@ -32,6 +33,6 @@ import { MailModule } from './shared/mail/mail.module'
         NotificationModule,
     ],
     controllers: [AppController],
-    providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
+    providers: [AppService, { provide: APP_GUARD, useClass: ClientIpThrottlerGuard }],
 })
 export class AppModule {}
