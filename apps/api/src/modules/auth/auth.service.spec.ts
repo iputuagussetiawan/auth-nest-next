@@ -279,7 +279,7 @@ describe('AuthService', () => {
             ).rejects.toMatchObject({ status: 503 })
             expect(blocked.insert).not.toHaveBeenCalled()
 
-            const existing = { id: 'user-id', email: 'old@example.com' }
+            const existing = { id: 'user-id', email: 'old@example.com', isEmailVerified: true }
             const allowed = {
                 select: jest.fn().mockReturnValue(createSelectChain([existing])),
                 update: jest.fn().mockReturnValue(createUpdateChain()),
@@ -365,11 +365,17 @@ describe('AuthService', () => {
         })
 
         it('updates lastLogin for an existing user without creating a notification', async () => {
-            const existing = { id: 'user-id', email: 'g@example.com', provider: 'google' }
+            const existing = {
+                id: 'user-id',
+                email: 'g@example.com',
+                provider: 'google',
+                isEmailVerified: true,
+            }
             const update = createUpdateChain()
             const db = {
                 select: jest.fn().mockReturnValue(createSelectChain([existing])),
                 update: jest.fn().mockReturnValue(update),
+                delete: jest.fn(),
             }
             const notificationService = { notifyNewUser: jest.fn() }
             const service = createService(db, { notificationService })
@@ -386,7 +392,41 @@ describe('AuthService', () => {
             expect(update.set).toHaveBeenCalledWith(
                 expect.objectContaining({ lastLogin: expect.any(Date) }),
             )
+            expect(update.set.mock.calls[0][0]).not.toHaveProperty('password')
+            expect(db.delete).not.toHaveBeenCalled()
             expect(notificationService.notifyNewUser).not.toHaveBeenCalled()
+        })
+
+        it('takes over an unverified email signup: drops its password, sessions and codes', async () => {
+            // Someone registered this address with a password but never verified it
+            const squatted = {
+                id: 'user-id',
+                email: 'g@example.com',
+                provider: 'email',
+                password: 'attacker-hash',
+                isEmailVerified: false,
+            }
+            const update = createUpdateChain()
+            const deleteChain = createDeleteChain()
+            const db = {
+                select: jest.fn().mockReturnValue(createSelectChain([squatted])),
+                update: jest.fn().mockReturnValue(update),
+                delete: jest.fn().mockReturnValue(deleteChain),
+            }
+
+            await createService(db).loginOrCreateAccount(googleProfile)
+
+            expect(update.set).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    isEmailVerified: true,
+                    password: null,
+                    provider: 'google',
+                    providerId: 'google-id',
+                }),
+            )
+            // Sessions and pending verification/reset codes
+            expect(db.delete).toHaveBeenCalledTimes(2)
+            expect(deleteChain.where).toHaveBeenCalledTimes(2)
         })
 
         it('copies a new Google user photo into Cloudinary at a larger size', async () => {
@@ -429,7 +469,12 @@ describe('AuthService', () => {
         })
 
         it('moves an existing user still on a Google photo URL to Cloudinary', async () => {
-            const existing = { id: 'user-id', email: 'g@example.com', profilePicture: GOOGLE_PHOTO }
+            const existing = {
+                id: 'user-id',
+                email: 'g@example.com',
+                profilePicture: GOOGLE_PHOTO,
+                isEmailVerified: true,
+            }
             const update = createUpdateChain()
             const db = {
                 select: jest.fn().mockReturnValue(createSelectChain([existing])),
@@ -453,6 +498,7 @@ describe('AuthService', () => {
                 id: 'user-id',
                 email: 'g@example.com',
                 profilePicture: CLOUDINARY_URL,
+                isEmailVerified: true,
             }
             const update = createUpdateChain()
             const db = {
