@@ -35,7 +35,7 @@ export function NavUser({ user }: { user: IUserProfile | null }) {
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="lg"
-                            className="border-sidebar-border/50 bg-sidebar-accent/40 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-2xl border px-3 py-2 group-data-[collapsible=icon]:hidden"
+                            className="border-sidebar-border/50 bg-sidebar-accent/40 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-2xl border px-3 py-2 group-data-[collapsible=icon]:rounded-lg group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:bg-transparent"
                         >
                             <UserAvatar
                                 name={`${user.firstName} ${user.lastName}`}

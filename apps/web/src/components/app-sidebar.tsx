@@ -61,7 +61,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarContent className="px-2 pb-3">
                 <NavMain key={user?.id || 'guest'} groups={sidebarData.navGroups} />
             </SidebarContent>
-            <SidebarFooter className="border-sidebar-border/60 gap-3 border-t px-3 pt-3 pb-4">
+            <SidebarFooter className="border-sidebar-border/60 gap-3 border-t px-3 pt-3 pb-4 group-data-[collapsible=icon]:px-2">
                 {user ? <NavUser user={user} /> : <div className="p-4 text-xs">Not Logged In</div>}
             </SidebarFooter>
             <SidebarRail />
