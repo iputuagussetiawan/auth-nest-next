@@ -7,7 +7,7 @@
         "build": {
             "dependsOn": ["^build"],
             "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
-            "env": ["NEXT_PUBLIC_*", "BACKEND_URL"]
+            "env": ["NEXT_PUBLIC_*"]
         },
         "dev": {
             "dependsOn": ["^build"],

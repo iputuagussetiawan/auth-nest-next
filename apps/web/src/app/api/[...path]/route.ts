@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { AUTH_COOKIE_NAME } from '@/lib/constants'
 
-const API_BASE_URL = process.env.BACKEND_URL || 'http://localhost:8000/api'
+// Public because the Google sign-in button navigates to it, but browser code must still call the
+// API through this /api proxy: direct calls to the API don't carry the auth cookies.
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api'
 
 function isAuthPath(path: string) {
     return path.startsWith('auth/')

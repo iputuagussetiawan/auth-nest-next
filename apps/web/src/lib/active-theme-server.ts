@@ -1,7 +1,7 @@
 import type { IThemeConfig } from '@/features/admin/themes/types/ThemeTypes'
 import { isSafeThemeConfig } from '@/lib/theme-utils'
 
-const API_BASE_URL = process.env.BACKEND_URL || 'http://localhost:8000/api'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api'
 
 export async function getActiveThemeConfig(): Promise<IThemeConfig | null> {
     try {

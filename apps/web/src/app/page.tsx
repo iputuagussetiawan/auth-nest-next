@@ -488,7 +488,7 @@ interface SiteData {
 }
 
 async function getSiteData(): Promise<SiteData> {
-    const base = process.env.BACKEND_URL
+    const base = process.env.NEXT_PUBLIC_API_BASE_URL
 
     if (!base) {
         return {

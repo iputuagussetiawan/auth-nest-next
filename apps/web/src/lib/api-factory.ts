@@ -27,7 +27,7 @@ class FetchFactory {
     async API<T>(endpoint: string, options: ApiOptions = {}): Promise<T> {
         const isServer = typeof window === 'undefined'
         const apiBaseUrl = isServer
-            ? (process.env.BACKEND_URL ?? process.env.NEXT_PUBLIC_APP_BASE_URL)
+            ? (process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.NEXT_PUBLIC_APP_BASE_URL)
             : process.env.NEXT_PUBLIC_APP_BASE_URL
         const defaultHeaders = await this.getRequestConfig()
 
