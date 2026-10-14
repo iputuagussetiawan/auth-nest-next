@@ -70,14 +70,14 @@ export function SignInForm({ className, ...props }: React.ComponentProps<'form'>
 
     return (
         <form
-            className={cn('flex flex-col gap-6', className)}
+            className={cn('mx-auto flex w-full max-w-md flex-col gap-5 sm:gap-6', className)}
             onSubmit={handleSubmit(onSubmit)}
             {...props}
         >
             <FieldGroup>
-                <div className="flex flex-col items-center gap-1 text-center">
-                    <h1 className="text-2xl font-bold">Welcome Back</h1>
-                    <p className="text-muted-foreground text-sm">
+                <div className="flex flex-col items-center gap-2 text-center">
+                    <h1 className="text-2xl font-bold sm:text-3xl">Welcome Back</h1>
+                    <p className="text-muted-foreground text-sm text-balance">
                         Enter your credentials to access your account
                     </p>
                 </div>
@@ -107,7 +107,7 @@ export function SignInForm({ className, ...props }: React.ComponentProps<'form'>
                         <FieldLabel htmlFor="password">Password</FieldLabel>
                         <Link
                             href="/forgot-password"
-                            className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                            className="ml-auto text-xs whitespace-nowrap underline-offset-4 hover:underline sm:text-sm"
                         >
                             Forgot your password?
                         </Link>
@@ -122,7 +122,7 @@ export function SignInForm({ className, ...props }: React.ComponentProps<'form'>
                     />
                 </div>
 
-                <UiButton type="submit" disabled={isPending} className="mt-2 w-full">
+                <UiButton type="submit" disabled={isPending} className="mt-2 w-full rounded-full">
                     {isPending ? (
                         <span className="flex items-center gap-2">
                             <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
