@@ -45,11 +45,15 @@ function createDeleteChain() {
     return { where: jest.fn().mockResolvedValue(undefined) }
 }
 
+const GOOGLE_PHOTO = 'https://lh3.googleusercontent.com/a/photo=s96-c'
+const CLOUDINARY_URL = 'https://res.cloudinary.com/demo/image/upload/v1/profile-pictures/photo.jpg'
+
 function createService(
     db: Record<string, unknown>,
     overrides: {
         roleService?: Record<string, unknown>
         notificationService?: Record<string, unknown>
+        cloudinaryService?: Record<string, unknown>
         maintenanceMode?: boolean
     } = {},
 ) {
@@ -70,6 +74,10 @@ function createService(
             get: jest
                 .fn()
                 .mockResolvedValue({ maintenanceMode: overrides.maintenanceMode ?? false }),
+        } as never,
+        {
+            uploadFromUrl: jest.fn().mockResolvedValue({ secure_url: CLOUDINARY_URL }),
+            ...(overrides.cloudinaryService ?? {}),
         } as never,
     )
 }
@@ -318,6 +326,14 @@ describe('AuthService', () => {
     })
 
     describe('loginOrCreateAccount', () => {
+        const googleProfile = {
+            provider: 'google',
+            providerId: 'google-id',
+            firstName: 'Grace',
+            lastName: 'Google',
+            email: 'g@example.com',
+        }
+
         it('creates a new Google user with verified email, role and notification', async () => {
             const created = { id: 'user-id', email: 'g@example.com', provider: 'google' }
             const insert = createInsertChain([created])
@@ -371,6 +387,87 @@ describe('AuthService', () => {
                 expect.objectContaining({ lastLogin: expect.any(Date) }),
             )
             expect(notificationService.notifyNewUser).not.toHaveBeenCalled()
+        })
+
+        it('copies a new Google user photo into Cloudinary at a larger size', async () => {
+            const insert = createInsertChain([{ id: 'user-id', email: 'g@example.com' }])
+            const db = {
+                select: jest.fn().mockReturnValue(createSelectChain([])),
+                insert: jest.fn().mockReturnValue(insert),
+            }
+            const cloudinaryService = {
+                uploadFromUrl: jest.fn().mockResolvedValue({ secure_url: CLOUDINARY_URL }),
+            }
+            const service = createService(db, { cloudinaryService })
+
+            await service.loginOrCreateAccount({ ...googleProfile, picture: GOOGLE_PHOTO })
+
+            expect(cloudinaryService.uploadFromUrl).toHaveBeenCalledWith(
+                'https://lh3.googleusercontent.com/a/photo=s256-c',
+            )
+            expect(insert.values).toHaveBeenCalledWith(
+                expect.objectContaining({ profilePicture: CLOUDINARY_URL }),
+            )
+        })
+
+        it('keeps the Google URL when the Cloudinary upload fails', async () => {
+            jest.spyOn(console, 'error').mockImplementation(() => {})
+            const insert = createInsertChain([{ id: 'user-id', email: 'g@example.com' }])
+            const db = {
+                select: jest.fn().mockReturnValue(createSelectChain([])),
+                insert: jest.fn().mockReturnValue(insert),
+            }
+            const cloudinaryService = { uploadFromUrl: jest.fn().mockRejectedValue(new Error()) }
+            const service = createService(db, { cloudinaryService })
+
+            await expect(
+                service.loginOrCreateAccount({ ...googleProfile, picture: GOOGLE_PHOTO }),
+            ).resolves.toBeDefined()
+            expect(insert.values).toHaveBeenCalledWith(
+                expect.objectContaining({ profilePicture: GOOGLE_PHOTO }),
+            )
+        })
+
+        it('moves an existing user still on a Google photo URL to Cloudinary', async () => {
+            const existing = { id: 'user-id', email: 'g@example.com', profilePicture: GOOGLE_PHOTO }
+            const update = createUpdateChain()
+            const db = {
+                select: jest.fn().mockReturnValue(createSelectChain([existing])),
+                update: jest.fn().mockReturnValue(update),
+            }
+            const service = createService(db)
+
+            const result = await service.loginOrCreateAccount({
+                ...googleProfile,
+                picture: GOOGLE_PHOTO,
+            })
+
+            expect(update.set).toHaveBeenCalledWith(
+                expect.objectContaining({ profilePicture: CLOUDINARY_URL }),
+            )
+            expect(result.profilePicture).toBe(CLOUDINARY_URL)
+        })
+
+        it('leaves an existing Cloudinary photo untouched', async () => {
+            const existing = {
+                id: 'user-id',
+                email: 'g@example.com',
+                profilePicture: CLOUDINARY_URL,
+            }
+            const update = createUpdateChain()
+            const db = {
+                select: jest.fn().mockReturnValue(createSelectChain([existing])),
+                update: jest.fn().mockReturnValue(update),
+            }
+            const cloudinaryService = { uploadFromUrl: jest.fn() }
+            const service = createService(db, { cloudinaryService })
+
+            await service.loginOrCreateAccount({ ...googleProfile, picture: GOOGLE_PHOTO })
+
+            expect(cloudinaryService.uploadFromUrl).not.toHaveBeenCalled()
+            expect(update.set).toHaveBeenCalledWith(
+                expect.not.objectContaining({ profilePicture: expect.anything() }),
+            )
         })
     })
 
@@ -478,6 +575,7 @@ describe('AuthService', () => {
             const service = new AuthService(
                 db as never,
                 jwt as never,
+                {} as never,
                 {} as never,
                 {} as never,
                 {} as never,
@@ -600,6 +698,7 @@ describe('AuthService', () => {
             const service = new AuthService(
                 {} as never,
                 jwt as never,
+                {} as never,
                 {} as never,
                 {} as never,
                 {} as never,

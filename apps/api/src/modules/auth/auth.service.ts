@@ -20,6 +20,7 @@ import {
     verificationCodes,
     VerificationTypeEnum,
 } from '../../database/schema/auth/verification-codes.schema'
+import { CloudinaryService } from '../../shared/cloudinary/cloudinary.service'
 import { MailService } from '../../shared/mail/mail.service'
 import { NotificationService } from '../notification/notification.service'
 import { RoleService } from '../rbac/role/role.service'
@@ -47,6 +48,7 @@ export class AuthService {
         private roleService: RoleService,
         private notificationService: NotificationService,
         private siteSettings: SiteSettingsService,
+        private cloudinaryService: CloudinaryService,
     ) {}
 
     /** New accounts are closed while the site is in maintenance; existing users can still sign in */
@@ -54,6 +56,24 @@ export class AuthService {
         const { maintenanceMode } = await this.siteSettings.get()
         if (maintenanceMode) {
             throw new ServiceUnavailableException('Registration is closed during maintenance')
+        }
+    }
+
+    /**
+     * Copy a Google profile photo into Cloudinary. Hotlinked Google avatars get rate-limited (429)
+     * and their URLs stop working when the user changes photo. Falls back to the original URL so a
+     * Cloudinary outage never blocks sign-in; the next login retries.
+     */
+    private async importProfilePicture(url: string) {
+        try {
+            // Google serves 96px by default (=s96-c); store a sharper copy
+            const result = await this.cloudinaryService.uploadFromUrl(
+                url.replace(/=s\d+-c$/, '=s256-c'),
+            )
+            return result.secure_url
+        } catch (error) {
+            console.error('Failed to import profile picture:', error)
+            return url
         }
     }
 
@@ -215,7 +235,7 @@ export class AuthService {
                     email: email ?? '',
                     firstName,
                     lastName,
-                    profilePicture: picture,
+                    profilePicture: picture ? await this.importProfilePicture(picture) : undefined,
                     provider,
                     providerId,
                     isEmailVerified: true,
@@ -236,10 +256,17 @@ export class AuthService {
                 console.error('Failed to create new-user notification:', error)
             }
         } else {
-            await this.db
-                .update(users)
-                .set({ lastLogin: new Date(), updatedAt: new Date() })
-                .where(eq(users.id, user.id))
+            const changes: Partial<typeof users.$inferInsert> = {
+                lastLogin: new Date(),
+                updatedAt: new Date(),
+            }
+            // Accounts created before photos were copied still point at Google's CDN; move them over
+            if (user.profilePicture?.includes('googleusercontent.com')) {
+                const imported = await this.importProfilePicture(picture ?? user.profilePicture)
+                if (!imported.includes('googleusercontent.com')) changes.profilePicture = imported
+            }
+            await this.db.update(users).set(changes).where(eq(users.id, user.id))
+            if (changes.profilePicture) user = { ...user, profilePicture: changes.profilePicture }
         }
 
         return user

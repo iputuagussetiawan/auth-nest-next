@@ -17,6 +17,11 @@ export class CloudinaryService {
         })
     }
 
+    /** Cloudinary fetches the remote image itself, so nothing is downloaded through the API */
+    uploadFromUrl(url: string, folder = 'profile-pictures'): Promise<UploadApiResponse> {
+        return cloudinary.uploader.upload(url, { folder, resource_type: 'image' })
+    }
+
     async delete(url: string): Promise<void> {
         const publicId = this.extractPublicId(url)
         if (!publicId) return
