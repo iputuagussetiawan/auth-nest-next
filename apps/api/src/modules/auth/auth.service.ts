@@ -1,4 +1,5 @@
 import * as crypto from 'crypto'
+import { DEFAULT_ROLE } from '@nest-auth/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import * as bcrypt from 'bcrypt'
@@ -196,7 +197,7 @@ export class AuthService {
             console.error('Failed to send verification email:', err)
         }
 
-        const userRole = await this.roleService.findByName('user')
+        const userRole = await this.roleService.findByName(DEFAULT_ROLE)
         if (userRole) await this.roleService.assignRoleToUser(user.id, userRole.id)
 
         try {
@@ -269,7 +270,7 @@ export class AuthService {
                 .returning()
             user = created
 
-            const userRole = await this.roleService.findByName('user')
+            const userRole = await this.roleService.findByName(DEFAULT_ROLE)
             if (userRole) await this.roleService.assignRoleToUser(user.id, userRole.id)
 
             try {

@@ -1,4 +1,4 @@
-import { ADMIN_ROLE } from '@nest-auth/shared'
+import { ADMIN_ROLE, DEFAULT_ROLE } from '@nest-auth/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { eq, inArray, sql } from 'drizzle-orm'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
@@ -16,8 +16,8 @@ import { roles, type Role } from '../../../database/schema/rbac/roles.schema'
 import { userRoles } from '../../../database/schema/rbac/user-roles.schema'
 import type { CreateRoleDto } from './dto/create-role.dto'
 
-// Guards authorize by role name, and sign-up assigns 'user': renaming or deleting either breaks the app
-const PROTECTED_ROLES = [ADMIN_ROLE, 'user']
+// Guards authorize by role name, and sign-up assigns the default role: renaming or deleting either breaks the app
+const PROTECTED_ROLES = [ADMIN_ROLE, DEFAULT_ROLE]
 
 @Injectable()
 export class RoleService {

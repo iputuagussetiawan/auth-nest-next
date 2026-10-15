@@ -9,6 +9,8 @@ import { roles } from '../schema/rbac/roles.schema'
 
 const ROLES = [
     { name: 'admin', label: 'Admin', description: 'Full system access', icon: 'ShieldCheck' },
+    // Sign-up assigns this role; without it new accounts end up with none
+    { name: 'user', label: 'User', description: 'Default role for new sign-ups', icon: 'User' },
     {
         name: 'participant',
         label: 'Participant',
