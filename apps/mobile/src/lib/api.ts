@@ -1,4 +1,4 @@
-import { clearAccessToken, getAccessToken, setAccessToken } from '@/lib/token-storage';
+import { clearTokens, getAccessToken, getDeviceId, getRefreshToken, setTokens } from '@/lib/token-storage';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL?.trim().replace(/\/$/, '');
 if (!API_URL) throw new Error('EXPO_PUBLIC_API_URL is not set. Copy .env.example and restart Expo.');
@@ -54,21 +54,33 @@ async function parseEnvelope<T>(response: Response): Promise<ApiEnvelope<T>> {
   return { status: 'success', message: envelope.message ?? '', data: envelope.data as T };
 }
 
+// X-Client: mobile makes the API hand tokens over in response bodies instead of cookies, and the
+// device id replaces the browser's deviceId cookie. Cookies are left out entirely (credentials: omit).
+async function clientHeaders() {
+  return { Accept: 'application/json', 'X-Client': 'mobile', 'X-Device-Id': await getDeviceId() };
+}
+
 async function requestRefresh(): Promise<string | null> {
   if (!refreshInFlight) {
     refreshInFlight = (async () => {
       try {
+        const refreshToken = await getRefreshToken();
+        if (!refreshToken) throw new ApiError('Not signed in', 401);
+
         const response = await fetch(`${API_ROOT}/auth/refresh`, {
           method: 'POST',
-          credentials: 'include',
+          credentials: 'omit',
+          headers: { ...(await clientHeaders()), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken }),
         });
-        const result = await parseEnvelope<{ access_token: string }>(response);
-        await setAccessToken(result.data.access_token);
+        // Refresh tokens rotate: store the new one, the old one is spent
+        const result = await parseEnvelope<{ access_token: string; refresh_token: string }>(response);
+        await setTokens(result.data.access_token, result.data.refresh_token);
         return result.data.access_token;
       } catch (error) {
-        // Only a refusal ends the session; a network blip keeps the stored token for next time
+        // Only a refusal ends the session; a network blip keeps the stored tokens for next time
         if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
-          await clearAccessToken();
+          await clearTokens();
           sessionExpiredListeners.forEach((listener) => listener());
         }
         return null;
@@ -89,9 +101,9 @@ export async function apiFetch<T>(
   try {
     response = await fetch(`${API_ROOT}${path}`, {
       method: options.method ?? 'GET',
-      credentials: 'include',
+      credentials: 'omit',
       headers: {
-        Accept: 'application/json',
+        ...(await clientHeaders()),
         ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },

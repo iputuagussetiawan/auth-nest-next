@@ -10,7 +10,8 @@ export type AuthUser = {
   isOnboardingCompleted: boolean;
 };
 
-type LoginData = { user: AuthUser; access_token: string };
+// refresh_token is only returned to the app (X-Client: mobile), never to browsers
+type LoginData = { user: AuthUser; access_token: string; refresh_token: string };
 
 export const authApi = {
   register: (data: { firstName: string; lastName: string; email: string; password: string }) =>

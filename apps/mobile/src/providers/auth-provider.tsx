@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 
 import { onSessionExpired } from '@/lib/api';
 import { authApi, type AuthUser } from '@/lib/auth-api';
-import { clearAccessToken, getAccessToken, setAccessToken } from '@/lib/token-storage';
+import { clearTokens, getAccessToken, getRefreshToken, setTokens } from '@/lib/token-storage';
 
 type AuthContextValue = {
   user: AuthUser | null;
@@ -31,10 +31,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    getAccessToken()
-      .then((token) => (token ? authApi.me() : null))
+    // An expired access token is fine: /user/me refreshes it with the stored refresh token
+    Promise.all([getAccessToken(), getRefreshToken()])
+      .then(([access, refresh]) => (access || refresh ? authApi.me() : null))
       .then((result) => setUser(result?.data ?? null))
-      .catch(() => clearAccessToken())
+      // A refused refresh already cleared the tokens; anything else (offline) keeps them for next launch
+      .catch(() => setUser(null))
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -44,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signIn(email: string, password: string) {
     const result = await authApi.login({ email: email.trim().toLowerCase(), password });
-    await setAccessToken(result.data.access_token);
+    await setTokens(result.data.access_token, result.data.refresh_token);
     setUser(result.data.user);
   }
 
@@ -60,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (typeof code !== 'string') throw new Error(GOOGLE_FAILED);
 
     const login = await authApi.googleExchange({ code, verifier: start.data.verifier });
-    await setAccessToken(login.data.access_token);
+    await setTokens(login.data.access_token, login.data.refresh_token);
     setUser(login.data.user);
     return true;
   }
@@ -73,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await authApi.logout();
     } finally {
-      await clearAccessToken();
+      await clearTokens();
       setUser(null);
     }
   }
