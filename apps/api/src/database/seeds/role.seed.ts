@@ -1,3 +1,4 @@
+import { PERMISSIONS as P } from '@nest-auth/shared'
 import { eq, notInArray } from 'drizzle-orm'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
@@ -46,22 +47,22 @@ const ROLES = [
     },
 ]
 
+// Must match the permissions the API enforces (PERMISSIONS in @nest-auth/shared)
 const PERMISSIONS = [
-    { name: 'user:read', description: 'Read user data' },
-    { name: 'user:create', description: 'Create users' },
-    { name: 'user:update', description: 'Update user data' },
-    { name: 'user:delete', description: 'Delete users' },
-    { name: 'role:manage', description: 'Manage roles and permissions' },
+    { name: P.USER_READ, description: 'List and view users' },
+    { name: P.USER_CREATE, description: 'Create users' },
+    { name: P.USER_UPDATE, description: 'Edit users and activate or deactivate them' },
+    { name: P.USER_DELETE, description: 'Delete users' },
+    { name: P.ROLE_MANAGE, description: 'Manage roles and permissions and assign roles' },
+    { name: P.THEME_MANAGE, description: 'Create, edit and activate themes' },
+    { name: P.SETTINGS_MANAGE, description: 'Edit site settings and upload site assets' },
+    { name: P.STATS_READ, description: 'View dashboard statistics' },
 ]
 
+// Admin passes every check anyway; the list just keeps the Roles page accurate. Other roles start
+// with nothing because every permission now unlocks real admin endpoints.
 const ROLE_PERMISSIONS: Record<string, string[]> = {
-    admin: ['user:read', 'user:create', 'user:update', 'user:delete', 'role:manage'],
-    participant: ['user:read'],
-    instructure: ['user:read'],
-    project_owner: ['user:read'],
-    project_member: ['user:read'],
-    project_mentor: ['user:read'],
-    investor: ['user:read'],
+    admin: PERMISSIONS.map((p) => p.name),
 }
 
 async function seedRoles(db: NodePgDatabase<typeof schema>): Promise<Map<string, string>> {

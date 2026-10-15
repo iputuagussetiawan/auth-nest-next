@@ -29,8 +29,8 @@ const ROLE_BG: Record<string, string> = {
 }
 
 interface Actions {
-    onEdit: (user: IAdminUser) => void
-    onDelete: (user: IAdminUser) => void
+    onEdit?: (user: IAdminUser) => void
+    onDelete?: (user: IAdminUser) => void
 }
 
 interface UsersGroupedTableProps extends Actions {

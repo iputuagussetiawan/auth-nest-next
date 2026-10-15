@@ -1,3 +1,4 @@
+import { PERMISSIONS } from '@nest-auth/shared'
 import {
     BadRequestException,
     Body,
@@ -28,8 +29,8 @@ import {
 import { Request } from 'express'
 import { memoryStorage } from 'multer'
 
-import { Roles } from '../../../common/decorators/roles.decorator'
-import { RolesGuard } from '../../../common/guards/roles.guard'
+import { Permissions } from '../../../common/decorators/permissions.decorator'
+import { PermissionsGuard } from '../../../common/guards/permissions.guard'
 import { successResponse } from '../../../common/helpers/response.helper'
 import { CloudinaryService } from '../../../shared/cloudinary/cloudinary.service'
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard'
@@ -51,7 +52,7 @@ function assertNotSelf(req: Request, userId: string) {
 @ApiTags('roles')
 @ApiBearerAuth('access-token')
 @Controller('roles')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class RoleController {
     constructor(
         private roleService: RoleService,
@@ -59,15 +60,16 @@ export class RoleController {
     ) {}
 
     @Get()
-    @Roles('admin')
-    @ApiOperation({ summary: 'Get all roles (admin)' })
+    // Read by the Users page to label and filter users, so user:read is enough
+    @Permissions(PERMISSIONS.USER_READ)
+    @ApiOperation({ summary: 'Get all roles' })
     async findAll() {
         const data = await this.roleService.findAll()
         return successResponse('Roles fetched', data)
     }
 
     @Get('with-permissions')
-    @Roles('admin')
+    @Permissions(PERMISSIONS.ROLE_MANAGE)
     @ApiOperation({ summary: 'Get all roles with their permissions (admin)' })
     async findAllWithPermissions() {
         const data = await this.roleService.findAllWithPermissions()
@@ -75,7 +77,7 @@ export class RoleController {
     }
 
     @Get(':id')
-    @Roles('admin')
+    @Permissions(PERMISSIONS.ROLE_MANAGE)
     @ApiOperation({ summary: 'Get role by ID (admin)' })
     async findOne(@Param('id', ParseUUIDPipe) id: string) {
         const data = await this.roleService.findById(id)
@@ -83,7 +85,7 @@ export class RoleController {
     }
 
     @Get(':id/permissions')
-    @Roles('admin')
+    @Permissions(PERMISSIONS.ROLE_MANAGE)
     @ApiOperation({ summary: 'Get permissions for a role (admin)' })
     async getRolePermissions(@Param('id', ParseUUIDPipe) id: string) {
         const data = await this.roleService.getRolePermissions(id)
@@ -91,7 +93,7 @@ export class RoleController {
     }
 
     @Post()
-    @Roles('admin')
+    @Permissions(PERMISSIONS.ROLE_MANAGE)
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Create role (admin)' })
     async create(@Body() dto: CreateRoleDto) {
@@ -100,7 +102,7 @@ export class RoleController {
     }
 
     @Put(':id')
-    @Roles('admin')
+    @Permissions(PERMISSIONS.ROLE_MANAGE)
     @ApiOperation({ summary: 'Update role (admin)' })
     async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CreateRoleDto) {
         const data = await this.roleService.update(id, dto)
@@ -108,7 +110,7 @@ export class RoleController {
     }
 
     @Delete(':id')
-    @Roles('admin')
+    @Permissions(PERMISSIONS.ROLE_MANAGE)
     @ApiOperation({ summary: 'Delete role (admin)' })
     async remove(@Param('id', ParseUUIDPipe) id: string) {
         await this.roleService.remove(id)
@@ -116,7 +118,7 @@ export class RoleController {
     }
 
     @Patch(':id/image')
-    @Roles('admin')
+    @Permissions(PERMISSIONS.ROLE_MANAGE)
     @ApiOperation({ summary: 'Upload role image to Cloudinary (admin)' })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
@@ -149,7 +151,7 @@ export class RoleController {
     }
 
     @Post(':id/permissions')
-    @Roles('admin')
+    @Permissions(PERMISSIONS.ROLE_MANAGE)
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Assign permissions to role (admin)' })
     assignPermissions(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AssignPermissionsDto) {
@@ -157,28 +159,33 @@ export class RoleController {
     }
 
     @Post('users/:userId/assign')
-    @Roles('admin')
+    @Permissions(PERMISSIONS.ROLE_MANAGE)
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Assign role to user (admin)' })
-    assignRoleToUser(
+    async assignRoleToUser(
         @Req() req: Request,
         @Param('userId', ParseUUIDPipe) userId: string,
         @Body() dto: AssignRoleDto,
     ) {
         assertNotSelf(req, userId)
+        await this.roleService.assertAdminOnlyTargets((req.user as any).roles, {
+            userId,
+            roleId: dto.roleId,
+        })
         return this.roleService.assignRoleToUser(userId, dto.roleId)
     }
 
     @Delete('users/:userId/role')
-    @Roles('admin')
+    @Permissions(PERMISSIONS.ROLE_MANAGE)
     @ApiOperation({ summary: 'Remove role from user (admin)' })
-    removeRoleFromUser(@Req() req: Request, @Param('userId', ParseUUIDPipe) userId: string) {
+    async removeRoleFromUser(@Req() req: Request, @Param('userId', ParseUUIDPipe) userId: string) {
         assertNotSelf(req, userId)
+        await this.roleService.assertAdminOnlyTargets((req.user as any).roles, { userId })
         return this.roleService.removeRoleFromUser(userId)
     }
 
     @Get('users/:userId')
-    @Roles('admin')
+    @Permissions(PERMISSIONS.ROLE_MANAGE)
     @ApiOperation({ summary: 'Get roles for user (admin)' })
     getUserRoles(@Param('userId', ParseUUIDPipe) userId: string) {
         return this.roleService.getUserRoles(userId)

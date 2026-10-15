@@ -1,3 +1,4 @@
+import { PERMISSIONS } from '@nest-auth/shared'
 import {
     Body,
     Controller,
@@ -12,8 +13,8 @@ import {
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 
-import { Roles } from '../../common/decorators/roles.decorator'
-import { RolesGuard } from '../../common/guards/roles.guard'
+import { Permissions } from '../../common/decorators/permissions.decorator'
+import { PermissionsGuard } from '../../common/guards/permissions.guard'
 import { successResponse } from '../../common/helpers/response.helper'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard'
@@ -65,8 +66,8 @@ export class ThemeController {
     // Admin endpoints
     @Get()
     @ApiBearerAuth('access-token')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin')
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
+    @Permissions(PERMISSIONS.THEME_MANAGE)
     @ApiOperation({ summary: 'List all themes' })
     async getAll() {
         const data = await this.themeService.getAll()
@@ -75,8 +76,8 @@ export class ThemeController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin')
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
+    @Permissions(PERMISSIONS.THEME_MANAGE)
     @ApiOperation({ summary: 'Create theme' })
     async create(@Body() dto: CreateThemeDto) {
         const data = await this.themeService.create(dto)
@@ -85,8 +86,8 @@ export class ThemeController {
 
     @Patch(':id/activate')
     @ApiBearerAuth('access-token')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin')
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
+    @Permissions(PERMISSIONS.THEME_MANAGE)
     @ApiOperation({ summary: 'Activate theme' })
     async activate(@Param('id', ParseUUIDPipe) id: string) {
         const data = await this.themeService.activate(id)
@@ -95,8 +96,8 @@ export class ThemeController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin')
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
+    @Permissions(PERMISSIONS.THEME_MANAGE)
     @ApiOperation({ summary: 'Update theme' })
     async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateThemeDto) {
         const data = await this.themeService.update(id, dto)
@@ -105,8 +106,8 @@ export class ThemeController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin')
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
+    @Permissions(PERMISSIONS.THEME_MANAGE)
     @ApiOperation({ summary: 'Delete theme' })
     async delete(@Param('id', ParseUUIDPipe) id: string) {
         const data = await this.themeService.delete(id)

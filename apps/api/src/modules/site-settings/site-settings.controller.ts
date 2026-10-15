@@ -1,3 +1,4 @@
+import { PERMISSIONS } from '@nest-auth/shared'
 import {
     BadRequestException,
     Body,
@@ -15,8 +16,8 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nes
 import { IsOptional, IsString, IsUrl } from 'class-validator'
 import { memoryStorage } from 'multer'
 
-import { Roles } from '../../common/decorators/roles.decorator'
-import { RolesGuard } from '../../common/guards/roles.guard'
+import { Permissions } from '../../common/decorators/permissions.decorator'
+import { PermissionsGuard } from '../../common/guards/permissions.guard'
 import { successResponse } from '../../common/helpers/response.helper'
 import { CloudinaryService } from '../../shared/cloudinary/cloudinary.service'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
@@ -54,8 +55,8 @@ export class SiteSettingsController {
 
     @Patch()
     @ApiBearerAuth('access-token')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin')
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
+    @Permissions(PERMISSIONS.SETTINGS_MANAGE)
     @ApiOperation({ summary: 'Update site settings' })
     async update(@Body() dto: UpdateSiteSettingsDto) {
         const data = await this.service.update(dto)
@@ -64,8 +65,8 @@ export class SiteSettingsController {
 
     @Post('upload')
     @ApiBearerAuth('access-token')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin')
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
+    @Permissions(PERMISSIONS.SETTINGS_MANAGE)
     @ApiOperation({
         summary: 'Upload logo or favicon — deletes oldUrl from Cloudinary if provided',
     })
@@ -113,8 +114,8 @@ export class SiteSettingsController {
 
     @Delete('asset')
     @ApiBearerAuth('access-token')
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles('admin')
+    @UseGuards(JwtAuthGuard, PermissionsGuard)
+    @Permissions(PERMISSIONS.SETTINGS_MANAGE)
     @ApiOperation({ summary: 'Delete a Cloudinary asset by URL' })
     async deleteAsset(@Body() dto: DeleteAssetDto) {
         if (!dto.url?.startsWith('http')) throw new BadRequestException('Invalid URL')

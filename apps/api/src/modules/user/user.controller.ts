@@ -1,3 +1,4 @@
+import { ADMIN_ROLE, PERMISSIONS } from '@nest-auth/shared'
 import {
     BadRequestException,
     Body,
@@ -28,10 +29,12 @@ import {
 import { Request } from 'express'
 import { memoryStorage } from 'multer'
 
-import { Roles } from '../../common/decorators/roles.decorator'
-import { RolesGuard } from '../../common/guards/roles.guard'
+import { Permissions } from '../../common/decorators/permissions.decorator'
+import { ForbiddenException } from '../../common/exceptions/app-error'
+import { PermissionsGuard } from '../../common/guards/permissions.guard'
 import { successResponse } from '../../common/helpers/response.helper'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
+import { RoleService } from '../rbac/role/role.service'
 import { AdminAssignRoleDto } from './dto/admin-assign-role.dto'
 import { AdminCreateUserDto } from './dto/admin-create-user.dto'
 import { AdminUpdateUserDto } from './dto/admin-update-user.dto'
@@ -47,7 +50,10 @@ const MAX_SIZE = 5 * 1024 * 1024 // 5 MB
 @Controller('user')
 @UseGuards(JwtAuthGuard)
 export class UserController {
-    constructor(private userService: UserService) {}
+    constructor(
+        private userService: UserService,
+        private roleService: RoleService,
+    ) {}
 
     @Get('me')
     @ApiOperation({ summary: 'Get current user profile with roles, permissions and sessions' })
@@ -90,18 +96,28 @@ export class UserController {
     // ── Admin endpoints ──────────────────────────────────────────────
 
     @Post('admin/users')
-    @UseGuards(RolesGuard)
-    @Roles('admin')
-    @ApiOperation({ summary: 'Create user (admin)' })
-    async adminCreateUser(@Body() dto: AdminCreateUserDto) {
+    @UseGuards(PermissionsGuard)
+    @Permissions(PERMISSIONS.USER_CREATE)
+    @ApiOperation({ summary: 'Create user' })
+    async adminCreateUser(@Req() req: Request, @Body() dto: AdminCreateUserDto) {
+        const actor = req.user as any
+        if (dto.roleId) {
+            // Picking the new user's role is role management, not just user creation
+            const canManageRoles =
+                actor.roles?.includes(ADMIN_ROLE) ||
+                actor.permissions?.includes(PERMISSIONS.ROLE_MANAGE)
+            if (!canManageRoles)
+                throw new ForbiddenException('Assigning a role requires role:manage')
+            await this.roleService.assertAdminOnlyTargets(actor.roles, { roleId: dto.roleId })
+        }
         const user = await this.userService.adminCreateUser(dto)
         return successResponse('User created', user)
     }
 
     @Get('admin/users')
-    @UseGuards(RolesGuard)
-    @Roles('admin')
-    @ApiOperation({ summary: 'List all users (admin)' })
+    @UseGuards(PermissionsGuard)
+    @Permissions(PERMISSIONS.USER_READ)
+    @ApiOperation({ summary: 'List all users' })
     @ApiQuery({ name: 'search', required: false })
     @ApiQuery({ name: 'page', required: false })
     @ApiQuery({ name: 'limit', required: false })
@@ -115,39 +131,45 @@ export class UserController {
     }
 
     @Patch('admin/users/:id')
-    @UseGuards(RolesGuard)
-    @Roles('admin')
-    @ApiOperation({ summary: 'Update user (admin)' })
+    @UseGuards(PermissionsGuard)
+    @Permissions(PERMISSIONS.USER_UPDATE)
+    @ApiOperation({ summary: 'Update user' })
     async adminUpdateUser(
         @Req() req: Request,
         @Param('id', ParseUUIDPipe) id: string,
         @Body() dto: AdminUpdateUserDto,
     ) {
         const actor = req.user as any
+        await this.roleService.assertAdminOnlyTargets(actor.roles, { userId: id })
         const user = await this.userService.adminUpdateUser(id, dto, actor.userId)
         return successResponse('User updated', user)
     }
 
     @Delete('admin/users/:id')
-    @UseGuards(RolesGuard)
-    @Roles('admin')
-    @ApiOperation({ summary: 'Delete user (admin)' })
+    @UseGuards(PermissionsGuard)
+    @Permissions(PERMISSIONS.USER_DELETE)
+    @ApiOperation({ summary: 'Delete user' })
     async adminDeleteUser(@Req() req: Request, @Param('id', ParseUUIDPipe) id: string) {
         const actor = req.user as any
+        await this.roleService.assertAdminOnlyTargets(actor.roles, { userId: id })
         const result = await this.userService.adminDeleteUser(id, actor.userId)
         return successResponse(result.message)
     }
 
     @Patch('admin/users/:id/role')
-    @UseGuards(RolesGuard)
-    @Roles('admin')
-    @ApiOperation({ summary: 'Assign role to user (admin)' })
+    @UseGuards(PermissionsGuard)
+    @Permissions(PERMISSIONS.ROLE_MANAGE)
+    @ApiOperation({ summary: 'Assign role to user' })
     async adminAssignRole(
         @Req() req: Request,
         @Param('id', ParseUUIDPipe) id: string,
         @Body() dto: AdminAssignRoleDto,
     ) {
         const actor = req.user as any
+        await this.roleService.assertAdminOnlyTargets(actor.roles, {
+            userId: id,
+            roleId: dto.roleId,
+        })
         const result = await this.userService.adminAssignRole(id, dto.roleId, actor.userId)
         return successResponse(result.message)
     }

@@ -13,6 +13,7 @@ describe('RoleController', () => {
         assignPermissions: jest.fn(),
         assignRoleToUser: jest.fn(),
         removeRoleFromUser: jest.fn(),
+        assertAdminOnlyTargets: jest.fn().mockResolvedValue(undefined),
         getUserRoles: jest.fn(),
     }
     const cloudinary = { upload: jest.fn() }
@@ -95,12 +96,12 @@ describe('RoleController', () => {
 
     const adminReq = { user: { userId: 'admin-id' } } as never
 
-    it('rejects an admin changing their own role', () => {
+    it('rejects an admin changing their own role', async () => {
         const selfReq = { user: { userId: 'user-id' } } as never
-        expect(() =>
+        await expect(
             controller.assignRoleToUser(selfReq, 'user-id', { roleId: 'role-id' }),
-        ).toThrow('You cannot change your own role')
-        expect(() => controller.removeRoleFromUser(selfReq, 'user-id')).toThrow(
+        ).rejects.toThrow('You cannot change your own role')
+        await expect(controller.removeRoleFromUser(selfReq, 'user-id')).rejects.toThrow(
             'You cannot change your own role',
         )
         expect(service.assignRoleToUser).not.toHaveBeenCalled()

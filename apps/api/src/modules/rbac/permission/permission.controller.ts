@@ -1,3 +1,4 @@
+import { PERMISSIONS } from '@nest-auth/shared'
 import {
     Body,
     Controller,
@@ -12,8 +13,8 @@ import {
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 
-import { Roles } from '../../../common/decorators/roles.decorator'
-import { RolesGuard } from '../../../common/guards/roles.guard'
+import { Permissions } from '../../../common/decorators/permissions.decorator'
+import { PermissionsGuard } from '../../../common/guards/permissions.guard'
 import { successResponse } from '../../../common/helpers/response.helper'
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard'
 import { CreatePermissionDto } from './dto/create-permission.dto'
@@ -22,8 +23,8 @@ import { PermissionService } from './permission.service'
 @ApiTags('permissions')
 @ApiBearerAuth('access-token')
 @Controller('permissions')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('admin')
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@Permissions(PERMISSIONS.ROLE_MANAGE)
 export class PermissionController {
     constructor(private permissionService: PermissionService) {}
 

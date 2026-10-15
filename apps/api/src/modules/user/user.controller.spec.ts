@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common'
 
+import { ForbiddenException } from '../../common/exceptions/app-error'
 import { UserController } from './user.controller'
 
 describe('UserController', () => {
@@ -15,8 +16,9 @@ describe('UserController', () => {
         adminAssignRole: jest.fn(),
         updateAvatar: jest.fn(),
     }
-    const controller = new UserController(service as never)
-    const req = { user: { userId: 'user-id', sessionId: 'session-id' } }
+    const roleService = { assertAdminOnlyTargets: jest.fn().mockResolvedValue(undefined) }
+    const controller = new UserController(service as never, roleService as never)
+    const req = { user: { userId: 'user-id', sessionId: 'session-id', roles: ['admin'] } }
 
     beforeEach(() => jest.clearAllMocks())
 
@@ -69,7 +71,7 @@ describe('UserController', () => {
         service.adminDeleteUser.mockResolvedValue({ message: 'User deleted' })
         service.adminAssignRole.mockResolvedValue({ message: 'Role assigned' })
 
-        await expect(controller.adminCreateUser({} as never)).resolves.toEqual({
+        await expect(controller.adminCreateUser(req as never, {} as never)).resolves.toEqual({
             status: 'success',
             message: 'User created',
             data: { id: 'user-id' },
@@ -97,6 +99,42 @@ describe('UserController', () => {
             }),
         ).resolves.toEqual({ status: 'success', message: 'Role assigned', data: null })
         expect(service.adminDeleteUser).toHaveBeenCalledWith('other-id', 'user-id')
+        // Every change to another account is checked for admin-only targets
+        expect(roleService.assertAdminOnlyTargets).toHaveBeenCalledWith(['admin'], {
+            userId: 'other-id',
+        })
+        expect(roleService.assertAdminOnlyTargets).toHaveBeenCalledWith(['admin'], {
+            userId: 'other-id',
+            roleId: 'role-id',
+        })
+    })
+
+    it('requires role:manage to pick a role when creating a user', async () => {
+        const creator = { user: { userId: 'u', roles: ['staff'], permissions: ['user:create'] } }
+        await expect(
+            controller.adminCreateUser(creator as never, { roleId: 'role-id' } as never),
+        ).rejects.toBeInstanceOf(ForbiddenException)
+        expect(service.adminCreateUser).not.toHaveBeenCalled()
+
+        service.adminCreateUser.mockResolvedValue({ id: 'new-id' })
+        const manager = {
+            user: { userId: 'u', roles: ['staff'], permissions: ['user:create', 'role:manage'] },
+        }
+        await controller.adminCreateUser(manager as never, { roleId: 'role-id' } as never)
+        expect(roleService.assertAdminOnlyTargets).toHaveBeenCalledWith(['staff'], {
+            roleId: 'role-id',
+        })
+        expect(service.adminCreateUser).toHaveBeenCalled()
+    })
+
+    it('does not touch the account when the admin-only check fails', async () => {
+        roleService.assertAdminOnlyTargets.mockRejectedValueOnce(
+            new ForbiddenException('Only admins can change an admin account'),
+        )
+        await expect(
+            controller.adminDeleteUser(req as never, 'admin-target'),
+        ).rejects.toBeInstanceOf(ForbiddenException)
+        expect(service.adminDeleteUser).not.toHaveBeenCalled()
     })
 
     it('rejects avatar requests without a file', async () => {

@@ -1,8 +1,9 @@
+import { PERMISSIONS } from '@nest-auth/shared'
 import { Controller, Get, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 
-import { Roles } from '../../common/decorators/roles.decorator'
-import { RolesGuard } from '../../common/guards/roles.guard'
+import { Permissions } from '../../common/decorators/permissions.decorator'
+import { PermissionsGuard } from '../../common/guards/permissions.guard'
 import { successResponse } from '../../common/helpers/response.helper'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { AdminStatsService } from './admin-stats.service'
@@ -10,8 +11,8 @@ import { AdminStatsService } from './admin-stats.service'
 @ApiTags('admin-stats')
 @ApiBearerAuth('access-token')
 @Controller('admin/stats')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('admin')
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@Permissions(PERMISSIONS.STATS_READ)
 export class AdminStatsController {
     constructor(private adminStatsService: AdminStatsService) {}
 
