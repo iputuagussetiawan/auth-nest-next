@@ -1,6 +1,8 @@
 import { ExecutionContext, HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 
+import { mobileCallbackUrl, peekMobileFlow } from '../google-mobile'
+
 export type GoogleAuthErrorReason = 'signup_closed' | 'email_unverified' | 'error'
 
 export function googleAuthErrorReason(err: unknown): GoogleAuthErrorReason {
@@ -17,6 +19,12 @@ export function googleAuthErrorReason(err: unknown): GoogleAuthErrorReason {
  */
 @Injectable()
 export class GoogleCallbackGuard extends AuthGuard('google') {
+    // Google only accepts the code with the same redirect URI the sign-in started with
+    getAuthenticateOptions(context: ExecutionContext) {
+        const req = context.switchToHttp().getRequest()
+        return peekMobileFlow(req) ? { callbackURL: mobileCallbackUrl() } : undefined
+    }
+
     handleRequest<TUser>(err: unknown, user: TUser, _info: unknown, context: ExecutionContext) {
         if (err || !user) {
             const req = context.switchToHttp().getRequest()

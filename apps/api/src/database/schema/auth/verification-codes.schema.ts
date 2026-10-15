@@ -5,6 +5,8 @@ import { users } from './users.schema'
 export const VerificationTypeEnum = {
     EMAIL_VERIFICATION: 'email_verification',
     PASSWORD_RESET: 'password_reset',
+    // Google sign-in hand-off to the mobile app (see modules/auth/google-mobile.ts)
+    MOBILE_OAUTH: 'mobile_oauth',
 } as const
 
 export const verificationCodes = pgTable('verification_codes', {

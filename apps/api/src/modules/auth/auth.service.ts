@@ -265,6 +265,45 @@ export class AuthService {
         return `${process.env.FRONTEND_ORIGIN}/reset-password?code=${code}&exp=${expiresAt.getTime()}`
     }
 
+    /**
+     * One-time code the browser hands to the app after Google sign-in. Stored together with the
+     * challenge, so it only redeems alongside the verifier the app got from the start request.
+     */
+    async createMobileExchangeCode(userId: string, challenge: string) {
+        const code = crypto.randomBytes(32).toString('hex')
+        await this.db.insert(verificationCodes).values({
+            userId,
+            code: hashCode(`${code}:${challenge}`),
+            type: VerificationTypeEnum.MOBILE_OAUTH,
+            expiresAt: new Date(Date.now() + 2 * 60 * 1000),
+        })
+        return code
+    }
+
+    async redeemMobileExchangeCode(code: string, verifier: string) {
+        const challenge = crypto.createHash('sha256').update(verifier).digest('hex')
+        // Deleting and reading in one statement makes the code single-use even under races
+        const [record] = await this.db
+            .delete(verificationCodes)
+            .where(
+                and(
+                    eq(verificationCodes.code, hashCode(`${code}:${challenge}`)),
+                    eq(verificationCodes.type, VerificationTypeEnum.MOBILE_OAUTH),
+                    gt(verificationCodes.expiresAt, new Date()),
+                ),
+            )
+            .returning()
+        if (!record) throw new UnauthorizedException('Invalid or expired sign-in code')
+
+        const [user] = await this.db
+            .select()
+            .from(users)
+            .where(eq(users.id, record.userId))
+            .limit(1)
+        if (!user?.isActive) throw new UnauthorizedException('Account is disabled')
+        return user
+    }
+
     async verifyEmail(code: string) {
         const [record] = await this.db
             .select()

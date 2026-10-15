@@ -22,13 +22,26 @@ import {
 import { Throttle } from '@nestjs/throttler'
 import { Request, Response } from 'express'
 
+import { BadRequestException } from '../../common/exceptions/app-error'
 import { getClientIp } from '../../common/helpers/client-ip'
 import { successResponse } from '../../common/helpers/response.helper'
 import { AuthService } from './auth.service'
 import { ForgotPasswordDto } from './dto/forgot-password.dto'
+import { MobileGoogleExchangeDto, MobileGoogleStartDto } from './dto/mobile-google.dto'
+import { RefreshTokenDto } from './dto/refresh-token.dto'
 import { RegisterDto } from './dto/register.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
 import { VerifyEmailDto } from './dto/verify-email.dto'
+import {
+    ClearMobileOAuthGuard,
+    isAllowedMobileRedirect,
+    mobileBeginUrl,
+    MobileGoogleAuthGuard,
+    MobileOAuthBeginGuard,
+    mobileRedirect,
+    sha256Hex,
+    takeMobileFlow,
+} from './google-mobile'
 import { GoogleCallbackGuard, type GoogleAuthErrorReason } from './guards/google-callback.guard'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { LocalAuthGuard } from './guards/local-auth.guard'
@@ -79,6 +92,21 @@ function getOrSetDeviceId(req: Request, res: Response): string {
     return deviceId
 }
 
+/**
+ * The mobile app sends X-Client: mobile. It gets its refresh token in the response body and keeps it
+ * in secure storage, because a phone's cookie store is plain app files. Browsers keep using httpOnly
+ * cookies; a refresh token is only ever returned in a body to a request that sent one in its body.
+ */
+function isMobileClient(req: Request) {
+    return req.headers['x-client'] === 'mobile'
+}
+
+/** The mobile app's own device id (it has no cookie for one), or a fresh one */
+function mobileDeviceId(req: Request) {
+    const header = req.headers['x-device-id']
+    return typeof header === 'string' && UUID_RE.test(header) ? header : crypto.randomUUID()
+}
+
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -123,13 +151,18 @@ export class AuthController {
     @ApiResponse({ status: 200, description: 'Logged in, sets httpOnly cookies' })
     @ApiResponse({ status: 401, description: 'Invalid credentials' })
     async login(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-        const user = req.user as any
+        return this.signIn(req, res, req.user as any)
+    }
+
+    /** Creates a session, sets the auth cookies and returns the user and access token */
+    private async signIn(req: Request, res: Response, user: any) {
+        const mobile = isMobileClient(req)
         const ip = getClientIp(req)
         const session = await this.authService.createSession(
             user.id,
             req.headers['user-agent'],
             ip,
-            getOrSetDeviceId(req, res),
+            mobile ? mobileDeviceId(req) : getOrSetDeviceId(req, res),
         )
         const accessToken = this.authService.signAccessToken({
             userId: user.id,
@@ -140,7 +173,7 @@ export class AuthController {
             tokenId: session.refreshTokenId,
         })
 
-        setAuthCookies(res, accessToken, refreshToken)
+        if (!mobile) setAuthCookies(res, accessToken, refreshToken)
 
         return successResponse('Logged in successfully', {
             user: {
@@ -153,23 +186,33 @@ export class AuthController {
                 isOnboardingCompleted: user.isOnboardingCompleted,
             },
             access_token: accessToken,
+            ...(mobile && { refresh_token: refreshToken }),
         })
     }
 
     @Post('refresh')
     @Throttle({ default: { ttl: 60000, limit: 20 } })
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Refresh access token using refresh cookie' })
+    @ApiOperation({ summary: 'Refresh access token using the refresh cookie or body token' })
     @ApiCookieAuth('accessToken')
     @ApiResponse({ status: 200, description: 'New access token issued' })
     @ApiResponse({ status: 401, description: 'Refresh token missing or invalid' })
-    async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-        const token: string | undefined = req.cookies?.refreshToken
+    async refresh(
+        @Body() dto: RefreshTokenDto,
+        @Req() req: Request,
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        const bodyToken = dto?.refreshToken
+        const token: string | undefined = bodyToken ?? req.cookies?.refreshToken
         if (!token) {
             res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Refresh token missing' })
             return
         }
         const { access_token, refresh_token } = await this.authService.refreshToken(token)
+        // Answer in kind: a token that came in the body goes back in the body, never a cookie's
+        if (bodyToken) {
+            return successResponse('Token refreshed successfully', { access_token, refresh_token })
+        }
         setAuthCookies(res, access_token, refresh_token)
         return successResponse('Token refreshed successfully', { access_token })
     }
@@ -211,10 +254,48 @@ export class AuthController {
 
     @Get('google')
     @Throttle({ default: { ttl: 60000, limit: 10 } })
-    @UseGuards(AuthGuard('google'))
+    @UseGuards(ClearMobileOAuthGuard, AuthGuard('google'))
     @ApiOperation({ summary: 'Initiate Google OAuth login (redirects to Google)' })
     @ApiResponse({ status: 302, description: 'Redirect to Google consent screen' })
     googleLogin() {}
+
+    @Post('google/mobile/start')
+    @Throttle({ default: { ttl: 60000, limit: 10 } })
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Start Google sign-in from the mobile app' })
+    @ApiResponse({ status: 200, description: 'Browser URL to open, and the verifier to keep' })
+    mobileGoogleStart(@Body() dto: MobileGoogleStartDto) {
+        if (!isAllowedMobileRedirect(dto.redirectUri)) {
+            throw new BadRequestException('redirectUri is not an allowed app link')
+        }
+        const verifier = crypto.randomBytes(32).toString('hex')
+        return successResponse('Open the URL to continue with Google', {
+            url: mobileBeginUrl(dto.redirectUri, sha256Hex(verifier)),
+            verifier,
+        })
+    }
+
+    @Get('google/mobile/begin')
+    @Throttle({ default: { ttl: 60000, limit: 10 } })
+    @UseGuards(MobileOAuthBeginGuard, MobileGoogleAuthGuard)
+    @ApiOperation({ summary: 'Mobile Google sign-in, in the browser (redirects to Google)' })
+    @ApiResponse({ status: 302, description: 'Redirect to Google consent screen' })
+    mobileGoogleBegin() {}
+
+    @Post('google/mobile/exchange')
+    @Throttle({ default: { ttl: 60000, limit: 10 } })
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Trade the code from the Google redirect for a session' })
+    @ApiResponse({ status: 200, description: 'Logged in, same response as /auth/login' })
+    @ApiResponse({ status: 401, description: 'Invalid or expired code' })
+    async mobileGoogleExchange(
+        @Body() dto: MobileGoogleExchangeDto,
+        @Req() req: Request,
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        const user = await this.authService.redeemMobileExchangeCode(dto.code, dto.verifier)
+        return this.signIn(req, res, user)
+    }
 
     @Get('google/callback')
     @Throttle({ default: { ttl: 60000, limit: 10 } })
@@ -222,14 +303,29 @@ export class AuthController {
     @ApiOperation({ summary: 'Google OAuth callback (handled by Google)' })
     @ApiResponse({ status: 302, description: 'Redirect to frontend after OAuth' })
     async googleCallback(@Req() req: Request, @Res() res: Response) {
+        const mobile = takeMobileFlow(req, res)
         const signinWith = (status: string) =>
-            res.redirect(`${FRONTEND_ORIGIN}/signin?status=${status}`)
+            res.redirect(
+                mobile
+                    ? mobileRedirect(mobile.redirectUri, { error: status })
+                    : `${FRONTEND_ORIGIN}/signin?status=${status}`,
+            )
         const authError = (req as any).googleAuthError as GoogleAuthErrorReason | undefined
         if (authError) return signinWith(authError)
 
         try {
             const user = req.user as any
             if (!user.isActive) return signinWith('account_disabled')
+
+            if (mobile) {
+                // The app creates its own session at /auth/google/mobile/exchange, so the refresh
+                // cookie lands in the app's cookie store rather than in this browser
+                const code = await this.authService.createMobileExchangeCode(
+                    user.id,
+                    mobile.challenge,
+                )
+                return res.redirect(mobileRedirect(mobile.redirectUri, { code }))
+            }
 
             const ip = getClientIp(req)
             const session = await this.authService.createSession(

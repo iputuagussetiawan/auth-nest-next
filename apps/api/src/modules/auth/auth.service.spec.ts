@@ -350,6 +350,67 @@ describe('AuthService', () => {
         })
     })
 
+    describe('mobile Google sign-in codes', () => {
+        const sha = (v: string) => crypto.createHash('sha256').update(v).digest('hex')
+        const verifier = 'b'.repeat(64)
+
+        it('stores the code bound to the challenge, never as-is', async () => {
+            const insert = createInsertChain([])
+            const service = createService({ insert: jest.fn().mockReturnValue(insert) })
+
+            const code = await service.createMobileExchangeCode('user-id', sha(verifier))
+
+            expect(code).toMatch(/^[0-9a-f]{64}$/)
+            expect(insert.values).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    userId: 'user-id',
+                    code: sha(`${code}:${sha(verifier)}`),
+                    type: 'mobile_oauth',
+                }),
+            )
+        })
+
+        function redeemDb(record: unknown, user: unknown) {
+            const del = {
+                where: jest.fn().mockReturnThis(),
+                returning: jest.fn().mockResolvedValue(record ? [record] : []),
+            }
+            return {
+                db: {
+                    delete: jest.fn().mockReturnValue(del),
+                    select: jest.fn().mockReturnValue(createSelectChain(user ? [user] : [])),
+                },
+                del,
+            }
+        }
+
+        it('returns the user and deletes the code in the same statement', async () => {
+            const user = { id: 'user-id', isActive: true }
+            const { db, del } = redeemDb({ userId: 'user-id' }, user)
+
+            await expect(
+                createService(db).redeemMobileExchangeCode('c'.repeat(64), verifier),
+            ).resolves.toEqual(user)
+            expect(db.delete).toHaveBeenCalledWith(verificationCodes)
+            expect(del.returning).toHaveBeenCalled()
+        })
+
+        it('rejects a code without the matching verifier, or used twice', async () => {
+            const { db } = redeemDb(null, null)
+            await expect(
+                createService(db).redeemMobileExchangeCode('c'.repeat(64), verifier),
+            ).rejects.toBeInstanceOf(UnauthorizedException)
+            expect(db.select).not.toHaveBeenCalled()
+        })
+
+        it('rejects a disabled account', async () => {
+            const { db } = redeemDb({ userId: 'user-id' }, { id: 'user-id', isActive: false })
+            await expect(
+                createService(db).redeemMobileExchangeCode('c'.repeat(64), verifier),
+            ).rejects.toBeInstanceOf(UnauthorizedException)
+        })
+    })
+
     describe('verifyEmail', () => {
         it('verifies the email and deletes the code', async () => {
             const record = { id: 'code-id', userId: 'user-id' }
