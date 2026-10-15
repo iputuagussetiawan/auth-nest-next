@@ -29,6 +29,13 @@
       "when": 1791983038949,
       "tag": "0003_session_device_id",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792026223891,
+      "tag": "0004_normalize_user_emails",
+      "breakpoints": true
     }
   ]
 }

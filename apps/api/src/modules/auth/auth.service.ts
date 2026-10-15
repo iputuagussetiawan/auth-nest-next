@@ -12,6 +12,7 @@ import {
     TooManyRequestsException,
     UnauthorizedException,
 } from '../../common/exceptions/app-error'
+import { normalizeEmail } from '../../common/helpers/email'
 import { DRIZZLE } from '../../database/drizzle.provider'
 import * as schema from '../../database/schema'
 import { sessions } from '../../database/schema/auth/sessions.schema'
@@ -31,6 +32,15 @@ import type { ResetPasswordDto } from './dto/reset-password.dto'
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000
 // Parallel requests may all refresh with the same token; accept the one just replaced for a moment
 const REFRESH_REUSE_GRACE_MS = 30 * 1000
+
+// Compared against when no account matches, so unknown emails take as long as wrong passwords
+// (bcrypt of a random string nobody knows, at the same cost as real hashes)
+const DUMMY_PASSWORD_HASH = '$2b$10$X/uHTuvE.5mMsSYIdLmVzeWgPF/.KbU0Au0mLZxnaKUUCX9BhYtvu'
+
+/** Codes are stored hashed, so a leaked database row can't be used as a verification or reset link */
+function hashCode(code: string) {
+    return crypto.createHash('sha256').update(code).digest('hex')
+}
 
 const COOKIE_OPTS = (maxAge: number) => ({
     httpOnly: true,
@@ -125,12 +135,14 @@ export class AuthService {
     }
 
     async validateUser(email: string, password: string) {
-        const [user] = await this.db.select().from(users).where(eq(users.email, email)).limit(1)
+        const [user] = await this.db
+            .select()
+            .from(users)
+            .where(eq(users.email, normalizeEmail(email)))
+            .limit(1)
 
-        if (!user || !user.password) return null
-
-        const isMatch = await bcrypt.compare(password, user.password)
-        if (!isMatch) return null
+        const isMatch = await bcrypt.compare(password, user?.password ?? DUMMY_PASSWORD_HASH)
+        if (!user?.password || !isMatch) return null
 
         if (!user.isEmailVerified)
             throw new UnauthorizedException('Please verify your email before logging in')
@@ -171,7 +183,7 @@ export class AuthService {
         const code = crypto.randomBytes(20).toString('hex')
         await this.db.insert(verificationCodes).values({
             userId: user.id,
-            code,
+            code: hashCode(code),
             type: VerificationTypeEnum.EMAIL_VERIFICATION,
             expiresAt: new Date(Date.now() + 45 * 60 * 1000),
         })
@@ -205,7 +217,7 @@ export class AuthService {
             .from(verificationCodes)
             .where(
                 and(
-                    eq(verificationCodes.code, code),
+                    eq(verificationCodes.code, hashCode(code)),
                     eq(verificationCodes.type, VerificationTypeEnum.EMAIL_VERIFICATION),
                     gt(verificationCodes.expiresAt, new Date()),
                 ),
@@ -232,7 +244,8 @@ export class AuthService {
         email?: string
         picture?: string
     }) {
-        const { provider, providerId, firstName, lastName, email, picture } = data
+        const { provider, providerId, firstName, lastName, picture } = data
+        const email = data.email ? normalizeEmail(data.email) : undefined
 
         let [user] = email
             ? await this.db.select().from(users).where(eq(users.email, email)).limit(1)
@@ -310,7 +323,7 @@ export class AuthService {
 
         await this.db.insert(verificationCodes).values({
             userId: user.id,
-            code,
+            code: hashCode(code),
             type: VerificationTypeEnum.PASSWORD_RESET,
             expiresAt,
         })
@@ -331,7 +344,7 @@ export class AuthService {
             .from(verificationCodes)
             .where(
                 and(
-                    eq(verificationCodes.code, dto.verificationCode),
+                    eq(verificationCodes.code, hashCode(dto.verificationCode)),
                     eq(verificationCodes.type, VerificationTypeEnum.PASSWORD_RESET),
                     gt(verificationCodes.expiresAt, new Date()),
                 ),
@@ -349,7 +362,15 @@ export class AuthService {
 
         // Password change invalidates every existing session for that user
         await this.db.delete(sessions).where(eq(sessions.userId, record.userId))
-        await this.db.delete(verificationCodes).where(eq(verificationCodes.id, record.id))
+        // Any other reset link sent before this one would otherwise still work for the rest of its hour
+        await this.db
+            .delete(verificationCodes)
+            .where(
+                and(
+                    eq(verificationCodes.userId, record.userId),
+                    eq(verificationCodes.type, VerificationTypeEnum.PASSWORD_RESET),
+                ),
+            )
 
         return { message: 'Password reset successfully' }
     }
@@ -390,15 +411,17 @@ export class AuthService {
     }
 
     private async findLiveSession(sessionId: string) {
-        const [session] = await this.db
-            .select()
+        const [row] = await this.db
+            .select({ session: sessions, isActive: users.isActive })
             .from(sessions)
+            .innerJoin(users, eq(users.id, sessions.userId))
             .where(eq(sessions.id, sessionId))
             .limit(1)
-        if (!session || session.expiredAt < new Date()) {
+        // A disabled account can't keep minting tokens with a refresh token it already holds
+        if (!row || !row.isActive || row.session.expiredAt < new Date()) {
             throw new UnauthorizedException('Session expired or revoked')
         }
-        return session
+        return row.session
     }
 
     /** Swaps the session's refresh token id only if it still matches, so parallel refreshes can't both win */

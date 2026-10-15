@@ -6,6 +6,8 @@ import {
 } from '@nest-auth/shared'
 import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator'
 
+import { NormalizeEmail } from '../../../common/helpers/email'
+
 export class RegisterDto {
     @IsString()
     @MinLength(NAME_MIN_LENGTH)
@@ -17,6 +19,7 @@ export class RegisterDto {
     @MaxLength(NAME_MAX_LENGTH)
     lastName!: string
 
+    @NormalizeEmail()
     @IsEmail()
     email!: string
 

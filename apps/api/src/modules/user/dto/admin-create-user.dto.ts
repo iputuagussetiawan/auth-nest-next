@@ -9,7 +9,10 @@ import {
     MinLength,
 } from 'class-validator'
 
+import { NormalizeEmail } from '../../../common/helpers/email'
+
 export class AdminCreateUserDto {
+    @NormalizeEmail()
     @IsEmail()
     email!: string
 
