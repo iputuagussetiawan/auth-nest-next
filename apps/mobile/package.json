@@ -44,7 +44,9 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "install:deps": "pnpm install --ignore-workspace"
+    "install:deps": "pnpm install --ignore-workspace",
+    "tunnel": "npx expo start --tunnel",
+    "build:apk": "npx eas-cli@latest build --platform android --profile preview"
   },
   "private": true
 }
