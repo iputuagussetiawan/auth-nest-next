@@ -23,6 +23,8 @@ describe('detectImageType', () => {
         [ICO, 'image/x-icon'],
         [Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"></svg>'), 'image/svg+xml'],
         [Buffer.from('<?xml version="1.0"?>\n<svg viewBox="0 0 1 1"/>'), 'image/svg+xml'],
+        // Starts with a byte-order mark
+        [Buffer.from('\uFEFF<svg xmlns="http://www.w3.org/2000/svg"/>'), 'image/svg+xml'],
     ])('recognises %#', (buf, type) => {
         expect(detectImageType(buf)).toBe(type)
     })

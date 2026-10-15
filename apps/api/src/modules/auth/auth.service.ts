@@ -154,21 +154,30 @@ export class AuthService {
         return safe
     }
 
+    /**
+     * Answers the same way whether or not the email is taken, so sign-up can't be used to find out
+     * who has an account. The owner of an existing account gets an email pointing them to sign-in
+     * and a password reset instead.
+     */
     async register(dto: RegisterDto) {
+        await this.assertSignupOpen()
+
         const firstName = dto.firstName.trim()
         const lastName = dto.lastName.trim()
 
         const [existing] = await this.db
-            .select({ id: users.id })
+            .select({ id: users.id, email: users.email })
             .from(users)
             .where(eq(users.email, dto.email))
             .limit(1)
 
-        if (existing) throw new BadRequestException('Email already in use')
-
-        await this.assertSignupOpen()
-
+        // Hashed on both paths so the response time doesn't give the answer away either
         const hashedPassword = await bcrypt.hash(dto.password, 10)
+
+        if (existing) {
+            await this.sendAccountExistsEmail(existing)
+            return
+        }
 
         const [user] = await this.db
             .insert(users)
@@ -209,8 +218,51 @@ export class AuthService {
         } catch (error) {
             console.error('Failed to create new-user notification:', error)
         }
+    }
 
-        return { userId: user.id }
+    private async sendAccountExistsEmail(user: { id: string; email: string }) {
+        // Same limit as forgot-password, but skipped silently: an error here would reveal the account
+        if (await this.hasRecentResetRequests(user.id)) return
+
+        const resetUrl = await this.createPasswordResetUrl(user.id)
+        try {
+            await this.mailService.sendAccountExistsEmail(
+                user.email,
+                `${process.env.FRONTEND_ORIGIN}/signin`,
+                resetUrl,
+            )
+        } catch (err) {
+            console.error('Failed to send account-exists email:', err)
+        }
+    }
+
+    private async hasRecentResetRequests(userId: string) {
+        const threeMinutesAgo = new Date(Date.now() - 3 * 60 * 1000)
+        const [{ recentCount }] = await this.db
+            .select({ recentCount: count() })
+            .from(verificationCodes)
+            .where(
+                and(
+                    eq(verificationCodes.userId, userId),
+                    eq(verificationCodes.type, VerificationTypeEnum.PASSWORD_RESET),
+                    gt(verificationCodes.createdAt, threeMinutesAgo),
+                ),
+            )
+        return recentCount >= 2
+    }
+
+    private async createPasswordResetUrl(userId: string) {
+        const code = crypto.randomBytes(20).toString('hex')
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000)
+
+        await this.db.insert(verificationCodes).values({
+            userId,
+            code: hashCode(code),
+            type: VerificationTypeEnum.PASSWORD_RESET,
+            expiresAt,
+        })
+
+        return `${process.env.FRONTEND_ORIGIN}/reset-password?code=${code}&exp=${expiresAt.getTime()}`
     }
 
     async verifyEmail(code: string) {
@@ -318,33 +370,11 @@ export class AuthService {
 
         if (!user) return { message: 'Password reset email sent' }
 
-        const threeMinutesAgo = new Date(Date.now() - 3 * 60 * 1000)
-        const [{ recentCount }] = await this.db
-            .select({ recentCount: count() })
-            .from(verificationCodes)
-            .where(
-                and(
-                    eq(verificationCodes.userId, user.id),
-                    eq(verificationCodes.type, VerificationTypeEnum.PASSWORD_RESET),
-                    gt(verificationCodes.createdAt, threeMinutesAgo),
-                ),
-            )
-
-        if (recentCount >= 2) {
+        if (await this.hasRecentResetRequests(user.id)) {
             throw new TooManyRequestsException('Too many requests, try again later')
         }
 
-        const code = crypto.randomBytes(20).toString('hex')
-        const expiresAt = new Date(Date.now() + 60 * 60 * 1000)
-
-        await this.db.insert(verificationCodes).values({
-            userId: user.id,
-            code: hashCode(code),
-            type: VerificationTypeEnum.PASSWORD_RESET,
-            expiresAt,
-        })
-
-        const resetUrl = `${process.env.FRONTEND_ORIGIN}/reset-password?code=${code}&exp=${expiresAt.getTime()}`
+        const resetUrl = await this.createPasswordResetUrl(user.id)
         try {
             await this.mailService.sendPasswordResetEmail(user.email, resetUrl)
         } catch (err) {
@@ -371,9 +401,11 @@ export class AuthService {
 
         const hashedPassword = await bcrypt.hash(dto.password, 10)
 
+        // The reset link arrived by email, so following it proves the address too. This is also how
+        // someone recovers an address that another person signed up with but never verified.
         await this.db
             .update(users)
-            .set({ password: hashedPassword, updatedAt: new Date() })
+            .set({ password: hashedPassword, isEmailVerified: true, updatedAt: new Date() })
             .where(eq(users.id, record.userId))
 
         // Password change invalidates every existing session for that user

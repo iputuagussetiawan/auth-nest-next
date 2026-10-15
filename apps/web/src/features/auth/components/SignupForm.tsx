@@ -71,9 +71,9 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
                     <div className="space-y-2">
                         <h1 className="text-2xl font-bold">Check your email</h1>
                         <p className="text-muted-foreground text-sm text-balance">
-                            We've sent a verification link to{' '}
+                            We've sent an email to{' '}
                             <span className="text-foreground font-semibold">{registeredEmail}</span>
-                            . Please click the link to activate your account.
+                            . Follow the link in it to continue.
                         </p>
                     </div>
                 </div>

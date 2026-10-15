@@ -379,6 +379,8 @@ Protected dashboard routes:
 - Emails are lowercased and trimmed everywhere, so `Ann@x.com` and `ann@x.com` are the same account.
 - Verification and reset codes are stored as SHA-256 hashes. A successful reset deletes every outstanding reset code for that user.
 - Login compares against a dummy bcrypt hash for unknown emails, so response time doesn't reveal which accounts exist.
+- Sign-up answers "Check your email to continue" whether or not the email is taken. If it is, the owner gets an email with a sign-in link and a password reset link instead of a verification link. Forgot-password also gives the same answer for every email.
+- Following a password reset link also marks the email as verified, since the link arrived at that address.
 - Uploads are checked by their actual bytes, not the browser-supplied type. Avatars and role images accept JPEG, PNG, WebP, and GIF; site assets also accept ICO and SVG, and SVGs containing scripts or event handlers are rejected.
 - Google sign-in requires a Google-verified email and checks the OAuth `state` parameter. Signing in with Google to an account whose email was never verified clears that account's password and pending codes.
 - The `admin` and `user` roles cannot be renamed or deleted, and admins cannot change their own role, deactivate themselves, or delete themselves.
