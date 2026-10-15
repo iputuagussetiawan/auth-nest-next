@@ -28,6 +28,7 @@ import { successResponse } from '../../common/helpers/response.helper'
 import { AuthService } from './auth.service'
 import { ForgotPasswordDto } from './dto/forgot-password.dto'
 import { MobileGoogleExchangeDto, MobileGoogleStartDto } from './dto/mobile-google.dto'
+import { RefreshTokenDto } from './dto/refresh-token.dto'
 import { RegisterDto } from './dto/register.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
 import { VerifyEmailDto } from './dto/verify-email.dto'
@@ -90,6 +91,21 @@ function getOrSetDeviceId(req: Request, res: Response): string {
     return deviceId
 }
 
+/**
+ * The mobile app sends X-Client: mobile. It gets its refresh token in the response body and keeps it
+ * in secure storage, because a phone's cookie store is plain app files. Browsers keep using httpOnly
+ * cookies; a refresh token is only ever returned in a body to a request that sent one in its body.
+ */
+function isMobileClient(req: Request) {
+    return req.headers['x-client'] === 'mobile'
+}
+
+/** The mobile app's own device id (it has no cookie for one), or a fresh one */
+function mobileDeviceId(req: Request) {
+    const header = req.headers['x-device-id']
+    return typeof header === 'string' && UUID_RE.test(header) ? header : crypto.randomUUID()
+}
+
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -139,12 +155,13 @@ export class AuthController {
 
     /** Creates a session, sets the auth cookies and returns the user and access token */
     private async signIn(req: Request, res: Response, user: any) {
+        const mobile = isMobileClient(req)
         const ip = getClientIp(req)
         const session = await this.authService.createSession(
             user.id,
             req.headers['user-agent'],
             ip,
-            getOrSetDeviceId(req, res),
+            mobile ? mobileDeviceId(req) : getOrSetDeviceId(req, res),
         )
         const accessToken = this.authService.signAccessToken({
             userId: user.id,
@@ -155,7 +172,7 @@ export class AuthController {
             tokenId: session.refreshTokenId,
         })
 
-        setAuthCookies(res, accessToken, refreshToken)
+        if (!mobile) setAuthCookies(res, accessToken, refreshToken)
 
         return successResponse('Logged in successfully', {
             user: {
@@ -168,23 +185,33 @@ export class AuthController {
                 isOnboardingCompleted: user.isOnboardingCompleted,
             },
             access_token: accessToken,
+            ...(mobile && { refresh_token: refreshToken }),
         })
     }
 
     @Post('refresh')
     @Throttle({ default: { ttl: 60000, limit: 20 } })
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Refresh access token using refresh cookie' })
+    @ApiOperation({ summary: 'Refresh access token using the refresh cookie or body token' })
     @ApiCookieAuth('accessToken')
     @ApiResponse({ status: 200, description: 'New access token issued' })
     @ApiResponse({ status: 401, description: 'Refresh token missing or invalid' })
-    async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-        const token: string | undefined = req.cookies?.refreshToken
+    async refresh(
+        @Body() dto: RefreshTokenDto,
+        @Req() req: Request,
+        @Res({ passthrough: true }) res: Response,
+    ) {
+        const bodyToken = dto?.refreshToken
+        const token: string | undefined = bodyToken ?? req.cookies?.refreshToken
         if (!token) {
             res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Refresh token missing' })
             return
         }
         const { access_token, refresh_token } = await this.authService.refreshToken(token)
+        // Answer in kind: a token that came in the body goes back in the body, never a cookie's
+        if (bodyToken) {
+            return successResponse('Token refreshed successfully', { access_token, refresh_token })
+        }
         setAuthCookies(res, access_token, refresh_token)
         return successResponse('Token refreshed successfully', { access_token })
     }

@@ -25,6 +25,7 @@ describe('AuthController security behavior', () => {
         const response = createResponse()
 
         await controller.refresh(
+            {},
             { cookies: { refreshToken: 'old-token' } } as never,
             response as never,
         )
@@ -249,6 +250,86 @@ describe('AuthController security behavior', () => {
             expect(response.cookie).toHaveBeenCalledWith(
                 'refreshToken',
                 'refresh',
+                expect.anything(),
+            )
+        })
+    })
+
+    describe('mobile clients keep tokens out of cookies', () => {
+        const deviceId = '11111111-2222-4333-8444-555555555555'
+        const mobileHeaders = { 'x-client': 'mobile', 'x-device-id': deviceId }
+
+        function service() {
+            return {
+                createSession: jest.fn().mockResolvedValue({ id: 's1', refreshTokenId: 't1' }),
+                signAccessToken: jest.fn().mockReturnValue('access'),
+                signRefreshToken: jest.fn().mockReturnValue('refresh'),
+                refreshToken: jest.fn().mockResolvedValue({
+                    access_token: 'new-access',
+                    refresh_token: 'new-refresh',
+                }),
+            }
+        }
+
+        it('login returns the refresh token in the body and sets no cookies', async () => {
+            const authService = service()
+            const response = createResponse()
+            const result = await new AuthController(authService as never).login(
+                { user: { id: 'u1' }, headers: mobileHeaders, socket: {} } as never,
+                response as never,
+            )
+            expect(result.data).toMatchObject({ access_token: 'access', refresh_token: 'refresh' })
+            expect(response.cookie).not.toHaveBeenCalled()
+            // The app's own device id replaces its previous session, as the cookie does in a browser
+            expect(authService.createSession).toHaveBeenCalledWith(
+                'u1',
+                undefined,
+                undefined,
+                deviceId,
+            )
+        })
+
+        it('browser login keeps the refresh token in a cookie only', async () => {
+            const response = createResponse()
+            const result = await new AuthController(service() as never).login(
+                { user: { id: 'u1' }, headers: {}, socket: {} } as never,
+                response as never,
+            )
+            expect(result.data).not.toHaveProperty('refresh_token')
+            expect(response.cookie).toHaveBeenCalledWith(
+                'refreshToken',
+                'refresh',
+                expect.anything(),
+            )
+        })
+
+        it('refresh with a body token answers in the body', async () => {
+            const authService = service()
+            const response = createResponse()
+            const result = await new AuthController(authService as never).refresh(
+                { refreshToken: 'old-refresh' },
+                { cookies: {}, headers: mobileHeaders } as never,
+                response as never,
+            )
+            expect(authService.refreshToken).toHaveBeenCalledWith('old-refresh')
+            expect(result?.data).toEqual({
+                access_token: 'new-access',
+                refresh_token: 'new-refresh',
+            })
+            expect(response.cookie).not.toHaveBeenCalled()
+        })
+
+        it('never returns a cookie refresh token in the body, even with the mobile header', async () => {
+            const response = createResponse()
+            const result = await new AuthController(service() as never).refresh(
+                {},
+                { cookies: { refreshToken: 'cookie-refresh' }, headers: mobileHeaders } as never,
+                response as never,
+            )
+            expect(result?.data).toEqual({ access_token: 'new-access' })
+            expect(response.cookie).toHaveBeenCalledWith(
+                'refreshToken',
+                'new-refresh',
                 expect.anything(),
             )
         })

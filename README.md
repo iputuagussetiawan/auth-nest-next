@@ -375,7 +375,7 @@ Protected dashboard routes:
 - Refresh tokens rotate on every use. Replaying an already-used refresh token ends the session. Parallel requests get a 30-second grace window.
 - The browser calls the API through the Next.js route `apps/web/src/app/api/[...path]/route.ts`, so cookies stay on the web domain. Server components call the API directly and forward the cookies.
 - `apps/web/src/proxy.ts` runs before every page, server action, and `/api` call. If the access token is missing or about to expire, it refreshes it and passes the new cookies to both the browser and the current request. A rejected refresh redirects to `/session-expired`, which clears the cookies.
-- The mobile app sends the access token as a bearer header and refreshes it on a 401.
+- The mobile app sends `X-Client: mobile` and its own `X-Device-Id`. For those requests the API sets no cookies and returns the refresh token in the response body; the app keeps both tokens in SecureStore (Keychain / Keystore), sends the access token as a bearer header, and refreshes on a 401 by posting `{ refreshToken }` to `/auth/refresh`. A refresh token is only returned in a body when one was sent in the body, so a script in a browser can't swap the httpOnly cookie for a readable token.
 - Google sign-in on mobile: `POST /auth/google/mobile/start` returns a browser URL and a secret verifier. The browser runs the normal Google flow and returns to the app's deep link with a 2-minute, single-use code. The app trades the code and verifier for a session at `POST /auth/google/mobile/exchange`. The verifier never passes through the browser, so a code caught by another app is useless.
 
 ### Security notes
