@@ -1,6 +1,7 @@
 import * as bcrypt from 'bcrypt'
 
 import { BadRequestException, NotFoundException } from '../../common/exceptions/app-error'
+import { sessions } from '../../database/schema/auth/sessions.schema'
 import { UserService } from './user.service'
 
 jest.mock('bcrypt', () => ({ compare: jest.fn(), hash: jest.fn() }))
@@ -156,6 +157,21 @@ describe('UserService', () => {
         await expect(
             instance.adminAssignRole('user-id', 'role-id', 'admin-id'),
         ).resolves.toBeUndefined()
+    })
+
+    it('signs a user out everywhere when an admin deactivates them', async () => {
+        const del = { where: jest.fn().mockResolvedValue(undefined) }
+        const db = {
+            select: jest.fn().mockReturnValue(query([{ id: 'user-id' }])),
+            update: jest.fn().mockReturnValue(updateQuery([{ id: 'user-id', isActive: false }])),
+            delete: jest.fn().mockReturnValue(del),
+        }
+        await service(db).adminUpdateUser('user-id', { isActive: false } as never, 'admin-id')
+        expect(db.delete).toHaveBeenCalledWith(sessions)
+
+        db.delete.mockClear()
+        await service(db).adminUpdateUser('user-id', { firstName: 'Ann' } as never, 'admin-id')
+        expect(db.delete).not.toHaveBeenCalled()
     })
 
     it('stops admins from deleting, deactivating or demoting themselves', async () => {

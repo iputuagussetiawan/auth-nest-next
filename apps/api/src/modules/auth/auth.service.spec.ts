@@ -1,3 +1,4 @@
+import * as crypto from 'crypto'
 import * as bcrypt from 'bcrypt'
 
 import {
@@ -5,6 +6,8 @@ import {
     NotFoundException,
     UnauthorizedException,
 } from '../../common/exceptions/app-error'
+import { sessions } from '../../database/schema/auth/sessions.schema'
+import { verificationCodes } from '../../database/schema/auth/verification-codes.schema'
 import { AuthService } from './auth.service'
 
 jest.mock('bcrypt', () => ({
@@ -16,6 +19,7 @@ function createSelectChain(result: unknown[]) {
     const chain = {
         from: jest.fn().mockReturnThis(),
         leftJoin: jest.fn().mockReturnThis(),
+        innerJoin: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
         limit: jest.fn().mockResolvedValue(result),
@@ -116,6 +120,11 @@ describe('AuthService', () => {
             const service = createService(db)
 
             await expect(service.validateUser('a@example.com', 'password')).resolves.toBeNull()
+            // Still pays for a bcrypt compare so unknown emails can't be told apart by timing
+            expect(bcrypt.compare).toHaveBeenCalledWith(
+                'password',
+                expect.stringMatching(/^\$2b\$10\$/),
+            )
         })
 
         it('returns null when the password does not match', async () => {
@@ -539,19 +548,29 @@ describe('AuthService', () => {
 
         it('stores a reset code and sends the email', async () => {
             const user = { id: 'user-id', email: 'a@example.com' }
+            const insert = createInsertChain([{ id: 'code-id' }])
             const db = {
                 select: jest
                     .fn()
                     .mockReturnValueOnce(createSelectChain([user]))
                     .mockReturnValueOnce(createSelectChain([{ recentCount: 0 }])),
-                insert: jest.fn().mockReturnValue(createInsertChain([{ id: 'code-id' }])),
+                insert: jest.fn().mockReturnValue(insert),
             }
+            const mailService = { sendPasswordResetEmail: jest.fn() }
             const service = createService(db)
+            ;(service as any).mailService = mailService
 
             await expect(service.forgotPassword('a@example.com')).resolves.toEqual({
                 message: 'Password reset email sent',
             })
-            expect(db.insert).toHaveBeenCalled()
+            // The emailed code is never stored as-is, only its SHA-256
+            const resetUrl: string = mailService.sendPasswordResetEmail.mock.calls[0][1]
+            const code = resetUrl.match(/code=([0-9a-f]+)/)![1]
+            expect(insert.values).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    code: crypto.createHash('sha256').update(code).digest('hex'),
+                }),
+            )
         })
     })
 
@@ -577,8 +596,10 @@ describe('AuthService', () => {
             expect(update.set).toHaveBeenCalledWith(
                 expect.objectContaining({ password: 'new-hash' }),
             )
-            // Password reset must revoke every existing session for that user
+            // Password reset must revoke every session and every outstanding reset code for that user
             expect(db.delete).toHaveBeenCalledTimes(2)
+            expect(db.delete).toHaveBeenCalledWith(sessions)
+            expect(db.delete).toHaveBeenCalledWith(verificationCodes)
         })
 
         it('rejects an invalid or expired code', async () => {
@@ -598,11 +619,14 @@ describe('AuthService', () => {
         const future = () => new Date(Date.now() + 60_000)
 
         function setup(
-            sessions: Record<string, unknown>[],
+            rows: Record<string, unknown>[],
             rotatedRows: unknown[] = [{ id: 'session-id' }],
         ) {
             const select = jest.fn()
-            sessions.forEach((row) => select.mockReturnValueOnce(createSelectChain([row])))
+            // Each row is joined with its user; isActive defaults to an active account
+            rows.forEach(({ isActive = true, ...session }) =>
+                select.mockReturnValueOnce(createSelectChain([{ session, isActive }])),
+            )
             const update = {
                 set: jest.fn().mockReturnThis(),
                 where: jest.fn().mockReturnThis(),
@@ -648,6 +672,20 @@ describe('AuthService', () => {
                 access_token: 'signed:access',
                 refresh_token: `signed:${refreshTokenId}`,
             })
+        })
+
+        it('refuses to refresh for a disabled account', async () => {
+            const { update, refresh } = setup([
+                {
+                    id: 'session-id',
+                    userId: 'user-id',
+                    expiredAt: future(),
+                    refreshTokenId: 't1',
+                    isActive: false,
+                },
+            ])
+            await expect(refresh({ tokenId: 't1' })).rejects.toBeInstanceOf(UnauthorizedException)
+            expect(update.set).not.toHaveBeenCalled()
         })
 
         it('upgrades a session created before rotation existed', async () => {

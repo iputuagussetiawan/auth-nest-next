@@ -130,6 +130,24 @@ describe('RoleService', () => {
         expect(del.where).toHaveBeenCalled()
     })
 
+    it('refuses to rename or delete the admin and user roles', async () => {
+        for (const name of ['admin', 'user']) {
+            const db = {
+                select: jest.fn().mockReturnValue(createQuery([{ id: 'role-id', name }])),
+                update: jest.fn(),
+                delete: jest.fn(),
+            }
+            const service = new RoleService(db as never)
+
+            await expect(service.update('role-id', { name: 'renamed' })).rejects.toBeInstanceOf(
+                BadRequestException,
+            )
+            await expect(service.remove('role-id')).rejects.toBeInstanceOf(BadRequestException)
+            expect(db.update).not.toHaveBeenCalled()
+            expect(db.delete).not.toHaveBeenCalled()
+        }
+    })
+
     it('replaces role permissions and skips insert for an empty list', async () => {
         const del = createDeleteQuery()
         const insert = createInsertQuery([])

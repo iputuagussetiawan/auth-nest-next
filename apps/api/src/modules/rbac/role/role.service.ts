@@ -11,6 +11,9 @@ import { roles, type Role } from '../../../database/schema/rbac/roles.schema'
 import { userRoles } from '../../../database/schema/rbac/user-roles.schema'
 import type { CreateRoleDto } from './dto/create-role.dto'
 
+// Guards authorize by role name, and sign-up assigns 'user': renaming or deleting either breaks the app
+const PROTECTED_ROLES = ['admin', 'user']
+
 @Injectable()
 export class RoleService {
     constructor(@Inject(DRIZZLE) private db: NodePgDatabase<typeof schema>) {}
@@ -42,7 +45,10 @@ export class RoleService {
     }
 
     async update(id: string, dto: Partial<CreateRoleDto>) {
-        await this.findById(id)
+        const role = await this.findById(id)
+        if (PROTECTED_ROLES.includes(role.name) && dto.name && dto.name !== role.name) {
+            throw new BadRequestException(`The ${role.name} role cannot be renamed`)
+        }
         if (dto.name) {
             const existing = await this.findByName(dto.name)
             if (existing && existing.id !== id) throw new BadRequestException('Role already exists')
@@ -56,7 +62,10 @@ export class RoleService {
     }
 
     async remove(id: string) {
-        await this.findById(id)
+        const role = await this.findById(id)
+        if (PROTECTED_ROLES.includes(role.name)) {
+            throw new BadRequestException(`The ${role.name} role cannot be deleted`)
+        }
         await this.db.delete(roles).where(eq(roles.id, id))
         return { message: 'Role deleted' }
     }

@@ -1,8 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
-import { Profile, Strategy } from 'passport-google-oauth20'
+import { Profile, Strategy, StrategyOptions } from 'passport-google-oauth20'
 
 import { AuthService } from '../auth.service'
+import { OAuthCookieStateStore } from './oauth-state.store'
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -12,7 +13,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
             clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
             callbackURL: process.env.GOOGLE_CALLBACK_URL!,
             scope: ['profile', 'email'],
-        })
+            store: new OAuthCookieStateStore(),
+        } as StrategyOptions)
     }
 
     async validate(_accessToken: string, _refreshToken: string, profile: Profile) {
