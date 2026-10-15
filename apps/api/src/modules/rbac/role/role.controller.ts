@@ -11,6 +11,7 @@ import {
     Patch,
     Post,
     Put,
+    Req,
     UploadedFile,
     UseGuards,
     UseInterceptors,
@@ -24,6 +25,7 @@ import {
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger'
+import { Request } from 'express'
 import { memoryStorage } from 'multer'
 
 import { Roles } from '../../../common/decorators/roles.decorator'
@@ -38,6 +40,13 @@ import { RoleService } from './role.service'
 
 const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const MAX_SIZE = 2 * 1024 * 1024 // 2 MB
+
+/** Same rule as PATCH /user/admin/users/:id/role: an admin demoting themself could leave no admin */
+function assertNotSelf(req: Request, userId: string) {
+    if ((req.user as any)?.userId === userId) {
+        throw new BadRequestException('You cannot change your own role')
+    }
+}
 
 @ApiTags('roles')
 @ApiBearerAuth('access-token')
@@ -151,14 +160,20 @@ export class RoleController {
     @Roles('admin')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Assign role to user (admin)' })
-    assignRoleToUser(@Param('userId', ParseUUIDPipe) userId: string, @Body() dto: AssignRoleDto) {
+    assignRoleToUser(
+        @Req() req: Request,
+        @Param('userId', ParseUUIDPipe) userId: string,
+        @Body() dto: AssignRoleDto,
+    ) {
+        assertNotSelf(req, userId)
         return this.roleService.assignRoleToUser(userId, dto.roleId)
     }
 
     @Delete('users/:userId/role')
     @Roles('admin')
     @ApiOperation({ summary: 'Remove role from user (admin)' })
-    removeRoleFromUser(@Param('userId', ParseUUIDPipe) userId: string) {
+    removeRoleFromUser(@Req() req: Request, @Param('userId', ParseUUIDPipe) userId: string) {
+        assertNotSelf(req, userId)
         return this.roleService.removeRoleFromUser(userId)
     }
 

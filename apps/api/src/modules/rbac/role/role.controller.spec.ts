@@ -93,6 +93,20 @@ describe('RoleController', () => {
         )
     })
 
+    const adminReq = { user: { userId: 'admin-id' } } as never
+
+    it('rejects an admin changing their own role', () => {
+        const selfReq = { user: { userId: 'user-id' } } as never
+        expect(() =>
+            controller.assignRoleToUser(selfReq, 'user-id', { roleId: 'role-id' }),
+        ).toThrow('You cannot change your own role')
+        expect(() => controller.removeRoleFromUser(selfReq, 'user-id')).toThrow(
+            'You cannot change your own role',
+        )
+        expect(service.assignRoleToUser).not.toHaveBeenCalled()
+        expect(service.removeRoleFromUser).not.toHaveBeenCalled()
+    })
+
     it('forwards permission and user-role operations', async () => {
         service.assignPermissions.mockResolvedValue({ message: 'Permissions assigned' })
         service.assignRoleToUser.mockResolvedValue({ message: 'Role assigned to user' })
@@ -105,11 +119,11 @@ describe('RoleController', () => {
             message: 'Permissions assigned',
         })
         await expect(
-            controller.assignRoleToUser('user-id', { roleId: 'role-id' }),
+            controller.assignRoleToUser(adminReq, 'user-id', { roleId: 'role-id' }),
         ).resolves.toEqual({
             message: 'Role assigned to user',
         })
-        await expect(controller.removeRoleFromUser('user-id')).resolves.toEqual({
+        await expect(controller.removeRoleFromUser(adminReq, 'user-id')).resolves.toEqual({
             message: 'Role removed from user',
         })
         await expect(controller.getUserRoles('user-id')).resolves.toEqual([{ id: 'role-id' }])

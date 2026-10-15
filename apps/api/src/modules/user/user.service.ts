@@ -237,6 +237,10 @@ export class UserService {
                 isActive: users.isActive,
                 updatedAt: users.updatedAt,
             })
+        // Sign a disabled user out everywhere rather than leaving their sessions to expire
+        if (dto.isActive === false) {
+            await this.db.delete(sessions).where(eq(sessions.userId, id))
+        }
         return updated
     }
 
