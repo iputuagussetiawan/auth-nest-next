@@ -98,8 +98,8 @@ export default function LoginScreen() {
               <View className="h-16 w-16 items-center justify-center rounded-3xl bg-primary dark:bg-primary-dark">
                 <SymbolView name={{ ios: 'lock.shield.fill', android: 'shield_lock', web: 'shield_lock' }} size={32} tintColor={palette.primaryForeground} />
               </View>
-              <Text className="mt-6 text-3xl font-bold text-foreground dark:text-foreground-dark">Welcome back</Text>
-              <Text className="mt-2 text-center text-base text-muted-foreground dark:text-muted-foreground-dark">Sign in to continue to your account.</Text>
+              <Text className="mt-6 w-full text-center text-3xl font-bold text-foreground dark:text-foreground-dark">Welcome back</Text>
+              <Text className="mt-2 w-full text-center text-base text-muted-foreground dark:text-muted-foreground-dark">Sign in to continue to your account.</Text>
             </View>
 
             <View className="mt-8 rounded-3xl border border-border dark:border-border-dark bg-card dark:bg-card-dark p-5">
