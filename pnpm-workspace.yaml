@@ -2,7 +2,7 @@ packages:
     - 'apps/*'
     - 'packages/*'
     # Expo app keeps its own lockfile for now
-    - '!apps/my-auth-mobile'
+    - '!apps/mobile'
 
 ignoredBuiltDependencies:
     - sharp
