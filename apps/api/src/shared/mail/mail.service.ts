@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Resend } from 'resend'
 
-import { passwordResetTemplate, verifyEmailTemplate } from './templates'
+import { accountExistsTemplate, passwordResetTemplate, verifyEmailTemplate } from './templates'
 
 @Injectable()
 export class MailService {
@@ -23,6 +23,16 @@ export class MailService {
 
     async sendPasswordResetEmail(to: string, url: string): Promise<void> {
         const { subject, html } = passwordResetTemplate(url)
+        await this.resend.emails.send({
+            from: process.env.MAIL_FROM || 'noreply@example.com',
+            to,
+            subject,
+            html,
+        })
+    }
+
+    async sendAccountExistsEmail(to: string, signinUrl: string, resetUrl: string): Promise<void> {
+        const { subject, html } = accountExistsTemplate(signinUrl, resetUrl)
         await this.resend.emails.send({
             from: process.env.MAIL_FROM || 'noreply@example.com',
             to,
