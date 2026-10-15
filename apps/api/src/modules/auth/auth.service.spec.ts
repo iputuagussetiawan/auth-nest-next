@@ -64,7 +64,11 @@ function createService(
     return new AuthService(
         db as never,
         { sign: jest.fn().mockReturnValue('signed-token'), verify: jest.fn() } as never,
-        { sendVerificationEmail: jest.fn(), sendPasswordResetEmail: jest.fn() } as never,
+        {
+            sendVerificationEmail: jest.fn(),
+            sendPasswordResetEmail: jest.fn(),
+            sendAccountExistsEmail: jest.fn(),
+        } as never,
         {
             findByName: jest.fn().mockResolvedValue({ id: 'role-id', name: 'user' }),
             assignRoleToUser: jest.fn(),
@@ -198,7 +202,7 @@ describe('AuthService', () => {
             const notificationService = { notifyNewUser: jest.fn().mockResolvedValue({}) }
             const service = createService(db, { roleService, notificationService })
 
-            await expect(service.register(dto as never)).resolves.toEqual({ userId: 'user-id' })
+            await expect(service.register(dto as never)).resolves.toBeUndefined()
             expect(roleService.assignRoleToUser).toHaveBeenCalledWith('user-id', 'role-id')
             expect(notificationService.notifyNewUser).toHaveBeenCalledWith({
                 id: 'user-id',
@@ -223,13 +227,54 @@ describe('AuthService', () => {
             )
         })
 
-        it('rejects duplicate email', async () => {
-            const db = {
-                select: jest.fn().mockReturnValue(createSelectChain([{ id: 'existing-id' }])),
-            }
-            const service = createService(db)
+        describe('when the email already has an account', () => {
+            const existing = { id: 'existing-id', email: 'new@example.com' }
 
-            await expect(service.register(dto as never)).rejects.toBeInstanceOf(BadRequestException)
+            it('answers like a new sign-up and emails the owner a sign-in and reset link', async () => {
+                const insert = createInsertChain([{ id: 'code-id' }])
+                const db = {
+                    select: jest
+                        .fn()
+                        .mockReturnValueOnce(createSelectChain([existing]))
+                        .mockReturnValueOnce(createSelectChain([{ recentCount: 0 }])),
+                    insert: jest.fn().mockReturnValue(insert),
+                }
+                const mailService = { sendAccountExistsEmail: jest.fn() }
+                const service = createService(db)
+                ;(service as any).mailService = mailService
+
+                await expect(service.register(dto as never)).resolves.toBeUndefined()
+
+                // Only a reset code is stored: no second user, no verification code
+                expect(db.insert).toHaveBeenCalledTimes(1)
+                expect(db.insert).toHaveBeenCalledWith(verificationCodes)
+                expect(insert.values).toHaveBeenCalledWith(
+                    expect.objectContaining({ userId: 'existing-id', type: 'password_reset' }),
+                )
+                const [to, signinUrl, resetUrl] = mailService.sendAccountExistsEmail.mock.calls[0]
+                expect(to).toBe('new@example.com')
+                expect(signinUrl).toMatch(/\/signin$/)
+                expect(resetUrl).toMatch(/\/reset-password\?code=[0-9a-f]+&exp=\d+$/)
+                // Same work as a real sign-up, so timing doesn't tell the two apart
+                expect(bcrypt.hash).toHaveBeenCalledWith(dto.password, 10)
+            })
+
+            it('stays silent instead of erroring when reset emails were just sent', async () => {
+                const db = {
+                    select: jest
+                        .fn()
+                        .mockReturnValueOnce(createSelectChain([existing]))
+                        .mockReturnValueOnce(createSelectChain([{ recentCount: 2 }])),
+                    insert: jest.fn(),
+                }
+                const mailService = { sendAccountExistsEmail: jest.fn() }
+                const service = createService(db)
+                ;(service as any).mailService = mailService
+
+                await expect(service.register(dto as never)).resolves.toBeUndefined()
+                expect(db.insert).not.toHaveBeenCalled()
+                expect(mailService.sendAccountExistsEmail).not.toHaveBeenCalled()
+            })
         })
 
         it('still registers when notification creation fails', async () => {
@@ -248,7 +293,7 @@ describe('AuthService', () => {
             const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => undefined)
 
             try {
-                await expect(service.register(dto as never)).resolves.toEqual({ userId: 'user-id' })
+                await expect(service.register(dto as never)).resolves.toBeUndefined()
             } finally {
                 errorSpy.mockRestore()
             }
@@ -593,8 +638,9 @@ describe('AuthService', () => {
                     password: 'NewPass123!',
                 } as never),
             ).resolves.toEqual({ message: 'Password reset successfully' })
+            // The emailed link proves the address, so it also counts as verifying it
             expect(update.set).toHaveBeenCalledWith(
-                expect.objectContaining({ password: 'new-hash' }),
+                expect.objectContaining({ password: 'new-hash', isEmailVerified: true }),
             )
             // Password reset must revoke every session and every outstanding reset code for that user
             expect(db.delete).toHaveBeenCalledTimes(2)

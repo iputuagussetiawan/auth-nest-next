@@ -88,11 +88,14 @@ export class AuthController {
     @Throttle({ default: { ttl: 60000, limit: 5 } })
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Register new user' })
-    @ApiResponse({ status: 201, description: 'User created successfully' })
-    @ApiResponse({ status: 400, description: 'Validation error or email already exists' })
+    @ApiResponse({
+        status: 201,
+        description: 'Same answer whether or not the email already has an account',
+    })
+    @ApiResponse({ status: 400, description: 'Validation error' })
     async register(@Body() dto: RegisterDto) {
         await this.authService.register(dto)
-        return successResponse('User created successfully')
+        return successResponse('Check your email to continue')
     }
 
     @Post('verify/email')

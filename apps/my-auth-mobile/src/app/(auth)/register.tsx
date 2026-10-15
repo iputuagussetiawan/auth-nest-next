@@ -18,7 +18,7 @@ export default function RegisterScreen() {
     const next = { name: validateRequired(name, 'Name') || (!lastName ? 'Enter your first and last name.' : ''), email: validateEmail(email), password: validatePassword(password), confirmation: !confirmation ? 'Please confirm your password.' : confirmation !== password ? 'Passwords do not match.' : '' };
     setErrors(next); if (Object.values(next).some(Boolean)) return;
     setSubmitting(true); setNotice('');
-    try { await signUp({ firstName, lastName, email, password }); setNotice('Account created. Check your email to verify your account before signing in.'); }
+    try { await signUp({ firstName, lastName, email, password }); setNotice('Check your email and follow the link in it to continue.'); }
     catch (err) { setFormError(err instanceof Error ? err.message : 'Registration failed.'); } finally { setSubmitting(false); }
   }
   const input = (label: string, value: string, setValue: (v: string) => void, field: string, props: any = {}) => {

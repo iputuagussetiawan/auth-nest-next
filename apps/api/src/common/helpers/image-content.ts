@@ -16,7 +16,11 @@ export function detectImageType(buf: Buffer): string | null {
     if (startsWith(buf, ascii('RIFF')) && startsWith(buf, ascii('WEBP'), 8)) return 'image/webp'
     if (startsWith(buf, [0x00, 0x00, 0x01, 0x00])) return 'image/x-icon'
 
-    const head = buf.subarray(0, 1024).toString('utf8').replace(/^﻿/, '').trimStart()
+    const head = buf
+        .subarray(0, 1024)
+        .toString('utf8')
+        .replace(/^\uFEFF/, '')
+        .trimStart()
     if (/^(<\?xml[^>]*>\s*)?(<!--[\s\S]*?-->\s*)*(<!DOCTYPE svg[^>]*>\s*)?<svg[\s>]/i.test(head)) {
         return 'image/svg+xml'
     }

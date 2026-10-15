@@ -148,3 +148,46 @@ export const passwordResetTemplate = (url: string) => ({
       </tr>
     `),
 })
+
+export const accountExistsTemplate = (signinUrl: string, resetUrl: string) => ({
+    subject: 'You already have an account',
+    html: base(`
+      <!-- Top accent bar -->
+      <tr>
+        <td style="background:linear-gradient(90deg,#18181b 0%,#3b82f6 100%);height:4px;"></td>
+      </tr>
+
+      <!-- Body -->
+      <tr>
+        <td style="padding:40px 48px 48px;">
+
+          <!-- Icon -->
+          <table cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+            <tr>
+              <td style="background-color:#eff6ff;border-radius:12px;padding:14px;width:48px;height:48px;text-align:center;">
+                <span style="font-size:28px;line-height:1;">👋</span>
+              </td>
+            </tr>
+          </table>
+
+          <h1 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#09090b;letter-spacing:-0.5px;">
+            You already have an account
+          </h1>
+          <p style="margin:0 0 8px;font-size:15px;color:#71717a;line-height:1.6;">
+            Someone just tried to sign up with this email address, but an account already exists for it.
+            If that was you, sign in instead, or set a new password if you've forgotten it.
+            The password link expires in <strong style="color:#18181b;">1 hour</strong>.
+          </p>
+          <p style="margin:0 0 24px;font-size:13px;color:#a1a1aa;line-height:1.5;">
+            If it wasn't you, you can ignore this email — nothing about your account has changed.
+          </p>
+
+          ${button(signinUrl, 'Sign In')}
+          <p style="margin:20px 0 0;font-size:14px;color:#71717a;text-align:center;">
+            Forgot your password? <a href="${resetUrl}" style="color:#3b82f6;">Set a new one</a>
+          </p>
+
+        </td>
+      </tr>
+    `),
+})
