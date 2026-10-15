@@ -10,14 +10,17 @@ Built with NestJS, Next.js, PostgreSQL, Drizzle ORM, React Query, React Hook For
 - Account verification
 - Forgot/reset password flow
 - Google OAuth support
-- JWT authentication with refresh tokens
+- Short-lived JWT access tokens (15 minutes) with rotating 30-day refresh tokens and reuse detection
+- httpOnly, SameSite cookies; the browser never handles tokens directly
+- Per-visitor rate limiting on auth endpoints
 - User profile and avatar management
 - Email and password management
 - Session/connections management
 - Role-based access control
 - User, role, and permission administration
 - Role-permission matrix
-- Site settings management
+- Site settings management, including maintenance mode
+- Admin notifications for new sign-ups
 - Theme management with light/dark/system modes
 - Monochrome (Vercel-style) default theme
 - Responsive admin sidebar and dashboard layout
@@ -34,6 +37,7 @@ Built with NestJS, Next.js, PostgreSQL, Drizzle ORM, React Query, React Hook For
 │   ├── api/                     # NestJS API
 │   │   ├── drizzle/             # SQL migrations
 │   │   └── src/
+│   │       ├── common/          # Guards, decorators, filters, helpers
 │   │       ├── database/        # Drizzle schema, seeds
 │   │       ├── modules/
 │   │       │   ├── auth/
@@ -42,14 +46,18 @@ Built with NestJS, Next.js, PostgreSQL, Drizzle ORM, React Query, React Hook For
 │   │       │   ├── session/
 │   │       │   ├── theme/
 │   │       │   ├── site-settings/
+│   │       │   ├── notification/
 │   │       │   └── admin-stats/
+│   │       ├── shared/          # Mail (Resend) and Cloudinary services
 │   │       └── main.ts
 │   ├── web/                     # Next.js frontend
 │   │   └── src/
 │   │       ├── app/             # App Router routes and layouts
+│   │       │   └── api/[...path]/  # Proxy from the browser to the API
 │   │       ├── components/      # Shared UI and layout components
 │   │       ├── features/        # Feature-specific pages and services
-│   │       └── providers/       # Auth, theme, and query providers
+│   │       ├── providers/       # Auth, theme, and query providers
+│   │       └── proxy.ts         # Route protection and access-token refresh
 │   └── my-auth-mobile/          # Expo app (own lockfile, not in pnpm workspace)
 ├── packages/
 │   └── shared/                  # Shared constants and types (@nest-auth/shared)
@@ -80,21 +88,25 @@ Clone the repository, then install dependencies from the project root:
 pnpm install
 ```
 
-Create the API environment file:
+Create the API and web environment files:
 
 ```bash
 cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env.local
 ```
 
 On Windows PowerShell:
 
 ```powershell
 Copy-Item apps/api/.env.example apps/api/.env
+Copy-Item apps/web/.env.example apps/web/.env.local
 ```
 
 Update `apps/api/.env` with a valid PostgreSQL connection and JWT secrets.
 
 ## Environment variables
+
+### API
 
 The API example file is:
 
@@ -121,12 +133,46 @@ GOOGLE_CLIENT_SECRET=
 GOOGLE_CALLBACK_URL=http://localhost:4001/api/auth/google/callback
 ```
 
+Locally the callback can point straight at the API. In production it must go through the web app's proxy (`https://<web-domain>/api/auth/google/callback`), because the auth cookies and the OAuth `state` cookie live on the web domain. Register the same URL in the Google Cloud console.
+
 Optional email variables:
 
 ```env
 RESEND_API_KEY=
 MAIL_FROM=noreply@yourdomain.com
 ```
+
+Optional Cloudinary variables, used for avatar, role image, and site asset uploads:
+
+```env
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+```
+
+Proxy secret shared with the web app:
+
+```env
+PROXY_SECRET=
+```
+
+Generate it with `openssl rand -hex 32` and use the same value in both apps. The web proxy sends it with the visitor's IP, and the API only trusts that IP when the secret matches. Without it the API still works, but every web visitor shares one rate limit and session IPs show the web server's address.
+
+### Web
+
+The web example file is:
+
+```text
+apps/web/.env.example
+```
+
+```env
+NEXT_PUBLIC_APP_BASE_URL=http://localhost:3000
+NEXT_PUBLIC_API_BASE_URL=http://localhost:4001/api
+PROXY_SECRET=
+```
+
+`PROXY_SECRET` has no `NEXT_PUBLIC_` prefix, so it stays on the server.
 
 Never commit real secrets, production credentials, or private OAuth keys.
 
@@ -170,7 +216,13 @@ Open Drizzle Studio:
 pnpm db:studio
 ```
 
-Use either `db:push` or migrations as appropriate for the environment. Do not run development seeds against production unless intentionally reviewed.
+Use either `db:push` or migrations as appropriate for the environment. Production runs migrations (see `railway.json`). Do not run development seeds against production unless intentionally reviewed.
+
+Migration `0004_normalize_user_emails` lowercases stored emails. It fails if two accounts differ only by letter case, so check first:
+
+```sql
+SELECT lower(trim(email)), array_agg(email) FROM users GROUP BY 1 HAVING count(*) > 1;
+```
 
 ## Development
 
@@ -313,6 +365,24 @@ Protected dashboard routes:
 
 ## Architecture notes
 
+### Authentication flow
+
+- Login sets three httpOnly cookies: `accessToken` (JWT, 15 minutes), `refreshToken` (JWT, 30 days), and `deviceId` (identifies the browser so signing in again replaces its old session).
+- Every request with an access token is checked against the `sessions` table, so logout, session revocation, password changes, and account deactivation take effect immediately.
+- Refresh tokens rotate on every use. Replaying an already-used refresh token ends the session. Parallel requests get a 30-second grace window.
+- The browser calls the API through the Next.js route `apps/web/src/app/api/[...path]/route.ts`, so cookies stay on the web domain. Server components call the API directly and forward the cookies.
+- `apps/web/src/proxy.ts` runs before every page, server action, and `/api` call. If the access token is missing or about to expire, it refreshes it and passes the new cookies to both the browser and the current request. A rejected refresh redirects to `/session-expired`, which clears the cookies.
+- The mobile app sends the access token as a bearer header and refreshes it on a 401.
+
+### Security notes
+
+- Emails are lowercased and trimmed everywhere, so `Ann@x.com` and `ann@x.com` are the same account.
+- Verification and reset codes are stored as SHA-256 hashes. A successful reset deletes every outstanding reset code for that user.
+- Login compares against a dummy bcrypt hash for unknown emails, so response time doesn't reveal which accounts exist.
+- Google sign-in requires a Google-verified email and checks the OAuth `state` parameter. Signing in with Google to an account whose email was never verified clears that account's password and pending codes.
+- Admin endpoints use `@Roles('admin')`. The `admin` and `user` roles cannot be renamed or deleted, and admins cannot change their own role, deactivate themselves, or delete themselves.
+- `PermissionsGuard` and `@Permissions()` exist, but no endpoint uses them yet. Permissions assigned in the UI do not restrict anything until they do.
+
 ### Server and client layouts
 
 `apps/web/src/app/(protected)/(admin)/layout.tsx` remains a server layout so it can export route metadata.
@@ -364,13 +434,14 @@ Keep native controls for browser-specific controls such as color inputs and hidd
 
 - [ ] Set production `NODE_ENV`.
 - [ ] Use strong random JWT secrets.
+- [ ] Set the same `PROXY_SECRET` on the API and the web app.
 - [ ] Configure a production PostgreSQL database.
 - [ ] Configure production frontend/API origins.
-- [ ] Configure Google OAuth callback URLs.
+- [ ] Point `GOOGLE_CALLBACK_URL` at the web app's `/api/auth/google/callback` and register it with Google.
 - [ ] Configure email delivery and sender domain.
 - [ ] Configure Cloudinary if image uploads are enabled.
 - [ ] Remove development credentials and seed data.
-- [ ] Run migrations deliberately.
+- [ ] Run migrations deliberately; check for case-duplicate emails before `0004`.
 - [ ] Run type, lint, formatting, test, and build checks.
 - [ ] Configure deployment for the selected hosting provider.
 - [ ] Enable HTTPS and secure cookie settings.
