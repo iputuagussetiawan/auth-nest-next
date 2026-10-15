@@ -55,7 +55,12 @@ describe('UserController', () => {
             message: 'Onboarding completed',
             data: null,
         })
-        await expect(controller.updateAvatar(req as never, {} as never)).resolves.toEqual({
+        await expect(
+            controller.updateAvatar(
+                req as never,
+                { buffer: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]) } as never,
+            ),
+        ).resolves.toEqual({
             status: 'success',
             message: 'Avatar updated',
             data: { id: 'user-id' },

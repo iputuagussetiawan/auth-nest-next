@@ -75,7 +75,7 @@ describe('RoleController', () => {
     })
 
     it('uploads an image and updates the role', async () => {
-        const file = { buffer: Buffer.from('image') }
+        const file = { buffer: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]) }
         cloudinary.upload.mockResolvedValue({ secure_url: 'https://image.test/role.png' })
         service.updateRoleImage.mockResolvedValue({
             id: 'role-id',

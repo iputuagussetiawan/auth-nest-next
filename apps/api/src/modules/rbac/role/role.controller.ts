@@ -31,6 +31,7 @@ import { memoryStorage } from 'multer'
 
 import { Permissions } from '../../../common/decorators/permissions.decorator'
 import { PermissionsGuard } from '../../../common/guards/permissions.guard'
+import { assertImageContent } from '../../../common/helpers/image-content'
 import { successResponse } from '../../../common/helpers/response.helper'
 import { CloudinaryService } from '../../../shared/cloudinary/cloudinary.service'
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard'
@@ -145,6 +146,7 @@ export class RoleController {
         @UploadedFile() file: Express.Multer.File,
     ) {
         if (!file) throw new BadRequestException('No file provided')
+        assertImageContent(file, ALLOWED_MIME)
         const result = await this.cloudinaryService.upload(file, 'role-images')
         const data = await this.roleService.updateRoleImage(id, result.secure_url)
         return successResponse('Role image updated', data)

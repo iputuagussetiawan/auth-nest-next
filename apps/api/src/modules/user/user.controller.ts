@@ -32,6 +32,7 @@ import { memoryStorage } from 'multer'
 import { Permissions } from '../../common/decorators/permissions.decorator'
 import { ForbiddenException } from '../../common/exceptions/app-error'
 import { PermissionsGuard } from '../../common/guards/permissions.guard'
+import { assertImageContent } from '../../common/helpers/image-content'
 import { successResponse } from '../../common/helpers/response.helper'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { RoleService } from '../rbac/role/role.service'
@@ -202,6 +203,7 @@ export class UserController {
     )
     async updateAvatar(@Req() req: Request, @UploadedFile() file: Express.Multer.File) {
         if (!file) throw new BadRequestException('No file provided')
+        assertImageContent(file, ALLOWED_MIME)
         const user = req.user as any
         const { user: updated } = await this.userService.updateAvatar(user.userId, file)
         return successResponse('Avatar updated', updated)

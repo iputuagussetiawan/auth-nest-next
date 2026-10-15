@@ -18,6 +18,7 @@ import { memoryStorage } from 'multer'
 
 import { Permissions } from '../../common/decorators/permissions.decorator'
 import { PermissionsGuard } from '../../common/guards/permissions.guard'
+import { assertImageContent } from '../../common/helpers/image-content'
 import { successResponse } from '../../common/helpers/response.helper'
 import { CloudinaryService } from '../../shared/cloudinary/cloudinary.service'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
@@ -100,6 +101,7 @@ export class SiteSettingsController {
     )
     async uploadAsset(@UploadedFile() file: Express.Multer.File, @Body('oldUrl') oldUrl?: string) {
         if (!file) throw new BadRequestException('No file provided')
+        assertImageContent(file, ALLOWED_MIME)
 
         // Upload new image first — if it fails, old image is untouched
         const result = await this.cloudinary.upload(file, 'site-assets')
