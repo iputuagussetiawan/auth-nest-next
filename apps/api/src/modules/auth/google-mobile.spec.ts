@@ -3,10 +3,13 @@ import {
     isAllowedMobileRedirect,
     MOBILE_OAUTH_COOKIE,
     mobileBeginUrl,
+    mobileCallbackUrl,
+    MobileGoogleAuthGuard,
     MobileOAuthBeginGuard,
     mobileRedirect,
     takeMobileFlow,
 } from './google-mobile'
+import { GoogleCallbackGuard } from './guards/google-callback.guard'
 
 const CHALLENGE = 'a'.repeat(64)
 
@@ -134,6 +137,46 @@ describe('google-mobile', () => {
             })
             const req = { cookies: { [MOBILE_OAUTH_COOKIE]: cookie } }
             expect(takeMobileFlow(req as never, res() as never)).toBeNull()
+        })
+    })
+
+    describe('separate callback URL for phones', () => {
+        const WEB = 'http://localhost:8000/api/auth/google/callback'
+        const TUNNEL = 'https://abc.ngrok.app/api/auth/google/callback'
+        const httpContext = (req: unknown) =>
+            ({ switchToHttp: () => ({ getRequest: () => req }) }) as never
+
+        it('falls back to the web callback when no mobile one is set', () => {
+            withEnv({ GOOGLE_CALLBACK_URL: WEB, GOOGLE_MOBILE_CALLBACK_URL: undefined }, () =>
+                expect(mobileCallbackUrl()).toBe(WEB),
+            )
+        })
+
+        it('starts mobile sign-in on the mobile callback host and tells Google to return there', () => {
+            withEnv({ GOOGLE_CALLBACK_URL: WEB, GOOGLE_MOBILE_CALLBACK_URL: TUNNEL }, () => {
+                const url = new URL(mobileBeginUrl('myauthmobile://auth/google', CHALLENGE))
+                expect(url.origin).toBe('https://abc.ngrok.app')
+                expect(new MobileGoogleAuthGuard().getAuthenticateOptions()).toEqual({
+                    callbackURL: TUNNEL,
+                })
+            })
+        })
+
+        it('the callback uses the mobile URL only for a mobile sign-in', () => {
+            withEnv({ GOOGLE_CALLBACK_URL: WEB, GOOGLE_MOBILE_CALLBACK_URL: TUNNEL }, () => {
+                const guard = new GoogleCallbackGuard()
+                const flow = JSON.stringify({
+                    redirectUri: 'myauthmobile://auth/google',
+                    challenge: CHALLENGE,
+                })
+                expect(
+                    guard.getAuthenticateOptions(
+                        httpContext({ cookies: { [MOBILE_OAUTH_COOKIE]: flow } }),
+                    ),
+                ).toEqual({ callbackURL: TUNNEL })
+                // undefined keeps the strategy's own GOOGLE_CALLBACK_URL for the web
+                expect(guard.getAuthenticateOptions(httpContext({ cookies: {} }))).toBeUndefined()
+            })
         })
     })
 })

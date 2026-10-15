@@ -1,5 +1,6 @@
 import * as crypto from 'crypto'
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
+import { AuthGuard } from '@nestjs/passport'
 import type { Request, Response } from 'express'
 
 import { BadRequestException } from '../../common/exceptions/app-error'
@@ -42,9 +43,18 @@ export function isAllowedMobileRedirect(uri: unknown): uri is string {
     }
 }
 
-/** Same host as GOOGLE_CALLBACK_URL: that's where the OAuth state cookie has to be set */
+/**
+ * Where Google sends mobile sign-ins back to. A phone can't reach a localhost callback, so in
+ * development GOOGLE_MOBILE_CALLBACK_URL can point at a public tunnel to the API while the web keeps
+ * GOOGLE_CALLBACK_URL. Both must be registered with Google.
+ */
+export function mobileCallbackUrl() {
+    return process.env.GOOGLE_MOBILE_CALLBACK_URL || process.env.GOOGLE_CALLBACK_URL!
+}
+
+/** Same host as the mobile callback: that's where the OAuth state cookie has to be set */
 export function mobileBeginUrl(redirectUri: string, challenge: string) {
-    const url = new URL(process.env.GOOGLE_CALLBACK_URL!.replace(/\/callback\/?$/, '/mobile/begin'))
+    const url = new URL(mobileCallbackUrl().replace(/\/callback\/?$/, '/mobile/begin'))
     url.searchParams.set('redirect_uri', redirectUri)
     url.searchParams.set('challenge', challenge)
     return url.toString()
@@ -87,6 +97,14 @@ export class MobileOAuthBeginGuard implements CanActivate {
     }
 }
 
+/** The Google redirect for a mobile sign-in, using the mobile callback URL */
+@Injectable()
+export class MobileGoogleAuthGuard extends AuthGuard('google') {
+    getAuthenticateOptions() {
+        return { callbackURL: mobileCallbackUrl() }
+    }
+}
+
 /** A web sign-in clears any mobile flow left in this browser, so it is never handed to the app */
 @Injectable()
 export class ClearMobileOAuthGuard implements CanActivate {
@@ -99,11 +117,10 @@ export class ClearMobileOAuthGuard implements CanActivate {
     }
 }
 
-/** The mobile flow this callback belongs to, if any. One use only. */
-export function takeMobileFlow(req: Request, res: Response): MobileOAuthFlow | null {
+/** The mobile flow this callback belongs to, if any, without using it up */
+export function peekMobileFlow(req: Request): MobileOAuthFlow | null {
     const raw: unknown = req.cookies?.[MOBILE_OAUTH_COOKIE]
     if (typeof raw !== 'string') return null
-    res.clearCookie(MOBILE_OAUTH_COOKIE, cookieOptions())
     try {
         const flow = JSON.parse(raw) as Partial<MobileOAuthFlow>
         if (
@@ -117,4 +134,12 @@ export function takeMobileFlow(req: Request, res: Response): MobileOAuthFlow | n
         // Malformed cookie: treat it as a web sign-in
     }
     return null
+}
+
+/** The mobile flow this callback belongs to, if any. One use only. */
+export function takeMobileFlow(req: Request, res: Response): MobileOAuthFlow | null {
+    if (req.cookies?.[MOBILE_OAUTH_COOKIE] !== undefined) {
+        res.clearCookie(MOBILE_OAUTH_COOKIE, cookieOptions())
+    }
+    return peekMobileFlow(req)
 }

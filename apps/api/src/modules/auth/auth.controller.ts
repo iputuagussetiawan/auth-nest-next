@@ -36,6 +36,7 @@ import {
     ClearMobileOAuthGuard,
     isAllowedMobileRedirect,
     mobileBeginUrl,
+    MobileGoogleAuthGuard,
     MobileOAuthBeginGuard,
     mobileRedirect,
     sha256Hex,
@@ -276,7 +277,7 @@ export class AuthController {
 
     @Get('google/mobile/begin')
     @Throttle({ default: { ttl: 60000, limit: 10 } })
-    @UseGuards(MobileOAuthBeginGuard, AuthGuard('google'))
+    @UseGuards(MobileOAuthBeginGuard, MobileGoogleAuthGuard)
     @ApiOperation({ summary: 'Mobile Google sign-in, in the browser (redirects to Google)' })
     @ApiResponse({ status: 302, description: 'Redirect to Google consent screen' })
     mobileGoogleBegin() {}

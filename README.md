@@ -131,12 +131,19 @@ Optional Google OAuth variables:
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GOOGLE_CALLBACK_URL=http://localhost:4001/api/auth/google/callback
+GOOGLE_MOBILE_CALLBACK_URL=
 MOBILE_APP_SCHEMES=myauthmobile
 ```
 
 Locally the callback can point straight at the API. In production it must go through the web app's proxy (`https://<web-domain>/api/auth/google/callback`), because the auth cookies and the OAuth `state` cookie live on the web domain. Register the same URL in the Google Cloud console.
 
-The mobile app uses the same Google client and callback, so it needs no extra Google setup. It opens the sign-in in the system browser, which ends on the app's deep link (`MOBILE_APP_SCHEMES`, default `myauthmobile`, the `scheme` in `app.json`). Expo Go's `exp://` links are also accepted outside production. The phone's browser has to reach `GOOGLE_CALLBACK_URL`, so a `localhost` callback only works on the iOS simulator; on a real device use a public HTTPS address, for example a tunnel.
+The mobile app uses the same Google client and callback, so it needs no extra Google setup. It opens the sign-in in the system browser, which ends on the app's deep link (`MOBILE_APP_SCHEMES`, default `myauthmobile`, the `scheme` in `app.json`). Expo Go's `exp://` links are also accepted outside production. The phone's browser has to reach the callback, and Google only accepts `localhost` or public HTTPS addresses, so a `localhost` callback only works on the iOS simulator. To test on a real phone or the Android emulator, give the app its own callback through a tunnel while the web keeps using `localhost`:
+
+1. Start a tunnel to the API: `ngrok http 8000` (free accounts get one fixed domain: `ngrok http 8000 --url=<your-domain>.ngrok-free.app`).
+2. In `apps/api/.env`, set `GOOGLE_MOBILE_CALLBACK_URL=https://<tunnel-domain>/api/auth/google/callback` and restart the API.
+3. Add that URL under **Authorized redirect URIs** of the OAuth client in the Google Cloud console. Changes can take a few minutes.
+
+`EXPO_PUBLIC_API_URL` stays on your LAN address. Only the browser part of the sign-in goes through the tunnel. ngrok's free plan shows a one-time "You are about to visit" page in the phone's browser; tap **Visit Site**.
 
 Optional email variables:
 
