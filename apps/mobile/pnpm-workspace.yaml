@@ -1,0 +1,4 @@
+# Makes this folder its own pnpm project, so a plain `pnpm install` here (as EAS Build runs it)
+# installs the app's packages instead of the root workspace, which excludes apps/mobile.
+packages:
+  - '.'
