@@ -21,6 +21,13 @@ export const authApi = {
 
   logout: () => apiFetch<null>('/auth/logout', { method: 'POST' }),
 
+  /** Browser URL for Google sign-in, and the verifier that later redeems the code it returns */
+  googleStart: (data: { redirectUri: string }) =>
+    apiFetch<{ url: string; verifier: string }>('/auth/google/mobile/start', { method: 'POST', body: data }),
+
+  googleExchange: (data: { code: string; verifier: string }) =>
+    apiFetch<LoginData>('/auth/google/mobile/exchange', { method: 'POST', body: data }),
+
   forgotPassword: (data: { email: string }) =>
     apiFetch<null>('/auth/password/forgot', { method: 'POST', body: data }),
 

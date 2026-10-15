@@ -52,7 +52,7 @@ function Field({ label, icon, error, inputRef, trailing, onFocus, onBlur, ...inp
 }
 
 export default function LoginScreen() {
-  const { signIn } = useAuth();
+  const { signIn, signInWithGoogle } = useAuth();
   const palette = usePalette();
   const passwordRef = useRef<TextInput>(null);
   const [email, setEmail] = useState('');
@@ -60,17 +60,17 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [formError, setFormError] = useState('');
-  const [notice, setNotice] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
+  const busy = submitting || googleBusy;
 
   function clearError(field: string) {
     setErrors((prev) => (prev[field] ? { ...prev, [field]: '' } : prev));
     setFormError('');
-    setNotice('');
   }
 
   async function onSubmit() {
-    if (submitting) return;
+    if (busy) return;
     const next: FormErrors = {
       email: validateEmail(email),
       password: validatePassword(password),
@@ -86,6 +86,19 @@ export default function LoginScreen() {
       setFormError(err instanceof Error ? err.message : 'Sign in failed. Please try again.');
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function onGoogle() {
+    if (busy) return;
+    setFormError('');
+    setGoogleBusy(true);
+    try {
+      if (await signInWithGoogle()) router.replace('/(auth)/dashboard');
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'Google sign-in failed. Please try again.');
+    } finally {
+      setGoogleBusy(false);
     }
   }
 
@@ -124,7 +137,7 @@ export default function LoginScreen() {
                   returnKeyType="next"
                   submitBehavior="submit"
                   onSubmitEditing={() => passwordRef.current?.focus()}
-                  editable={!submitting}
+                  editable={!busy}
                   value={email}
                   onChangeText={(v) => {
                     setEmail(v);
@@ -144,7 +157,7 @@ export default function LoginScreen() {
                   secureTextEntry={!showPassword}
                   returnKeyType="go"
                   onSubmitEditing={onSubmit}
-                  editable={!submitting}
+                  editable={!busy}
                   value={password}
                   onChangeText={(v) => {
                     setPassword(v);
@@ -175,8 +188,8 @@ export default function LoginScreen() {
 
               <Pressable
                 accessibilityRole="button"
-                accessibilityState={{ disabled: submitting, busy: submitting }}
-                disabled={submitting}
+                accessibilityState={{ disabled: busy, busy: submitting }}
+                disabled={busy}
                 onPress={onSubmit}
                 className={`mt-6 h-14 flex-row items-center justify-center gap-2 rounded-2xl bg-primary dark:bg-primary-dark active:opacity-80 ${submitting ? 'opacity-80' : ''}`}>
                 {submitting ? (
@@ -197,7 +210,9 @@ export default function LoginScreen() {
 
               <Pressable
                 accessibilityRole="button"
-                onPress={() => setNotice("Google sign-in isn't available in the app yet. Please use your email and password.")}
+                accessibilityState={{ disabled: busy, busy: googleBusy }}
+                disabled={busy}
+                onPress={onGoogle}
                 className="h-14 flex-row items-center justify-center gap-3 rounded-2xl border border-border dark:border-border-dark bg-card dark:bg-card-dark active:bg-secondary dark:active:bg-secondary-dark">
                 <Svg width={20} height={20} viewBox="0 0 24 24">
                   <Path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47a5.57 5.57 0 0 1-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z" />
@@ -205,9 +220,11 @@ export default function LoginScreen() {
                   <Path fill="#FBBC05" d="M5.27 14.29A7.2 7.2 0 0 1 4.89 12c0-.8.14-1.57.38-2.29V6.62H1.29a11.99 11.99 0 0 0 0 10.76l3.98-3.09z" />
                   <Path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.69 1.29 6.62l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75z" />
                 </Svg>
-                <Text className="text-base font-semibold text-foreground dark:text-foreground-dark">Continue with Google</Text>
+                {googleBusy && <ActivityIndicator color={palette.foreground} />}
+                <Text className="text-base font-semibold text-foreground dark:text-foreground-dark">
+                  {googleBusy ? 'Waiting for Google...' : 'Continue with Google'}
+                </Text>
               </Pressable>
-              {!!notice && <Text className="mt-3 text-center text-sm text-muted-foreground dark:text-muted-foreground-dark">{notice}</Text>}
             </View>
 
             <View className="mt-8 flex-row justify-center gap-1">

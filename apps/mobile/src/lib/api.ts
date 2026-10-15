@@ -17,7 +17,7 @@ export type ApiEnvelope<T> = {
 
 // Requests that must not trigger a refresh-and-retry. Logout is not one of them: with an expired
 // access token it would fail and leave the server session alive.
-const AUTH_PATHS = ['/auth/login', '/auth/refresh'];
+const AUTH_PATHS = ['/auth/login', '/auth/refresh', '/auth/google/mobile/exchange'];
 
 let refreshInFlight: Promise<string | null> | null = null;
 
