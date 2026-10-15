@@ -90,7 +90,8 @@ export class AuthService {
     signAccessToken(payload: { userId: string; sessionId: string }) {
         return this.jwtService.sign(payload, {
             secret: process.env.JWT_SECRET,
-            expiresIn: '1d',
+            // Short-lived: the web app's proxy and the mobile client refresh it when it runs out
+            expiresIn: '15m',
         })
     }
 
