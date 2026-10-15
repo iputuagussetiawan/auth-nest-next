@@ -33,7 +33,7 @@ import { GoogleCallbackGuard, type GoogleAuthErrorReason } from './guards/google
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { LocalAuthGuard } from './guards/local-auth.guard'
 
-const ACCESS_MAX_AGE = 24 * 60 * 60 * 1000 // 1 day
+const ACCESS_MAX_AGE = 15 * 60 * 1000 // 15 minutes, same as the token inside it
 const REFRESH_MAX_AGE = 30 * 24 * 60 * 60 * 1000 // 30 days
 const IS_PROD = process.env.NODE_ENV === 'production'
 const FRONTEND_ORIGIN = (process.env.FRONTEND_ORIGIN || 'http://localhost:3000')
