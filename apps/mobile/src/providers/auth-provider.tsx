@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
+import { onSessionExpired } from '@/lib/api';
 import { authApi, type AuthUser } from '@/lib/auth-api';
 import { clearAccessToken, getAccessToken, setAccessToken } from '@/lib/token-storage';
 
@@ -24,6 +25,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .catch(() => clearAccessToken())
       .finally(() => setIsLoading(false));
   }, []);
+
+  // A refused refresh means the session ended elsewhere (logout, deactivation, expiry); screens
+  // redirect to login once there is no user
+  useEffect(() => onSessionExpired(() => setUser(null)), []);
 
   async function signIn(email: string, password: string) {
     const result = await authApi.login({ email: email.trim().toLowerCase(), password });
