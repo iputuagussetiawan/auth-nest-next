@@ -2,10 +2,12 @@ import { Redirect, router } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { usePalette } from '@/hooks/use-palette';
 import { useAuth } from '@/providers/auth-provider';
 
 export default function HomeScreen() {
   const { user, isLoading, signOut } = useAuth();
+  const palette = usePalette();
 
   async function onSignOut() {
     try {
@@ -18,8 +20,8 @@ export default function HomeScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-[#f0fdf4] dark:bg-[#020c06]">
-        <ActivityIndicator color="#10AF13" />
+      <SafeAreaView className="flex-1 items-center justify-center bg-background dark:bg-background-dark">
+        <ActivityIndicator color={palette.foreground} />
       </SafeAreaView>
     );
   }
@@ -31,25 +33,25 @@ export default function HomeScreen() {
   const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || 'there';
 
   return (
-    <SafeAreaView className="flex-1 bg-[#f0fdf4] dark:bg-[#020c06]">
+    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <ScrollView contentContainerClassName="flex-grow px-6 py-10">
         <View className="w-full max-w-md self-center">
           <View className="flex-row items-start justify-between">
             <View className="mr-3 flex-1">
-              <Text className="text-sm font-semibold uppercase tracking-[3px] text-[#10AF13]">
+              <Text className="text-sm font-semibold uppercase tracking-[3px] text-muted-foreground dark:text-muted-foreground-dark">
                 Dashboard
               </Text>
-              <Text className="mt-3 text-4xl font-bold text-[#052e16] dark:text-[#d1fae5]">
+              <Text className="mt-3 text-4xl font-bold text-foreground dark:text-foreground-dark">
                 Welcome back, {name}
               </Text>
-              <Text className="mt-3 text-base leading-6 text-[#166534] dark:text-[#6ee7b7]">
+              <Text className="mt-3 text-base leading-6 text-muted-foreground dark:text-muted-foreground-dark">
                 Signed in as {user.email}.
               </Text>
             </View>
             <Pressable
               onPress={onSignOut}
-              className="mt-1 rounded-2xl border border-emerald-300 bg-white px-4 py-2 dark:border-emerald-900 dark:bg-emerald-950">
-              <Text className="text-sm font-semibold text-[#10AF13]">Sign out</Text>
+              className="mt-1 rounded-2xl border border-border dark:border-border-dark bg-card dark:bg-card-dark px-4 py-2">
+              <Text className="text-sm font-semibold text-foreground dark:text-foreground-dark">Sign out</Text>
             </Pressable>
           </View>
         </View>
