@@ -58,7 +58,7 @@ Built with NestJS, Next.js, PostgreSQL, Drizzle ORM, React Query, React Hook For
 │   │       ├── features/        # Feature-specific pages and services
 │   │       ├── providers/       # Auth, theme, and query providers
 │   │       └── proxy.ts         # Route protection and access-token refresh
-│   └── my-auth-mobile/          # Expo app (own lockfile, not in pnpm workspace)
+│   └── mobile/                  # Expo app (own lockfile, not in pnpm workspace)
 ├── packages/
 │   └── shared/                  # Shared constants and types (@nest-auth/shared)
 ├── .github/workflows/           # CI workflows
