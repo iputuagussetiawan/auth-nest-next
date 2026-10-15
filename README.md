@@ -131,9 +131,12 @@ Optional Google OAuth variables:
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GOOGLE_CALLBACK_URL=http://localhost:4001/api/auth/google/callback
+MOBILE_APP_SCHEMES=myauthmobile
 ```
 
 Locally the callback can point straight at the API. In production it must go through the web app's proxy (`https://<web-domain>/api/auth/google/callback`), because the auth cookies and the OAuth `state` cookie live on the web domain. Register the same URL in the Google Cloud console.
+
+The mobile app uses the same Google client and callback, so it needs no extra Google setup. It opens the sign-in in the system browser, which ends on the app's deep link (`MOBILE_APP_SCHEMES`, default `myauthmobile`, the `scheme` in `app.json`). Expo Go's `exp://` links are also accepted outside production. The phone's browser has to reach `GOOGLE_CALLBACK_URL`, so a `localhost` callback only works on the iOS simulator; on a real device use a public HTTPS address, for example a tunnel.
 
 Optional email variables:
 
@@ -373,6 +376,7 @@ Protected dashboard routes:
 - The browser calls the API through the Next.js route `apps/web/src/app/api/[...path]/route.ts`, so cookies stay on the web domain. Server components call the API directly and forward the cookies.
 - `apps/web/src/proxy.ts` runs before every page, server action, and `/api` call. If the access token is missing or about to expire, it refreshes it and passes the new cookies to both the browser and the current request. A rejected refresh redirects to `/session-expired`, which clears the cookies.
 - The mobile app sends the access token as a bearer header and refreshes it on a 401.
+- Google sign-in on mobile: `POST /auth/google/mobile/start` returns a browser URL and a secret verifier. The browser runs the normal Google flow and returns to the app's deep link with a 2-minute, single-use code. The app trades the code and verifier for a session at `POST /auth/google/mobile/exchange`. The verifier never passes through the browser, so a code caught by another app is useless.
 
 ### Security notes
 
