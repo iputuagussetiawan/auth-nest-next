@@ -379,9 +379,30 @@ Protected dashboard routes:
 - Emails are lowercased and trimmed everywhere, so `Ann@x.com` and `ann@x.com` are the same account.
 - Verification and reset codes are stored as SHA-256 hashes. A successful reset deletes every outstanding reset code for that user.
 - Login compares against a dummy bcrypt hash for unknown emails, so response time doesn't reveal which accounts exist.
+- Uploads are checked by their actual bytes, not the browser-supplied type. Avatars and role images accept JPEG, PNG, WebP, and GIF; site assets also accept ICO and SVG, and SVGs containing scripts or event handlers are rejected.
 - Google sign-in requires a Google-verified email and checks the OAuth `state` parameter. Signing in with Google to an account whose email was never verified clears that account's password and pending codes.
-- Admin endpoints use `@Roles('admin')`. The `admin` and `user` roles cannot be renamed or deleted, and admins cannot change their own role, deactivate themselves, or delete themselves.
-- `PermissionsGuard` and `@Permissions()` exist, but no endpoint uses them yet. Permissions assigned in the UI do not restrict anything until they do.
+- The `admin` and `user` roles cannot be renamed or deleted, and admins cannot change their own role, deactivate themselves, or delete themselves.
+
+### Roles and permissions
+
+Admin endpoints are guarded by `@Permissions()` (`apps/api/src/common/guards/permissions.guard.ts`). The `admin` role passes every check. Any other role gets exactly the permissions granted to it on the Roles page:
+
+| Permission        | Allows                                              |
+| ----------------- | --------------------------------------------------- |
+| `user:read`       | List users and role names                           |
+| `user:create`     | Create users                                        |
+| `user:update`     | Edit users, activate or deactivate them             |
+| `user:delete`     | Delete users                                        |
+| `role:manage`     | Manage roles and permissions, assign roles to users |
+| `theme:manage`    | Create, edit, activate, and delete themes           |
+| `settings:manage` | Edit site settings and upload or delete site assets |
+| `stats:read`      | View dashboard statistics                           |
+
+- Only admins can edit, delete, or change the role of an admin account, or assign the admin role.
+- Choosing a role while creating a user also needs `role:manage`.
+- `role:manage` lets a role grant itself any permission, so treat it as near-admin access.
+- Notifications stay admin-only.
+- Permission names live in `packages/shared/src/rbac.ts` and are shared by the API and the web sidebar.
 
 ### Server and client layouts
 
@@ -442,6 +463,7 @@ Keep native controls for browser-specific controls such as color inputs and hidd
 - [ ] Configure Cloudinary if image uploads are enabled.
 - [ ] Remove development credentials and seed data.
 - [ ] Run migrations deliberately; check for case-duplicate emails before `0004`.
+- [ ] After `0005`, non-admin roles have no permissions; grant what each role needs on the Roles page.
 - [ ] Run type, lint, formatting, test, and build checks.
 - [ ] Configure deployment for the selected hosting provider.
 - [ ] Enable HTTPS and secure cookie settings.

@@ -1,3 +1,4 @@
+import { PERMISSIONS } from '@nest-auth/shared'
 import {
     Briefcase,
     FileUser,
@@ -97,27 +98,32 @@ export const getSidebarData = (user?: IUserProfile) => {
         {
             group: 'User Management',
             roles: ['admin'],
+            permissions: [PERMISSIONS.USER_READ],
             item: { title: 'Users', url: '/dashboard/users', icon: Users },
         },
         {
             group: 'User Management',
             roles: ['admin'],
+            permissions: [PERMISSIONS.ROLE_MANAGE],
             item: { title: 'Roles', url: '/dashboard/roles', icon: Shield },
         },
         {
             group: 'User Management',
             roles: ['admin'],
+            permissions: [PERMISSIONS.ROLE_MANAGE],
             item: { title: 'Permissions', url: '/dashboard/permissions', icon: KeyRound },
         },
         // --- Configuration ---
         {
             group: 'Configuration',
             roles: ['admin'],
+            permissions: [PERMISSIONS.THEME_MANAGE],
             item: { title: 'Themes', url: '/dashboard/themes', icon: Palette },
         },
         {
             group: 'Configuration',
             roles: ['admin'],
+            permissions: [PERMISSIONS.SETTINGS_MANAGE],
             item: { title: 'Site Settings', url: '/dashboard/settings', icon: Settings },
         },
     ]

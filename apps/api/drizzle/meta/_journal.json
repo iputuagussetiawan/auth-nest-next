@@ -36,6 +36,20 @@
       "when": 1792026223891,
       "tag": "0004_normalize_user_emails",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792028604252,
+      "tag": "0005_enforce_permissions",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792029320068,
+      "tag": "0006_default_user_role",
+      "breakpoints": true
     }
   ]
 }

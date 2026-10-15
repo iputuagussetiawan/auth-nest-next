@@ -1,6 +1,8 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useAuthContext } from '@/providers/auth-provider'
+import { PERMISSIONS } from '@nest-auth/shared'
 import { BadgeCheck, Layers, Plus, Search, ShieldCheck, UserCheck, Users } from 'lucide-react'
 
 import { StatCard } from '@/features/admin/dashboard/components/StatCard'
@@ -10,6 +12,7 @@ import DashboardPageMain from '@/components/layouts/backend/DashboardPageMain'
 import { UiButton } from '@/components/ui-custom/UiButton'
 import { UiInput } from '@/components/ui-custom/UiInput'
 import { UiDataTable } from '@/components/ui-custom/UiTable'
+import { hasPermission } from '@/lib/permissions'
 
 import { getUserColumns } from './components/UserColumns'
 import { UserDeleteDialog } from './components/UserDeleteDialog'
@@ -86,11 +89,14 @@ export function UsersPage() {
         [users],
     )
 
+    const { user: viewer } = useAuthContext()
     const openEdit = (u: (typeof users)[number]) => {
         setEditUser(u)
         setFormOpen(true)
     }
-    const columns = getUserColumns({ onEdit: openEdit, onDelete: setDeleteUser })
+    const onEdit = hasPermission(viewer, PERMISSIONS.USER_UPDATE) ? openEdit : undefined
+    const onDelete = hasPermission(viewer, PERMISSIONS.USER_DELETE) ? setDeleteUser : undefined
+    const columns = getUserColumns({ onEdit, onDelete })
 
     return (
         <DashboardPageMain>
@@ -198,8 +204,8 @@ export function UsersPage() {
                     ) : (
                         <UsersGroupedTable
                             users={searchedUsers}
-                            onEdit={openEdit}
-                            onDelete={setDeleteUser}
+                            onEdit={onEdit}
+                            onDelete={onDelete}
                         />
                     )}
                 </div>

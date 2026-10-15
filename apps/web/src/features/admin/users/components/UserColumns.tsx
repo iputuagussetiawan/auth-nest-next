@@ -13,12 +13,14 @@ import { UserAvatar } from '@/components/user-avatar'
 
 import type { IAdminUser } from '../types/UserTypes'
 
+// Leave an action out when the viewer lacks the permission for it
 interface Actions {
-    onEdit: (user: IAdminUser) => void
-    onDelete: (user: IAdminUser) => void
+    onEdit?: (user: IAdminUser) => void
+    onDelete?: (user: IAdminUser) => void
 }
 
-export function renderUserActions(user: IAdminUser, actions: Actions) {
+export function renderUserActions(user: IAdminUser, { onEdit, onDelete }: Actions) {
+    if (!onEdit && !onDelete) return null
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -27,15 +29,19 @@ export function renderUserActions(user: IAdminUser, actions: Actions) {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => actions.onEdit(user)}>
-                    <Pencil className="mr-2 h-4 w-4" /> Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                    onClick={() => actions.onDelete(user)}
-                    className="text-destructive focus:text-destructive"
-                >
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                </DropdownMenuItem>
+                {onEdit && (
+                    <DropdownMenuItem onClick={() => onEdit(user)}>
+                        <Pencil className="mr-2 h-4 w-4" /> Edit
+                    </DropdownMenuItem>
+                )}
+                {onDelete && (
+                    <DropdownMenuItem
+                        onClick={() => onDelete(user)}
+                        className="text-destructive focus:text-destructive"
+                    >
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                    </DropdownMenuItem>
+                )}
             </DropdownMenuContent>
         </DropdownMenu>
     )

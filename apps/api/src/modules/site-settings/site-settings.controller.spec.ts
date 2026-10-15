@@ -25,7 +25,10 @@ describe('SiteSettingsController', () => {
     })
 
     it('uploads before deleting the old valid asset', async () => {
-        const file = { mimetype: 'image/png' }
+        const file = {
+            mimetype: 'image/png',
+            buffer: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+        }
         cloudinary.upload.mockResolvedValue({ secure_url: 'https://cdn.test/new.png' })
         await expect(
             controller.uploadAsset(file as never, 'https://cdn.test/old.png'),
@@ -39,6 +42,13 @@ describe('SiteSettingsController', () => {
     })
 
     it('rejects missing files and invalid delete URLs', async () => {
+        // Claims to be a PNG but is HTML: rejected before anything reaches Cloudinary
+        await expect(
+            controller.uploadAsset({
+                mimetype: 'image/png',
+                buffer: Buffer.from('<html>'),
+            } as never),
+        ).rejects.toBeInstanceOf(BadRequestException)
         await expect(controller.uploadAsset(undefined as never)).rejects.toBeInstanceOf(
             BadRequestException,
         )

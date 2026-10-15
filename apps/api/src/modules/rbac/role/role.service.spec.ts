@@ -1,4 +1,8 @@
-import { BadRequestException, NotFoundException } from '../../../common/exceptions/app-error'
+import {
+    BadRequestException,
+    ForbiddenException,
+    NotFoundException,
+} from '../../../common/exceptions/app-error'
 import { RoleService } from './role.service'
 
 function createQuery(result: unknown[]) {
@@ -146,6 +150,56 @@ describe('RoleService', () => {
             expect(db.update).not.toHaveBeenCalled()
             expect(db.delete).not.toHaveBeenCalled()
         }
+    })
+
+    describe('assertAdminOnlyTargets', () => {
+        const adminRole = { role: { id: 'admin-role', name: 'admin' } }
+
+        it('lets admins act on anyone', async () => {
+            const db = { select: jest.fn() }
+            await expect(
+                new RoleService(db as never).assertAdminOnlyTargets(['admin'], {
+                    userId: 'x',
+                    roleId: 'admin-role',
+                }),
+            ).resolves.toBeUndefined()
+            expect(db.select).not.toHaveBeenCalled()
+        })
+
+        it('stops non-admins from changing an admin account', async () => {
+            const db = { select: jest.fn().mockReturnValue(createQuery([adminRole])) }
+            await expect(
+                new RoleService(db as never).assertAdminOnlyTargets(['staff'], { userId: 'x' }),
+            ).rejects.toBeInstanceOf(ForbiddenException)
+        })
+
+        it('stops non-admins from handing out the admin role', async () => {
+            const db = {
+                select: jest
+                    .fn()
+                    .mockReturnValue(createQuery([{ id: 'admin-role', name: 'admin' }])),
+            }
+            await expect(
+                new RoleService(db as never).assertAdminOnlyTargets(['staff'], {
+                    roleId: 'admin-role',
+                }),
+            ).rejects.toBeInstanceOf(ForbiddenException)
+        })
+
+        it('lets non-admins manage other accounts and roles', async () => {
+            const db = {
+                select: jest
+                    .fn()
+                    .mockReturnValueOnce(createQuery([{ role: { id: 'r', name: 'participant' } }]))
+                    .mockReturnValueOnce(createQuery([{ id: 'r', name: 'participant' }])),
+            }
+            await expect(
+                new RoleService(db as never).assertAdminOnlyTargets(['staff'], {
+                    userId: 'x',
+                    roleId: 'r',
+                }),
+            ).resolves.toBeUndefined()
+        })
     })
 
     it('replaces role permissions and skips insert for an empty list', async () => {

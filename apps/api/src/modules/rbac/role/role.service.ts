@@ -1,8 +1,13 @@
+import { ADMIN_ROLE, DEFAULT_ROLE } from '@nest-auth/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { eq, inArray, sql } from 'drizzle-orm'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
-import { BadRequestException, NotFoundException } from '../../../common/exceptions/app-error'
+import {
+    BadRequestException,
+    ForbiddenException,
+    NotFoundException,
+} from '../../../common/exceptions/app-error'
 import { DRIZZLE } from '../../../database/drizzle.provider'
 import * as schema from '../../../database/schema'
 import { permissions } from '../../../database/schema/rbac/permissions.schema'
@@ -11,12 +16,35 @@ import { roles, type Role } from '../../../database/schema/rbac/roles.schema'
 import { userRoles } from '../../../database/schema/rbac/user-roles.schema'
 import type { CreateRoleDto } from './dto/create-role.dto'
 
-// Guards authorize by role name, and sign-up assigns 'user': renaming or deleting either breaks the app
-const PROTECTED_ROLES = ['admin', 'user']
+// Guards authorize by role name, and sign-up assigns the default role: renaming or deleting either breaks the app
+const PROTECTED_ROLES = [ADMIN_ROLE, DEFAULT_ROLE]
 
 @Injectable()
 export class RoleService {
     constructor(@Inject(DRIZZLE) private db: NodePgDatabase<typeof schema>) {}
+
+    /**
+     * Non-admins holding user or role permissions can't touch admin accounts or hand out the admin
+     * role; otherwise any of those permissions would be a path to full admin access.
+     */
+    async assertAdminOnlyTargets(
+        actorRoles: string[] | undefined,
+        target: { userId?: string; roleId?: string },
+    ) {
+        if (actorRoles?.includes(ADMIN_ROLE)) return
+        if (target.userId) {
+            const targetRoles = await this.getUserRoles(target.userId)
+            if (targetRoles.some((r) => r.name === ADMIN_ROLE)) {
+                throw new ForbiddenException('Only admins can change an admin account')
+            }
+        }
+        if (target.roleId) {
+            const role = await this.findById(target.roleId)
+            if (role.name === ADMIN_ROLE) {
+                throw new ForbiddenException('Only admins can assign the admin role')
+            }
+        }
+    }
 
     async findAll() {
         return this.db.select().from(roles)
